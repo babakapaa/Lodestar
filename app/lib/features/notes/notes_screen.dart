@@ -55,10 +55,13 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
           onPressed: () => context.push(AppRoutes.notesGraph),
         ),
         PopupMenuButton<String>(
-          onSelected: (action) => action == 'export'
-              ? NoteActions.exportVault(ref)
-              : NoteActions.importVault(context, ref),
+          onSelected: (action) => switch (action) {
+            'sources' => context.push(AppRoutes.sourcesPath),
+            'export' => NoteActions.exportVault(ref),
+            _ => NoteActions.importVault(context, ref),
+          },
           itemBuilder: (context) => [
+            PopupMenuItem(value: 'sources', child: Text(l10n.notesSources)),
             PopupMenuItem(value: 'export', child: Text(l10n.notesExport)),
             PopupMenuItem(value: 'import', child: Text(l10n.notesImport)),
           ],

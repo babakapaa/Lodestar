@@ -5,6 +5,7 @@ import 'package:http/testing.dart';
 
 import 'fake_directory.dart';
 import 'fake_notes.dart';
+import 'fake_sources.dart';
 import 'fake_study.dart';
 
 class FakeServer {
@@ -12,6 +13,7 @@ class FakeServer {
   final FakeDirectory directory = FakeDirectory();
   final FakeStudy study = FakeStudy();
   final FakeNotes notes = FakeNotes();
+  final FakeSources sources = FakeSources();
   bool offline = false;
   final Map<String, Object?> profile = {
     'userId': 'u1',
@@ -192,6 +194,10 @@ class FakeServer {
         request,
       ),
       _ when path.startsWith('/v1/study/') => study.handle(request),
+      _
+          when path.startsWith('/v1/notes/sources') ||
+              path == '/v1/notes/lookup' =>
+        sources.handle(request),
       _ when path == '/v1/notes' || path.startsWith('/v1/notes/') =>
         notes.handle(request),
       _ => directory.handle(request),

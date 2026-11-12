@@ -96,5 +96,53 @@
   "errorTenantNotFound": "На этом сервере нет вуза с таким кодом.",
   "errorRedirectRejected": "Сервер вуза не разрешает вход из этого приложения. Обратитесь к администратору.",
   "errorInvalidProfile": "Проверьте поля: имя до 100 знаков, о себе до 2000.",
-  "errorNotLodestar": "По этому адресу нет сервера Lodestar."
+  "errorNotLodestar": "По этому адресу нет сервера Lodestar.",
+  "notificationsTitle": "Уведомления",
+  "notificationsUnread": "Уведомления, непрочитанных: {count}",
+  "@notificationsUnread": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notificationsReadAll": "Прочитать все",
+  "notificationsMore": "Показать ещё",
+  "notificationsEmptyTitle": "Уведомлений пока нет",
+  "notificationsEmptyBody": "Здесь появятся дедлайны, ответы и новости курсов.",
+  "notificationFallback": "Новое уведомление",
+  "notificationSettingsTitle": "Настройки уведомлений",
+  "notificationChannelsTitle": "Куда приходят",
+  "notificationChannelsEmpty": "Типы уведомлений появятся, когда вуз включит модули.",
+  "channelInApp": "В приложении",
+  "channelPush": "Push на устройство",
+  "channelEmail": "На почту",
+  "channelRequired": "Важные уведомления нельзя выключить в приложении",
+  "quietHoursTitle": "Тихие часы",
+  "quietHoursEnabled": "Не беспокоить ночью",
+  "quietHoursBody": "Push и письма придут после окончания тихих часов",
+  "quietHoursFrom": "Начало",
+  "quietHoursTo": "Конец",
+  "privacyTitle": "Мои данные",
+  "exportTitle": "Скачать мои данные",
+  "exportBody": "Архив со всем, что платформа хранит о вас: профиль, настройки, уведомления, файлы.",
+  "exportAction": "Скачать архив",
+  "exportBusy": "Собираю архив…",
+  "exportDone": "Архив сохранён на устройстве.",
+  "deletionTitle": "Удалить аккаунт",
+  "deletionBody": "Аккаунт и все данные удалятся после срока, который задал вуз. До этого удаление можно отменить.",
+  "deletionRequest": "Удалить аккаунт",
+  "deletionConfirmTitle": "Удалить аккаунт?",
+  "deletionConfirmBody": "Перед удалением можно скачать свои данные. После срока восстановить аккаунт нельзя.",
+  "deletionPlanned": "Аккаунт будет удалён {date}.",
+  "@deletionPlanned": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "deletionCancel": "Отменить удаление",
+  "actionCancel": "Отмена",
+  "errorDeletionByUniversity": "Удаление аккаунта в вашем вузе проводит администрация."
 }

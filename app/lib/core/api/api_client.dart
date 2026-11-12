@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'api_exception.dart';
 import 'api_transport.dart';
 import 'auth_api.dart';
@@ -21,28 +23,40 @@ class ApiClient {
   final Future<void> Function() _onExpired;
   Future<TokenPair?>? _refreshing;
 
-  Future<Object?> get(String path) => _send('GET', path);
+  Future<Object?> get(String path, [Map<String, String>? query]) =>
+      _send('GET', path, query: query);
 
   Future<Object?> post(String path, [Object? body]) =>
-      _send('POST', path, body);
+      _send('POST', path, body: body);
 
-  Future<Object?> put(String path, Object? body) => _send('PUT', path, body);
+  Future<Object?> put(String path, Object? body) =>
+      _send('PUT', path, body: body);
 
   Future<Object?> delete(String path) => _send('DELETE', path);
 
-  Future<Object?> _send(String method, String path, [Object? body]) async {
-    final uri = _address.resolve(path);
+  Future<Uint8List> download(String path) => _authorized(
+    (token) => _transport.bytes(_address.resolve(path), accessToken: token),
+  );
+
+  Future<Object?> _send(
+    String method,
+    String path, {
+    Object? body,
+    Map<String, String>? query,
+  }) {
+    final uri = _address.resolve(path, query);
+    return _authorized(
+      (token) => _transport.send(method, uri, body: body, accessToken: token),
+    );
+  }
+
+  Future<T> _authorized<T>(Future<T> Function(String token) call) async {
     final tokens = _tokens.current;
     if (tokens == null) {
       throw const ApiException(401, ApiException.unauthorized);
     }
     try {
-      return await _transport.send(
-        method,
-        uri,
-        body: body,
-        accessToken: tokens.accessToken,
-      );
+      return await call(tokens.accessToken);
     } on ApiException catch (error) {
       if (error.statusCode != 401) {
         rethrow;
@@ -53,12 +67,7 @@ class ApiClient {
       await _onExpired();
       throw const ApiException(401, ApiException.unauthorized);
     }
-    return _transport.send(
-      method,
-      uri,
-      body: body,
-      accessToken: fresh.accessToken,
-    );
+    return call(fresh.accessToken);
   }
 
   Future<TokenPair?> _refresh(TokenPair stale) {

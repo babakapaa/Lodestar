@@ -60,6 +60,14 @@ func (s Service) MarkAllRead(ctx context.Context, p auth.Principal) error {
 	})
 }
 
+func (s Service) Types() []TypeInfo {
+	list := []TypeInfo{}
+	for _, t := range s.catalog.All() {
+		list = append(list, TypeInfo{Key: t.Key, Required: t.Required, Names: t.Names, Texts: t.Texts})
+	}
+	return list
+}
+
 func (s Service) Channels(ctx context.Context, p auth.Principal) ([]Channels, error) {
 	var choices map[string]ChannelsInput
 	err := s.tenants.Run(ctx, p.TenantID, func(tx pgx.Tx) error {

@@ -1574,6 +1574,27 @@ paths:
           $ref: "#/components/responses/Error"
         default:
           $ref: "#/components/responses/Error"
+  /v1/notification-types:
+    get:
+      tags: [live]
+      operationId: listNotificationTypes
+      summary: Типы уведомлений с названиями и текстами на всех языках
+      description: Приложение собирает текст уведомления само, подставляя params в шаблоны вида {name}.
+      security:
+        - bearer: []
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/NotificationType"
+        "401":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
   /v1/me/notification-channels:
     get:
       tags: [live]
@@ -2573,6 +2594,33 @@ components:
       properties:
         unread:
           type: integer
+    NotificationType:
+      type: object
+      required: [key, required, names, texts]
+      properties:
+        key:
+          type: string
+          examples: [study.deadline]
+        required:
+          type: boolean
+        names:
+          type: object
+          description: Название типа по языкам
+          additionalProperties:
+            type: string
+        texts:
+          type: object
+          description: Шаблоны заголовка и текста по языкам
+          additionalProperties:
+            $ref: "#/components/schemas/NotificationText"
+    NotificationText:
+      type: object
+      required: [title, body]
+      properties:
+        title:
+          type: string
+        body:
+          type: string
     NotificationChannels:
       type: object
       required: [type, required, inApp, push, email]

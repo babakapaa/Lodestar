@@ -23,7 +23,10 @@ class LodestarCard extends StatelessWidget {
         border: Border.all(color: tokens.palette.border),
         boxShadow: tokens.palette.shadow,
       ),
-      child: Padding(padding: padding, child: child),
+      child: Material(
+        type: MaterialType.transparency,
+        child: Padding(padding: padding, child: child),
+      ),
     );
   }
 }

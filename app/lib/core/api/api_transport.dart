@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:http/http.dart' as http;
 
@@ -17,6 +18,21 @@ class ApiTransport {
     Object? body,
     String? accessToken,
   }) async {
+    final response = await _exchange(method, uri, body, accessToken);
+    return _decode(response);
+  }
+
+  Future<Uint8List> bytes(Uri uri, {required String accessToken}) async {
+    final response = await _exchange('GET', uri, null, accessToken);
+    return response.bodyBytes;
+  }
+
+  Future<http.Response> _exchange(
+    String method,
+    Uri uri,
+    Object? body,
+    String? accessToken,
+  ) async {
     final request = http.Request(method, uri)
       ..headers['Accept'] = 'application/json';
     if (accessToken != null) {
@@ -34,10 +50,10 @@ class ApiTransport {
     } on Exception {
       throw const ApiException(0, ApiException.unreachable);
     }
-    final decoded = _decode(response);
     if (response.statusCode >= 200 && response.statusCode < 300) {
-      return decoded;
+      return response;
     }
+    final decoded = _decode(response);
     final code = decoded is Map<String, Object?> ? decoded['code'] : null;
     throw ApiException(response.statusCode, code is String ? code : 'unknown');
   }

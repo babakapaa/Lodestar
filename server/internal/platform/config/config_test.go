@@ -7,6 +7,7 @@ import (
 
 func TestLoadDefaults(t *testing.T) {
 	t.Setenv("LODESTAR_DATABASE_URL", "postgres://db")
+	t.Setenv("LODESTAR_SECRET_KEY", "key")
 	t.Setenv("LODESTAR_HTTP_ADDR", "")
 	t.Setenv("LODESTAR_SHUTDOWN_TIMEOUT", "")
 
@@ -20,12 +21,21 @@ func TestLoadDefaults(t *testing.T) {
 	if cfg.ShutdownTimeout != 15*time.Second {
 		t.Errorf("ShutdownTimeout = %v, want 15s", cfg.ShutdownTimeout)
 	}
+	if cfg.AccessTTL != 15*time.Minute {
+		t.Errorf("AccessTTL = %v, want 15m", cfg.AccessTTL)
+	}
+	if len(cfg.AppRedirects) != 1 {
+		t.Errorf("AppRedirects = %v, want one default", cfg.AppRedirects)
+	}
 }
 
 func TestLoadFromEnv(t *testing.T) {
 	t.Setenv("LODESTAR_DATABASE_URL", "postgres://db")
+	t.Setenv("LODESTAR_SECRET_KEY", "key")
 	t.Setenv("LODESTAR_HTTP_ADDR", ":9000")
 	t.Setenv("LODESTAR_SHUTDOWN_TIMEOUT", "3s")
+	t.Setenv("LODESTAR_PUBLIC_URL", "https://lodestar.example/")
+	t.Setenv("LODESTAR_APP_REDIRECTS", "app:/auth, http://localhost:5000/auth")
 
 	cfg, err := Load()
 	if err != nil {
@@ -37,6 +47,12 @@ func TestLoadFromEnv(t *testing.T) {
 	if cfg.ShutdownTimeout != 3*time.Second {
 		t.Errorf("ShutdownTimeout = %v, want 3s", cfg.ShutdownTimeout)
 	}
+	if cfg.PublicURL != "https://lodestar.example" {
+		t.Errorf("PublicURL = %q", cfg.PublicURL)
+	}
+	if len(cfg.AppRedirects) != 2 || cfg.AppRedirects[1] != "http://localhost:5000/auth" {
+		t.Errorf("AppRedirects = %v", cfg.AppRedirects)
+	}
 }
 
 func TestLoadRequiresDatabase(t *testing.T) {
@@ -47,8 +63,18 @@ func TestLoadRequiresDatabase(t *testing.T) {
 	}
 }
 
+func TestLoadRequiresSecretKey(t *testing.T) {
+	t.Setenv("LODESTAR_DATABASE_URL", "postgres://db")
+	t.Setenv("LODESTAR_SECRET_KEY", "")
+
+	if _, err := Load(); err == nil {
+		t.Fatal("Load accepted a missing secret key")
+	}
+}
+
 func TestLoadRejectsBadDuration(t *testing.T) {
 	t.Setenv("LODESTAR_DATABASE_URL", "postgres://db")
+	t.Setenv("LODESTAR_SECRET_KEY", "key")
 	t.Setenv("LODESTAR_SHUTDOWN_TIMEOUT", "soon")
 
 	if _, err := Load(); err == nil {

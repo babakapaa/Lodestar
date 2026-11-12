@@ -19,7 +19,19 @@ cp deploy/.env.example deploy/.env
 make up
 ```
 
+В `deploy/.env` впишите `LODESTAR_SECRET_KEY`, его выдаёт `openssl rand -base64 32`.
+
 Сервер поднимается на `http://localhost:8080`, проверка: `curl localhost:8080/healthz`.
+
+## Подключить вуз
+
+```sh
+docker compose -f deploy/compose.yaml exec server /lodestarctl tenant create -slug kaznu -name "КазНУ"
+docker compose -f deploy/compose.yaml exec -e LODESTAR_OIDC_CLIENT_SECRET=... server \
+  /lodestarctl oidc set -tenant kaznu -key microsoft -name "Microsoft" -issuer https://login.microsoftonline.com/<id>/v2.0 -client-id <id>
+```
+
+Команда напечатает адрес возврата, его нужно указать в настройках приложения у провайдера.
 
 ## Разработка
 

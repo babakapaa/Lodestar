@@ -11,6 +11,8 @@ security: []
 tags:
   - name: system
     description: Состояние сервера и сведения о нём
+  - name: auth
+    description: Вход через систему вуза и сессии на устройствах
 paths:
   /healthz:
     get:
@@ -56,7 +58,219 @@ paths:
                 $ref: "#/components/schemas/Meta"
         default:
           $ref: "#/components/responses/Error"
+  /v1/auth/{tenant}/providers:
+    get:
+      tags: [auth]
+      operationId: listProviders
+      summary: Способы входа, которые подключил вуз
+      parameters:
+        - $ref: "#/components/parameters/Tenant"
+      responses:
+        "200":
+          description: Список способов входа
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ProviderInfo"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/auth/{tenant}/{provider}/login:
+    get:
+      tags: [auth]
+      operationId: startLogin
+      summary: Начать вход, приложение открывает этот адрес в браузере
+      parameters:
+        - $ref: "#/components/parameters/Tenant"
+        - $ref: "#/components/parameters/Provider"
+        - name: redirect_uri
+          in: query
+          required: true
+          description: Адрес возврата в приложение из списка LODESTAR_APP_REDIRECTS
+          schema:
+            type: string
+        - name: code_challenge
+          in: query
+          required: true
+          description: PKCE S256 от code_verifier приложения
+          schema:
+            type: string
+        - name: code_challenge_method
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [S256]
+        - name: device
+          in: query
+          description: Название устройства для списка сессий
+          schema:
+            type: string
+      responses:
+        "302":
+          description: Переход на страницу входа вуза
+        "400":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/auth/{tenant}/{provider}/callback:
+    get:
+      tags: [auth]
+      operationId: finishLogin
+      summary: Возврат от провайдера вуза
+      description: Перенаправляет на redirect_uri приложения с параметром code или error=login_failed.
+      parameters:
+        - $ref: "#/components/parameters/Tenant"
+        - $ref: "#/components/parameters/Provider"
+        - name: state
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: code
+          in: query
+          schema:
+            type: string
+        - name: error
+          in: query
+          schema:
+            type: string
+      responses:
+        "302":
+          description: Возврат в приложение
+        "400":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/auth/token:
+    post:
+      tags: [auth]
+      operationId: issueTokens
+      summary: Обменять одноразовый код или токен обновления на новую пару токенов
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TokenRequest"
+      responses:
+        "200":
+          description: Новая пара токенов
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TokenPair"
+        "400":
+          description: Код или токен неверен или устарел, код invalid_grant
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/auth/logout:
+    post:
+      tags: [auth]
+      operationId: logout
+      summary: Выйти на этом устройстве
+      security:
+        - bearer: []
+      responses:
+        "204":
+          description: Сессия закрыта
+        "401":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/me:
+    get:
+      tags: [auth]
+      operationId: getMe
+      summary: Текущий пользователь
+      security:
+        - bearer: []
+      responses:
+        "200":
+          description: Пользователь
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "401":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/sessions:
+    get:
+      tags: [auth]
+      operationId: listSessions
+      summary: Устройства, на которых пользователь вошёл
+      security:
+        - bearer: []
+      responses:
+        "200":
+          description: Список сессий
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Session"
+        "401":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/sessions/{id}:
+    delete:
+      tags: [auth]
+      operationId: revokeSession
+      summary: Выйти на другом устройстве
+      security:
+        - bearer: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: Сессия закрыта
+        "401":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
 components:
+  securitySchemes:
+    bearer:
+      type: http
+      scheme: bearer
+      description: Токен доступа из /v1/auth/token
+  parameters:
+    Tenant:
+      name: tenant
+      in: path
+      required: true
+      description: Короткое имя вуза
+      schema:
+        type: string
+        examples: [kaznu]
+    Provider:
+      name: provider
+      in: path
+      required: true
+      description: Короткое имя способа входа
+      schema:
+        type: string
+        examples: [microsoft]
   responses:
     Error:
       description: Ошибка
@@ -93,6 +307,80 @@ components:
         version:
           type: string
           examples: ["1"]
+    ProviderInfo:
+      type: object
+      required: [key, displayName]
+      properties:
+        key:
+          type: string
+          examples: [microsoft]
+        displayName:
+          type: string
+          examples: [Microsoft]
+    TokenRequest:
+      type: object
+      required: [grantType]
+      properties:
+        grantType:
+          type: string
+          enum: [authorization_code, refresh_token]
+        code:
+          type: string
+        codeVerifier:
+          type: string
+        redirectUri:
+          type: string
+        refreshToken:
+          type: string
+    TokenPair:
+      type: object
+      required: [accessToken, refreshToken, tokenType, expiresIn]
+      properties:
+        accessToken:
+          type: string
+        refreshToken:
+          type: string
+        tokenType:
+          type: string
+          enum: [Bearer]
+        expiresIn:
+          type: integer
+          description: Сколько секунд живёт токен доступа
+    User:
+      type: object
+      required: [id, tenantId, email, displayName, createdAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenantId:
+          type: string
+          format: uuid
+        email:
+          type: string
+        displayName:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+    Session:
+      type: object
+      required: [id, deviceName, createdAt, lastUsedAt, current]
+      properties:
+        id:
+          type: string
+          format: uuid
+        deviceName:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        lastUsedAt:
+          type: string
+          format: date-time
+        current:
+          type: boolean
+          description: Это сессия того устройства, с которого пришёл запрос
     Error:
       type: object
       required: [code]

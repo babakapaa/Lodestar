@@ -3,6 +3,7 @@ module github.com/babakapaa/lodestar/server
 go 1.24
 
 require (
+	github.com/coder/websocket v1.8.13
 	github.com/coreos/go-oidc/v3 v3.14.1
 	github.com/go-jose/go-jose/v4 v4.1.0
 	github.com/jackc/pgx/v5 v5.7.5

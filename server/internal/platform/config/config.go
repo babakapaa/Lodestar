@@ -14,6 +14,7 @@ type Config struct {
 	PublicURL       string
 	SecretKey       string
 	AppRedirects    []string
+	WebOrigins      []string
 	AccessTTL       time.Duration
 	RefreshTTL      time.Duration
 	ShutdownTimeout time.Duration
@@ -26,6 +27,7 @@ func Load() (Config, error) {
 		PublicURL:    strings.TrimRight(stringEnv("LODESTAR_PUBLIC_URL", "http://localhost:8080"), "/"),
 		SecretKey:    stringEnv("LODESTAR_SECRET_KEY", ""),
 		AppRedirects: listEnv("LODESTAR_APP_REDIRECTS", "io.github.babakapaa.lodestar:/auth"),
+		WebOrigins:   listEnv("LODESTAR_WEB_ORIGINS", ""),
 	}
 	if cfg.DatabaseURL == "" {
 		return Config{}, errors.New("LODESTAR_DATABASE_URL is required")

@@ -48,10 +48,11 @@ func TestTurnedOffModuleDisappears(t *testing.T) {
 		t.Fatalf("box: %v", err)
 	}
 	cfg := config.Config{AccessTTL: time.Minute, RefreshTTL: time.Hour, PublicURL: "http://localhost"}
-	handler, err := NewHandler("test", cfg, box, pool, registry)
+	server, err := NewServer("test", cfg, box, pool, registry)
 	if err != nil {
-		t.Fatalf("NewHandler: %v", err)
+		t.Fatalf("NewServer: %v", err)
 	}
+	handler := server.Handler
 
 	created, err := tenant.NewStore(pool).Create(ctx, "kaznu", "КазНУ")
 	if err != nil {

@@ -54,9 +54,16 @@ func run() error {
 		return err
 	}
 
-	handler, err := app.NewHandler(version, cfg, box, pool, registry)
+	server, err := app.NewServer(version, cfg, box, pool, registry)
 	if err != nil {
 		return err
 	}
-	return httpserver.Run(ctx, httpserver.New(cfg.HTTPAddr, handler), cfg.ShutdownTimeout)
+	for _, w := range server.Workers {
+		go w.Run(ctx)
+	}
+	srv := httpserver.New(cfg.HTTPAddr, server.Handler)
+	for _, f := range server.OnShutdown {
+		srv.RegisterOnShutdown(f)
+	}
+	return httpserver.Run(ctx, srv, cfg.ShutdownTimeout)
 }

@@ -20,7 +20,13 @@ func newTestRouter(t *testing.T) http.Handler {
 	if err != nil {
 		t.Fatalf("NewRegistry: %v", err)
 	}
-	return NewRouter("test", registry, stubPinger{})
+	return NewRouter("test", registry, stubPinger{}, openGate{})
+}
+
+type openGate struct{}
+
+func (openGate) Wrap(_ string, h http.Handler) http.Handler {
+	return h
 }
 
 type stubPinger struct {
@@ -91,7 +97,7 @@ func TestReadyReportsDatabaseDown(t *testing.T) {
 	if err != nil {
 		t.Fatalf("NewRegistry: %v", err)
 	}
-	router := NewRouter("test", registry, stubPinger{err: errors.New("down")})
+	router := NewRouter("test", registry, stubPinger{err: errors.New("down")}, openGate{})
 
 	rec := serve(t, router, "/readyz")
 

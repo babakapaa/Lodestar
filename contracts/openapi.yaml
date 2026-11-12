@@ -17,6 +17,10 @@ tags:
     description: Роли и права как в Discord
   - name: structure
     description: Факультеты, кафедры, группы и их участники
+  - name: profile
+    description: Профиль и личные настройки
+  - name: settings
+    description: Настройки вуза и модули
 paths:
   /healthz:
     get:
@@ -1054,6 +1058,365 @@ paths:
           $ref: "#/components/responses/Error"
         default:
           $ref: "#/components/responses/Error"
+  /v1/me/profile:
+    get:
+      tags: [profile]
+      operationId: getMyProfile
+      summary: Мой профиль со всеми контактами
+      security:
+        - bearer: []
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Profile"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+    put:
+      tags: [profile]
+      operationId: updateMyProfile
+      summary: Изменить профиль
+      security:
+        - bearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProfileInput"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Profile"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/users/{id}/profile:
+    get:
+      tags: [profile]
+      operationId: getUserProfile
+      summary: Профиль человека, видны только открытые контакты
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Profile"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/preferences/schema:
+    get:
+      tags: [profile]
+      operationId: getPreferenceSchema
+      summary: Какие личные настройки бывают
+      security:
+        - bearer: []
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Definition"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/me/preferences:
+    get:
+      tags: [profile]
+      operationId: getMyPreferences
+      summary: Мои личные настройки, невыбранные со значением по умолчанию
+      security:
+        - bearer: []
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SettingValue"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/me/preferences/{key}:
+    put:
+      tags: [profile]
+      operationId: setMyPreference
+      summary: Выбрать значение
+      security:
+        - bearer: []
+      parameters:
+        - name: key
+          in: path
+          required: true
+          schema:
+            type: string
+            examples: [core.theme]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ValueInput"
+      responses:
+        "204":
+          description: Готово
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+    delete:
+      tags: [profile]
+      operationId: resetMyPreference
+      summary: Вернуть значение по умолчанию
+      security:
+        - bearer: []
+      parameters:
+        - name: key
+          in: path
+          required: true
+          schema:
+            type: string
+            examples: [core.theme]
+      responses:
+        "204":
+          description: Готово
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/settings/schema:
+    get:
+      tags: [settings]
+      operationId: getSettingsSchema
+      summary: Какие настройки вуза бывают
+      security:
+        - bearer: []
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Definition"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/settings:
+    get:
+      tags: [settings]
+      operationId: getSettings
+      summary: Настройки вуза
+      security:
+        - bearer: []
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SettingValue"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/settings/{key}:
+    put:
+      tags: [settings]
+      operationId: setSetting
+      summary: Изменить настройку вуза, нужно право core.settings.manage
+      security:
+        - bearer: []
+      parameters:
+        - name: key
+          in: path
+          required: true
+          schema:
+            type: string
+            examples: [core.theme]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ValueInput"
+      responses:
+        "204":
+          description: Готово
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+    delete:
+      tags: [settings]
+      operationId: resetSetting
+      summary: Вернуть значение по умолчанию
+      security:
+        - bearer: []
+      parameters:
+        - name: key
+          in: path
+          required: true
+          schema:
+            type: string
+            examples: [core.theme]
+      responses:
+        "204":
+          description: Готово
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/modules:
+    get:
+      tags: [settings]
+      operationId: listModules
+      summary: Модули и включены ли они в этом вузе
+      security:
+        - bearer: []
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ModuleState"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/modules/{name}:
+    put:
+      tags: [settings]
+      operationId: setModule
+      summary: Включить или выключить необязательный модуль
+      security:
+        - bearer: []
+      parameters:
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ModuleInput"
+      responses:
+        "204":
+          description: Готово
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
 components:
   securitySchemes:
     bearer:
@@ -1119,8 +1482,10 @@ components:
             $ref: "#/components/schemas/ModuleInfo"
     ModuleInfo:
       type: object
-      required: [name, version]
+      required: [name, version, optional]
       properties:
+        optional:
+          type: boolean
         name:
           type: string
           examples: [study]
@@ -1416,6 +1781,98 @@ components:
               code:
                 type: string
                 enum: [missing_parent, invalid_unit, cycle, missing_unit, unknown_user, ambiguous_user]
+    Contact:
+      type: object
+      required: [kind, value, public]
+      properties:
+        kind:
+          type: string
+          examples: [telegram]
+        value:
+          type: string
+        public:
+          type: boolean
+          description: Виден ли контакт другим
+    Profile:
+      type: object
+      required: [userId, displayName, about, contacts]
+      properties:
+        userId:
+          type: string
+          format: uuid
+        displayName:
+          type: string
+        about:
+          type: string
+        contacts:
+          type: array
+          items:
+            $ref: "#/components/schemas/Contact"
+    ProfileInput:
+      type: object
+      properties:
+        displayName:
+          type: string
+          description: Пусто означает имя из учётной записи вуза
+        about:
+          type: string
+        contacts:
+          type: array
+          items:
+            $ref: "#/components/schemas/Contact"
+    Definition:
+      type: object
+      required: [key, type, default]
+      properties:
+        key:
+          type: string
+        type:
+          type: string
+          enum: [bool, integer, text, choice]
+        options:
+          type: array
+          items:
+            type: string
+        min:
+          type: integer
+        max:
+          type: integer
+        maxLength:
+          type: integer
+        default: {}
+    SettingValue:
+      type: object
+      required: [key, value, set]
+      properties:
+        key:
+          type: string
+        value: {}
+        set:
+          type: boolean
+          description: false, если значение по умолчанию
+    ValueInput:
+      type: object
+      required: [value]
+      properties:
+        value: {}
+    ModuleState:
+      type: object
+      required: [name, version, optional, enabled]
+      properties:
+        name:
+          type: string
+        version:
+          type: string
+        optional:
+          type: boolean
+        enabled:
+          type: boolean
+    ModuleInput:
+      type: object
+      required: [enabled]
+      properties:
+        enabled:
+          type: boolean
     Error:
       type: object
       required: [code]

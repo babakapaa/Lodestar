@@ -4,17 +4,12 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
-	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 
 	"github.com/babakapaa/lodestar/server/internal/app"
-	"github.com/babakapaa/lodestar/server/internal/core/access"
-	"github.com/babakapaa/lodestar/server/internal/core/auth"
 	"github.com/babakapaa/lodestar/server/internal/core/module"
-	"github.com/babakapaa/lodestar/server/internal/core/structure"
 	"github.com/babakapaa/lodestar/server/internal/platform/config"
 	"github.com/babakapaa/lodestar/server/internal/platform/database"
 	"github.com/babakapaa/lodestar/server/internal/platform/httpserver"
@@ -59,24 +54,9 @@ func run() error {
 		return err
 	}
 
-	authRoutes := auth.NewRoutes(pool, auth.Settings{
-		Box:        box,
-		Lifetimes:  app.Lifetimes(cfg),
-		Redirects:  cfg.AppRedirects,
-		PublicURL:  cfg.PublicURL,
-		HTTPClient: &http.Client{Timeout: 10 * time.Second},
-	})
-	catalog, err := access.NewCatalog(append(structure.Permissions(), registry.Permissions()...)...)
+	handler, err := app.NewHandler(version, cfg, box, pool, registry)
 	if err != nil {
 		return err
 	}
-	tenantTx := database.NewTenantTx(pool)
-	accessService := access.NewService(tenantTx, catalog, structure.Tree{})
-	accessRoutes := access.Routes{Service: accessService, Authenticator: authRoutes.Authenticator}
-	structureRoutes := structure.Routes{
-		Service:       structure.NewService(tenantTx, accessService),
-		Authenticator: authRoutes.Authenticator,
-	}
-	srv := httpserver.New(cfg.HTTPAddr, app.NewRouter(version, registry, pool, authRoutes, accessRoutes, structureRoutes))
-	return httpserver.Run(ctx, srv, cfg.ShutdownTimeout)
+	return httpserver.Run(ctx, httpserver.New(cfg.HTTPAddr, handler), cfg.ShutdownTimeout)
 }

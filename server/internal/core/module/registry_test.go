@@ -16,7 +16,7 @@ func (s stubModule) Manifest() Manifest {
 }
 
 func (s stubModule) Mount(mux *http.ServeMux) {
-	mux.HandleFunc("GET /v1/"+s.name, func(w http.ResponseWriter, _ *http.Request) {
+	mux.HandleFunc("GET /v1/"+s.name+"/ping", func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusNoContent)
 	})
 }
@@ -52,13 +52,40 @@ func TestRegistryMountsRoutes(t *testing.T) {
 		t.Fatalf("NewRegistry: %v", err)
 	}
 	mux := http.NewServeMux()
-	registry.Mount(mux)
+	registry.Mount(mux, closedGate{closed: "notes"})
 
 	rec := httptest.NewRecorder()
-	mux.ServeHTTP(rec, httptest.NewRequest(http.MethodGet, "/v1/study", nil))
+	mux.ServeHTTP(rec, httptest.NewRequest(http.MethodGet, "/v1/study/ping", nil))
 
 	if rec.Code != http.StatusNoContent {
 		t.Fatalf("status = %d, want 204", rec.Code)
+	}
+}
+
+type closedGate struct {
+	closed string
+}
+
+func (g closedGate) Wrap(name string, h http.Handler) http.Handler {
+	if name == g.closed {
+		return http.NotFoundHandler()
+	}
+	return h
+}
+
+func TestRegistryMountGoesThroughGate(t *testing.T) {
+	registry, err := NewRegistry(stubModule{name: "notes"})
+	if err != nil {
+		t.Fatalf("NewRegistry: %v", err)
+	}
+	mux := http.NewServeMux()
+	registry.Mount(mux, closedGate{closed: "notes"})
+
+	rec := httptest.NewRecorder()
+	mux.ServeHTTP(rec, httptest.NewRequest(http.MethodGet, "/v1/notes/ping", nil))
+
+	if rec.Code != http.StatusNotFound {
+		t.Fatalf("status = %d, want 404", rec.Code)
 	}
 }
 
@@ -77,5 +104,13 @@ func TestRegistryCollectsPermissions(t *testing.T) {
 	}
 	if got := registry.Permissions(); len(got) != 1 || got[0] != "study.grades.view" {
 		t.Fatalf("Permissions = %v", got)
+	}
+}
+
+func TestRegistryRejectsReservedNames(t *testing.T) {
+	for _, name := range []string{"roles", "Study", "x"} {
+		if _, err := NewRegistry(stubModule{name: name}); !errors.Is(err, ErrReservedName) {
+			t.Errorf("NewRegistry(%q) err = %v", name, err)
+		}
 	}
 }

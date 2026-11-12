@@ -9,12 +9,14 @@ class TabPage extends StatelessWidget {
     required this.title,
     required this.child,
     this.floatingActionButton,
+    this.actions = const [],
     super.key,
   });
 
   final String title;
   final Widget child;
   final Widget? floatingActionButton;
+  final List<Widget> actions;
 
   @override
   Widget build(BuildContext context) {
@@ -24,6 +26,7 @@ class TabPage extends StatelessWidget {
       appBar: AppBar(
         title: Text(title),
         actions: [
+          ...actions,
           const NotificationsButton(),
           if (compact) const ProfileButton(showLabel: false),
         ],

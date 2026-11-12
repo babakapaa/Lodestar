@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/auth/auth_providers.dart';
 import 'note.dart';
 import 'note_member.dart';
+import 'note_version.dart';
 import 'notes_api.dart';
 import 'notes_database.dart';
 import 'notes_store.dart';
@@ -60,4 +61,14 @@ final notesPendingProvider = StreamProvider<bool>(
 final noteMembersProvider = FutureProvider.autoDispose
     .family<List<NoteMember>, String>(
       (ref, id) => ref.watch(notesApiProvider).members(id),
+    );
+
+final noteVersionsProvider = FutureProvider.autoDispose
+    .family<List<NoteVersion>, String>(
+      (ref, id) => ref.watch(notesApiProvider).versions(id),
+    );
+
+final noteVersionBodyProvider = FutureProvider.autoDispose
+    .family<String, (String, String)>(
+      (ref, key) => ref.watch(notesApiProvider).versionBody(key.$1, key.$2),
     );

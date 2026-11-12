@@ -89,32 +89,30 @@ class NoteScreen extends ConsumerWidget {
               icon: const Icon(Icons.group_outlined),
               onPressed: () => context.push(AppRoutes.noteMembers(noteId)),
             ),
-          if (canEdit || owner)
-            PopupMenuButton<String>(
-              onSelected: (action) => switch (action) {
-                'rename' => _rename(context, ref, note),
-                'tags' => _tags(context, ref, note),
-                'delete' => _delete(context, ref),
-                _ => NoteActions.remote(
-                  context,
-                  ref,
-                  () => ref.read(notesApiProvider).restore(noteId),
-                ),
-              },
-              itemBuilder: (context) => [
-                if (canEdit) ...[
-                  PopupMenuItem(value: 'rename', child: Text(l10n.notesRename)),
-                  PopupMenuItem(value: 'tags', child: Text(l10n.notesTags)),
-                ],
-                if (owner && !note.deleted)
-                  PopupMenuItem(value: 'delete', child: Text(l10n.notesDelete)),
-                if (owner && note.deleted)
-                  PopupMenuItem(
-                    value: 'restore',
-                    child: Text(l10n.notesRestore),
-                  ),
+          PopupMenuButton<String>(
+            onSelected: (action) => switch (action) {
+              'rename' => _rename(context, ref, note),
+              'tags' => _tags(context, ref, note),
+              'delete' => _delete(context, ref),
+              'history' => context.push(AppRoutes.noteVersions(noteId)),
+              _ => NoteActions.remote(
+                context,
+                ref,
+                () => ref.read(notesApiProvider).restore(noteId),
+              ),
+            },
+            itemBuilder: (context) => [
+              if (canEdit) ...[
+                PopupMenuItem(value: 'rename', child: Text(l10n.notesRename)),
+                PopupMenuItem(value: 'tags', child: Text(l10n.notesTags)),
               ],
-            ),
+              PopupMenuItem(value: 'history', child: Text(l10n.notesHistory)),
+              if (owner && !note.deleted)
+                PopupMenuItem(value: 'delete', child: Text(l10n.notesDelete)),
+              if (owner && note.deleted)
+                PopupMenuItem(value: 'restore', child: Text(l10n.notesRestore)),
+            ],
+          ),
         ],
       ),
       body: SafeArea(

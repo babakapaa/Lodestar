@@ -324,5 +324,17 @@
   "errorNoteReadOnly": "Бұл жазбаны тек оқуға болады.",
   "errorNoteDeleted": "Жазба себетте.",
   "errorNotesQuota": "Жазбаларға арналған орын бітті. Себетті босатыңыз немесе ЖОО-ға жүгініңіз.",
-  "errorNotNoteOwner": "Мұны тек жазба иесі жасай алады."
+  "errorNotNoteOwner": "Мұны тек жазба иесі жасай алады.",
+  "notesGraph": "Байланыстар графы",
+  "notesHistory": "Нұсқалар тарихы",
+  "notesHistoryHint": "Түзетулер көп жиналғанда немесе батырма арқылы нұсқа өзі сақталады. Кез келген нұсқаны қайтаруға болады.",
+  "notesHistoryEmpty": "Сақталған нұсқалар әлі жоқ",
+  "notesSaveVersion": "Нұсқаны сақтау",
+  "notesVersion": "Нұсқа",
+  "notesRestoreVersion": "Осы нұсқаны қайтару",
+  "notesExport": "Барлық жазбаны жүктеу (.md)",
+  "notesImport": "Жазбаларды жүктеп салу (.md немесе .zip)",
+  "notesImported": "Қосылған жазбалар: {count}",
+  "errorNoNewEdits": "Алдыңғы нұсқадан бері жаңа түзету жоқ.",
+  "notesGraphLabel": "Байланыстар графы, жазбалар: {count}"
 }

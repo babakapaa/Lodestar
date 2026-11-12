@@ -24,7 +24,7 @@ class _NoteEditorState extends ConsumerState<NoteEditor> {
   final _controller = TextEditingController();
   late final NotesStore _store;
   NoteDoc? _doc;
-  StreamSubscription<TextEdit>? _remote;
+  StreamSubscription<TextEdit>? _outside;
 
   @override
   void initState() {
@@ -42,7 +42,7 @@ class _NoteEditorState extends ConsumerState<NoteEditor> {
       _doc = doc;
       _controller.text = doc.text;
     });
-    _remote = doc.remoteEdits.listen(_onRemote);
+    _outside = doc.outsideEdits.listen(_onOutside);
     _controller.addListener(_onChanged);
   }
 
@@ -53,7 +53,7 @@ class _NoteEditorState extends ConsumerState<NoteEditor> {
     }
   }
 
-  void _onRemote(TextEdit change) {
+  void _onOutside(TextEdit change) {
     final value = _controller.value;
     final selection = value.selection;
     _controller.value = TextEditingValue(
@@ -72,7 +72,7 @@ class _NoteEditorState extends ConsumerState<NoteEditor> {
     _controller
       ..removeListener(_onChanged)
       ..dispose();
-    unawaited(_remote?.cancel());
+    unawaited(_outside?.cancel());
     unawaited(_store.flush(widget.noteId));
     super.dispose();
   }

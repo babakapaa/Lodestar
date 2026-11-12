@@ -17,6 +17,7 @@ abstract final class AppRoutes {
   static const schedulePath = '/study/schedule';
   static const notesPath = '/notes';
   static const notesTrash = '/notes/trash';
+  static const notesGraph = '/notes/graph';
 
   static String role(String id) => '/admin/roles/$id';
 
@@ -39,6 +40,11 @@ abstract final class AppRoutes {
   static String note(String id) => '/notes/$id';
 
   static String noteMembers(String id) => '/notes/$id/members';
+
+  static String noteVersions(String id) => '/notes/$id/versions';
+
+  static String noteVersion(String id, String version) =>
+      '/notes/$id/versions/$version';
 
   static String schedule(String date) => '$schedulePath?date=$date';
 }

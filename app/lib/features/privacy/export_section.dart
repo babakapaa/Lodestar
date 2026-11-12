@@ -8,6 +8,7 @@ import '../../design/components/lodestar_button_variant.dart';
 import '../../design/components/section.dart';
 import '../../design/tokens/spacing.dart';
 import '../../l10n/l10n_context.dart';
+import '../../core/files/files_providers.dart';
 import 'privacy_providers.dart';
 
 class ExportSection extends ConsumerStatefulWidget {

@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 
-import 'package:lodestar/features/privacy/export_saver.dart';
+import 'package:lodestar/core/files/export_saver.dart';
 
 class FakeExportSaver implements ExportSaver {
   final Map<String, Uint8List> saved = {};

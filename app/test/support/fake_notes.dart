@@ -7,6 +7,7 @@ class FakeNotes {
   final Map<String, List<Map<String, Object?>>> updates = {};
   final Map<String, Map<String, Object?>> snapshots = {};
   final Map<String, List<Map<String, Object?>>> members = {};
+  final Map<String, List<Map<String, Object?>>> versions = {};
   int _seq = 0;
 
   http.Response handle(http.Request request) {
@@ -20,6 +21,14 @@ class FakeNotes {
       ('GET', [final id, 'updates']) => _changes(id, request),
       ('POST', [final id, 'updates']) => _push(id, request),
       ('POST', [final id, 'versions']) => _compact(id, request),
+      ('GET', [final id, 'versions']) => _json(200, [
+        for (final version in versions[id] ?? const <Map<String, Object?>>[])
+          {...version}..remove('body'),
+      ]),
+      ('GET', [final id, 'versions', final version]) => _json(
+        200,
+        versions[id]!.firstWhere((v) => v['id'] == version),
+      ),
       ('GET', [final id, 'members']) => _json(200, members[id] ?? const []),
       ('PUT', [final id, 'members', final user]) => _share(id, user, request),
       ('DELETE', [final id, 'members', final user]) => _unshare(id, user),
@@ -107,15 +116,23 @@ class FakeNotes {
   http.Response _compact(String id, http.Request request) {
     final body = _body(request);
     final seq = body['seq']! as int;
+    final base = (snapshots[id]?['seq'] as int?) ?? 0;
+    if (seq <= base || seq > (notes[id]!['seq']! as int)) {
+      return _json(409, {'code': 'stale_snapshot'});
+    }
     snapshots[id] = {'seq': seq, 'data': body['data']};
     updates[id]!.removeWhere((update) => (update['seq']! as int) <= seq);
-    return _json(201, {
+    final version = {
       'id': 'v$seq',
       'seq': seq,
       'authorId': 'u1',
       'bytes': 0,
       'createdAt': '2026-11-12T10:00:00Z',
-    });
+      'data': body['data'],
+      'body': body['body'],
+    };
+    versions.putIfAbsent(id, () => []).add(version);
+    return _json(201, {...version}..remove('body'));
   }
 
   http.Response _share(String id, String user, http.Request request) {

@@ -479,5 +479,31 @@
   "errorNoteReadOnly": "Эту заметку можно только читать.",
   "errorNoteDeleted": "Заметка в корзине.",
   "errorNotesQuota": "Место для заметок закончилось. Освободите корзину или обратитесь в вуз.",
-  "errorNotNoteOwner": "Это может сделать только владелец заметки."
+  "errorNotNoteOwner": "Это может сделать только владелец заметки.",
+  "notesGraph": "Граф связей",
+  "notesHistory": "История версий",
+  "notesHistoryHint": "Версия сохраняется сама, когда правок накопилось много, или по кнопке. Любую версию можно вернуть.",
+  "notesHistoryEmpty": "Сохранённых версий пока нет",
+  "notesSaveVersion": "Сохранить версию",
+  "notesVersion": "Версия",
+  "notesRestoreVersion": "Вернуть эту версию",
+  "notesExport": "Скачать все заметки (.md)",
+  "notesImport": "Загрузить заметки (.md или .zip)",
+  "notesImported": "Добавлено заметок: {count}",
+  "@notesImported": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "errorNoNewEdits": "С прошлой версии новых правок нет.",
+  "notesGraphLabel": "Граф связей, заметок: {count}",
+  "@notesGraphLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

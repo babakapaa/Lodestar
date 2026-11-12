@@ -1,0 +1,1 @@
+enum LodestarButtonVariant { primary, secondary }

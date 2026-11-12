@@ -1,0 +1,85 @@
+openapi: 3.1.0
+info:
+  title: Lodestar API
+  version: 0.1.0
+  license:
+    name: Proprietary
+    identifier: LicenseRef-Proprietary
+servers:
+  - url: http://localhost:8080
+security: []
+tags:
+  - name: system
+    description: Состояние сервера и сведения о нём
+paths:
+  /healthz:
+    get:
+      tags: [system]
+      operationId: getHealth
+      summary: Проверка, что сервер жив
+      responses:
+        "200":
+          description: Сервер работает
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Health"
+  /v1/meta:
+    get:
+      tags: [system]
+      operationId: getMeta
+      summary: Версия сервера и подключённые модули
+      responses:
+        "200":
+          description: Сведения о сервере
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Meta"
+        default:
+          $ref: "#/components/responses/Error"
+components:
+  responses:
+    Error:
+      description: Ошибка
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+  schemas:
+    Health:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [ok]
+    Meta:
+      type: object
+      required: [version, modules]
+      properties:
+        version:
+          type: string
+          examples: ["0.1.0"]
+        modules:
+          type: array
+          items:
+            $ref: "#/components/schemas/ModuleInfo"
+    ModuleInfo:
+      type: object
+      required: [name, version]
+      properties:
+        name:
+          type: string
+          examples: [study]
+        version:
+          type: string
+          examples: ["1"]
+    Error:
+      type: object
+      required: [code]
+      properties:
+        code:
+          type: string
+          description: Машинный код ошибки. Текст для человека подставляет приложение.
+          examples: [not_found]

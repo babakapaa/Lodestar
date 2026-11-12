@@ -1,0 +1,111 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:material_ui/material_ui.dart';
+
+import '../../core/navigation/app_routes.dart';
+import '../../design/components/section.dart';
+import '../../design/tokens/spacing.dart';
+import '../../design/tokens/tokens_context.dart';
+import '../../l10n/l10n_context.dart';
+import 'assignment_details.dart';
+import 'class_work_section.dart';
+import 'course_role.dart';
+import 'loaded_list_view.dart';
+import 'my_work_section.dart';
+import 'study_labels_context.dart';
+import 'study_providers.dart';
+import 'submit_form.dart';
+
+class AssignmentScreen extends ConsumerWidget {
+  const AssignmentScreen({required this.assignmentId, super.key});
+
+  final String assignmentId;
+
+  Future<void> _edit(BuildContext context) async {
+    final deleted = await context.push<bool>(
+      AppRoutes.assignmentEdit(assignmentId),
+    );
+    if ((deleted ?? false) && context.mounted) {
+      context.pop();
+    }
+  }
+
+  Future<void> _refresh(WidgetRef ref) {
+    ref.invalidate(assignmentWorkProvider(assignmentId));
+    return ref.refresh(assignmentProvider(assignmentId).future);
+  }
+
+  List<Widget> _body(BuildContext context, AssignmentDetails details) {
+    final l10n = context.l10n;
+    final labels = context.studyLabels;
+    final assignment = details.assignment;
+    final textTheme = Theme.of(context).textTheme;
+    return [
+      Text(assignment.title, style: textTheme.headlineSmall),
+      const SizedBox(height: Spacing.s),
+      Text(
+        [
+          labels.due(assignment.dueAt),
+          labels.grading(assignment.grading),
+          if (!assignment.published) l10n.assignmentDraft,
+        ].join(', '),
+        style: textTheme.bodyMedium!.copyWith(color: context.palette.muted),
+      ),
+      if (assignment.description.isNotEmpty) ...[
+        const SizedBox(height: Spacing.l),
+        SelectableText(assignment.description),
+      ],
+      if (details.files.isNotEmpty) ...[
+        const SizedBox(height: Spacing.xl),
+        Section(
+          title: l10n.assignmentFiles,
+          child: Column(
+            children: [
+              for (final file in details.files)
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(Icons.attach_file),
+                  title: Text(file.name),
+                ),
+            ],
+          ),
+        ),
+      ],
+      const SizedBox(height: Spacing.xl),
+      if (details.role == CourseRole.student) ...[
+        MyWorkSection(details: details),
+        const SizedBox(height: Spacing.xl),
+        SubmitForm(details: details),
+      ] else
+        ClassWorkSection(assignment: assignment),
+    ];
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
+    final details = ref.watch(assignmentProvider(assignmentId));
+    final loaded = details.value?.value;
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(loaded?.courseTitle ?? ''),
+        actions: [
+          if (loaded != null && loaded.role.teaches)
+            IconButton(
+              tooltip: l10n.assignmentEdit,
+              icon: const Icon(Icons.edit_outlined),
+              onPressed: () => _edit(context),
+            ),
+        ],
+      ),
+      body: SafeArea(
+        top: false,
+        child: LoadedListView(
+          value: details,
+          onRefresh: () => _refresh(ref),
+          builder: (details) => _body(context, details),
+        ),
+      ),
+    );
+  }
+}

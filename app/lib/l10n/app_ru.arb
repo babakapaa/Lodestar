@@ -269,5 +269,128 @@
         "type": "String"
       }
     }
-  }
+  },
+  "studyCourses": "Мои курсы",
+  "studyNoCourses": "Курсов пока нет",
+  "studyNoCoursesBody": "Когда вас добавят на курс, он появится здесь.",
+  "studyRoleTeacher": "Преподаю",
+  "studyRoleStudent": "Учусь",
+  "studyRoleManager": "Управляю",
+  "studyArchived": "В архиве",
+  "studyStale": "Нет сети. Показаны сохранённые данные.",
+  "studyOutboxTitle": "Ждут отправки",
+  "studyOutboxPending": "Отправится, когда появится сеть",
+  "studyOutboxFailed": "Не отправилось: {reason}",
+  "@studyOutboxFailed": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "studyRetry": "Отправить снова",
+  "studyDiscard": "Удалить",
+  "courseTeachers": "Преподаватели",
+  "courseGroups": "Группы",
+  "courseAssignments": "Задания",
+  "courseNoAssignments": "Заданий пока нет",
+  "assignmentNew": "Новое задание",
+  "assignmentEdit": "Изменить задание",
+  "assignmentDraft": "Черновик",
+  "assignmentDue": "Срок: {date}",
+  "@assignmentDue": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "assignmentNoDue": "Без срока",
+  "assignmentOverdue": "Срок прошёл",
+  "assignmentSubmitted": "Сдано",
+  "assignmentWaiting": "Ждёт отправки",
+  "assignmentProgress": "Сдали: {submitted} из {students}, оценено: {graded}",
+  "@assignmentProgress": {
+    "placeholders": {
+      "submitted": {
+        "type": "int"
+      },
+      "students": {
+        "type": "int"
+      },
+      "graded": {
+        "type": "int"
+      }
+    }
+  },
+  "gradePoints": "{points} из {max}",
+  "@gradePoints": {
+    "placeholders": {
+      "points": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "gradePassed": "Зачтено",
+  "gradeFailed": "Не зачтено",
+  "gradeReviewed": "Проверено",
+  "gradingPoints": "Баллы",
+  "gradingPass": "Зачёт",
+  "gradingNone": "Без оценки",
+  "assignmentFiles": "Материалы",
+  "myWork": "Моя работа",
+  "myWorkNone": "Вы ещё не сдавали эту работу.",
+  "myWorkSentAt": "Сдано {time}",
+  "@myWorkSentAt": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "myWorkAttempts": "Попыток: {count}",
+  "@myWorkAttempts": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "feedback": "Отзыв преподавателя",
+  "submitHint": "Ответ",
+  "submitWork": "Сдать работу",
+  "submitAgain": "Сдать заново",
+  "submitQueued": "Работа сохранена и уйдёт, когда появится сеть.",
+  "classWork": "Работы студентов",
+  "classWorkNone": "На курсе пока нет студентов.",
+  "workNotSubmitted": "Не сдано",
+  "assignmentTitle": "Название",
+  "assignmentDescription": "Описание",
+  "assignmentDueLabel": "Срок сдачи",
+  "assignmentPickDue": "Выбрать срок",
+  "assignmentClearDue": "Убрать срок",
+  "assignmentGrading": "Как оценивать",
+  "assignmentMaxPoints": "Максимум баллов",
+  "assignmentPublish": "Опубликовать",
+  "assignmentPublishHint": "Студенты увидят задание и получат уведомление.",
+  "assignmentDelete": "Удалить задание",
+  "assignmentDeleteConfirm": "Удалить задание «{title}»?",
+  "@assignmentDeleteConfirm": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "errorInvalidAssignment": "Проверьте название и способ оценки.",
+  "errorAssignmentHasWork": "По заданию уже есть работы, удалить его нельзя.",
+  "errorInvalidSubmission": "Напишите ответ.",
+  "errorCourseArchived": "Курс в архиве.",
+  "errorAssignmentNotFound": "Задание не найдено.",
+  "errorCourseNotFound": "Курс не найден.",
+  "errorNotPublished": "Задание ещё не опубликовано.",
+  "errorNotStudent": "Вы не студент этого курса."
 }

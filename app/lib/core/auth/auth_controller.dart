@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../api/api_exception.dart';
 import '../api/server_address.dart';
+import '../offline/offline_providers.dart';
 import 'auth_providers.dart';
 import 'auth_state.dart';
 import 'identity_provider.dart';
@@ -28,6 +29,7 @@ class AuthController extends Notifier<AuthState> {
 
   Future<void> disconnect() async {
     await ref.read(tokenStoreProvider).clear();
+    await ref.read(responseCacheProvider).clear();
     await ref.read(connectionStoreProvider).clear();
     state = const Disconnected();
   }
@@ -90,6 +92,7 @@ class AuthController extends Notifier<AuthState> {
   Future<void> expire() async {
     final address = state.address;
     await ref.read(tokenStoreProvider).clear();
+    await ref.read(responseCacheProvider).clear();
     if (address != null) {
       state = SignedOut(address);
     }

@@ -23,6 +23,9 @@ import '../../features/profile/profile_screen.dart';
 import '../../features/roles/role_edit_screen.dart';
 import '../../features/roles/roles_screen.dart';
 import '../../features/settings/settings_screen.dart';
+import '../../features/study/assignment_edit_screen.dart';
+import '../../features/study/assignment_screen.dart';
+import '../../features/study/course_screen.dart';
 import '../../features/study/study_screen.dart';
 import '../../features/today/today_screen.dart';
 import '../../features/units/units_screen.dart';
@@ -72,6 +75,19 @@ class AppRouter {
           ),
           _route(AppRoutes.units, const UnitsScreen()),
           _param(AppRoutes.unit(':id'), (id) => UnitsScreen(unitId: id)),
+          _param(AppRoutes.course(':id'), (id) => CourseScreen(courseId: id)),
+          _param(
+            AppRoutes.assignmentNew(':id'),
+            (id) => AssignmentEditScreen(courseId: id),
+          ),
+          _param(
+            AppRoutes.assignment(':id'),
+            (id) => AssignmentScreen(assignmentId: id),
+          ),
+          _param(
+            AppRoutes.assignmentEdit(':id'),
+            (id) => AssignmentEditScreen(assignmentId: id),
+          ),
         ],
       );
 

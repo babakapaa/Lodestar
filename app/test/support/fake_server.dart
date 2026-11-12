@@ -4,10 +4,13 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 
 import 'fake_directory.dart';
+import 'fake_study.dart';
 
 class FakeServer {
   final List<http.Request> requests = [];
   final FakeDirectory directory = FakeDirectory();
+  final FakeStudy study = FakeStudy();
+  bool offline = false;
   final Map<String, Object?> profile = {
     'userId': 'u1',
     'displayName': '',
@@ -64,6 +67,9 @@ class FakeServer {
   MockClient get client => MockClient(_handle);
 
   Future<http.Response> _handle(http.Request request) async {
+    if (offline) {
+      throw http.ClientException('offline', request.url);
+    }
     requests.add(request);
     final path = request.url.path;
     final route = '${request.method} $path';
@@ -183,6 +189,7 @@ class FakeServer {
       _ when route.startsWith('PUT /v1/me/preferences/') => _setPreference(
         request,
       ),
+      _ when path.startsWith('/v1/study/') => study.handle(request),
       _ => directory.handle(request),
     };
   }

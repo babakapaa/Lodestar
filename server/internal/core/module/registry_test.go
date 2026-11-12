@@ -25,6 +25,9 @@ func (s stubModule) Mount(mux *http.ServeMux, _ Kernel) {
 	mux.HandleFunc("GET /v1/"+s.name+"/ping", func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusNoContent)
 	})
+	mux.HandleFunc("GET /v1/"+s.name, func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusAccepted)
+	})
 }
 
 func TestRegistryRejectsDuplicates(t *testing.T) {
@@ -77,6 +80,22 @@ func (g closedGate) Wrap(name string, h http.Handler) http.Handler {
 		return http.NotFoundHandler()
 	}
 	return h
+}
+
+func TestRegistryMountsTheModuleRoot(t *testing.T) {
+	registry, err := NewRegistry(stubModule{name: "notes"})
+	if err != nil {
+		t.Fatalf("NewRegistry: %v", err)
+	}
+	mux := http.NewServeMux()
+	registry.Mount(mux, closedGate{}, Kernel{})
+
+	rec := httptest.NewRecorder()
+	mux.ServeHTTP(rec, httptest.NewRequest(http.MethodGet, "/v1/notes", nil))
+
+	if rec.Code != http.StatusAccepted {
+		t.Fatalf("status = %d, want 202", rec.Code)
+	}
 }
 
 func TestRegistryMountGoesThroughGate(t *testing.T) {

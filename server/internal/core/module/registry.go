@@ -171,6 +171,8 @@ func (r *Registry) Mount(mux *http.ServeMux, gate Gate, k Kernel) {
 		name := m.Manifest().Name
 		sub := http.NewServeMux()
 		m.Mount(sub, k)
-		mux.Handle("/v1/"+name+"/", gate.Wrap(name, sub))
+		gated := gate.Wrap(name, sub)
+		mux.Handle("/v1/"+name, gated)
+		mux.Handle("/v1/"+name+"/", gated)
 	}
 }

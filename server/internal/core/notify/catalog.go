@@ -17,7 +17,7 @@ type Catalog struct {
 func NewCatalog(types ...module.NotificationType) (Catalog, error) {
 	c := Catalog{byKey: map[string]module.NotificationType{}}
 	for _, t := range types {
-		if _, dup := c.byKey[t.Key]; dup || !typePattern.MatchString(t.Key) {
+		if _, dup := c.byKey[t.Key]; dup || !typePattern.MatchString(t.Key) || len(t.Texts) == 0 {
 			return Catalog{}, fmt.Errorf("%w: %q", ErrBadType, t.Key)
 		}
 		if t.Required {

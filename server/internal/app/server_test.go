@@ -48,7 +48,7 @@ func TestTurnedOffModuleDisappears(t *testing.T) {
 		t.Fatalf("box: %v", err)
 	}
 	cfg := config.Config{AccessTTL: time.Minute, RefreshTTL: time.Hour, PublicURL: "http://localhost"}
-	server, err := NewServer("test", cfg, box, pool, registry, nil)
+	server, err := NewServer("test", cfg, box, pool, registry, Integrations{})
 	if err != nil {
 		t.Fatalf("NewServer: %v", err)
 	}

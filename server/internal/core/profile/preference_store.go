@@ -3,6 +3,7 @@ package profile
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 
 	"github.com/jackc/pgx/v5"
@@ -42,4 +43,16 @@ func (PreferenceStore) Put(ctx context.Context, tx pgx.Tx, userID, key string, v
 func (PreferenceStore) Delete(ctx context.Context, tx pgx.Tx, userID, key string) error {
 	_, err := tx.Exec(ctx, `DELETE FROM core.preferences WHERE user_id::text = $1 AND key = $2`, userID, key)
 	return err
+}
+
+func (PreferenceStore) Get(ctx context.Context, tx pgx.Tx, userID, key string) (json.RawMessage, bool, error) {
+	var value []byte
+	err := tx.QueryRow(ctx, `SELECT value FROM core.preferences WHERE user_id::text = $1 AND key = $2`, userID, key).Scan(&value)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return nil, false, nil
+	}
+	if err != nil {
+		return nil, false, fmt.Errorf("read preference: %w", err)
+	}
+	return value, true, nil
 }

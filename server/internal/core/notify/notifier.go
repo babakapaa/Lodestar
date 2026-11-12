@@ -7,6 +7,7 @@ import (
 
 	"github.com/jackc/pgx/v5"
 
+	"github.com/babakapaa/lodestar/server/internal/core/delivery"
 	"github.com/babakapaa/lodestar/server/internal/core/live"
 )
 
@@ -15,6 +16,7 @@ type Notifier struct {
 	store    NotificationStore
 	channels ChannelStore
 	live     live.Store
+	queue    delivery.Queue
 }
 
 func NewNotifier(catalog Catalog) Notifier {
@@ -37,12 +39,28 @@ func (n Notifier) Send(ctx context.Context, tx pgx.Tx, tenantID string, m Messag
 	if err != nil {
 		return err
 	}
-	var inApp []string
+	var inApp, push, email []string
 	for _, userID := range m.UserIDs {
 		c, chosen := choices[userID]
-		if t.Required || (!chosen && t.InApp) || (chosen && c.InApp) {
+		if !chosen {
+			c = ChannelsInput{InApp: t.InApp, Push: t.Push, Email: t.Email}
+		}
+		if t.Required || c.InApp {
 			inApp = append(inApp, userID)
 		}
+		if c.Push {
+			push = append(push, userID)
+		}
+		if c.Email {
+			email = append(email, userID)
+		}
+	}
+	item := delivery.Item{Type: m.Type, Params: params, Link: m.Link}
+	if err := n.queue.Enqueue(ctx, tx, delivery.ChannelPush, push, item); err != nil {
+		return err
+	}
+	if err := n.queue.Enqueue(ctx, tx, delivery.ChannelEmail, email, item); err != nil {
+		return err
 	}
 	if len(inApp) == 0 {
 		return nil

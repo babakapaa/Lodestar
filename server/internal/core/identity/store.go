@@ -79,3 +79,15 @@ func (s Store) ByEmail(ctx context.Context, tenantID, email string) ([]User, err
 	}
 	return users, nil
 }
+
+func (Store) Email(ctx context.Context, tx pgx.Tx, userID string) (string, error) {
+	var email string
+	err := tx.QueryRow(ctx, `SELECT email FROM core.users WHERE id::text = $1`, userID).Scan(&email)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return "", ErrNotFound
+	}
+	if err != nil {
+		return "", fmt.Errorf("read email: %w", err)
+	}
+	return email, nil
+}

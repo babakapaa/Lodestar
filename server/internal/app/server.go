@@ -8,7 +8,9 @@ import (
 
 	"github.com/babakapaa/lodestar/server/internal/core/access"
 	"github.com/babakapaa/lodestar/server/internal/core/auth"
+	"github.com/babakapaa/lodestar/server/internal/core/delivery"
 	"github.com/babakapaa/lodestar/server/internal/core/files"
+	"github.com/babakapaa/lodestar/server/internal/core/identity"
 	"github.com/babakapaa/lodestar/server/internal/core/live"
 	"github.com/babakapaa/lodestar/server/internal/core/module"
 	"github.com/babakapaa/lodestar/server/internal/core/notify"
@@ -26,6 +28,7 @@ const (
 	pruneEvery     = time.Hour
 	uploadDeadline = 24 * time.Hour
 	sweepEvery     = time.Hour
+	dispatchEvery  = 5 * time.Second
 )
 
 type Server struct {
@@ -34,7 +37,7 @@ type Server struct {
 	OnShutdown []func()
 }
 
-func NewServer(version string, cfg config.Config, box secretbox.Box, pool *pgxpool.Pool, registry *module.Registry, storage files.Storage) (Server, error) {
+func NewServer(version string, cfg config.Config, box secretbox.Box, pool *pgxpool.Pool, registry *module.Registry, ext Integrations) (Server, error) {
 	tx := database.NewTenantTx(pool)
 	authRoutes := auth.NewRoutes(pool, auth.Settings{
 		Box:        box,
@@ -50,11 +53,11 @@ func NewServer(version string, cfg config.Config, box secretbox.Box, pool *pgxpo
 	if err != nil {
 		return Server{}, err
 	}
-	preferences, err := schema.NewCatalog(append(profile.CorePreferences(), registry.Preferences()...)...)
+	preferences, err := schema.NewCatalog(append(append(profile.CorePreferences(), delivery.CorePreferences()...), registry.Preferences()...)...)
 	if err != nil {
 		return Server{}, err
 	}
-	tenantSettings, err := schema.NewCatalog(append(append(settings.CoreSettings(), files.CoreSettings()...), registry.Settings()...)...)
+	tenantSettings, err := schema.NewCatalog(append(append(append(settings.CoreSettings(), files.CoreSettings()...), delivery.CoreSettings()...), registry.Settings()...)...)
 	if err != nil {
 		return Server{}, err
 	}
@@ -66,19 +69,31 @@ func NewServer(version string, cfg config.Config, box secretbox.Box, pool *pgxpo
 
 	accessService := access.NewService(tx, catalog, structure.Tree{})
 	settingsService := settings.NewService(tx, accessService, tenantSettings, registry)
+	profileService := profile.NewService(tx, preferences)
 	handler := NewRouter(version, registry, pool, settings.NewGate(settingsService, authn),
 		authRoutes,
 		access.Routes{Service: accessService, Authenticator: authn},
 		structure.Routes{Service: structure.NewService(tx, accessService), Authenticator: authn},
-		profile.Routes{Service: profile.NewService(tx, preferences), Authenticator: authn},
+		profile.Routes{Service: profileService, Authenticator: authn},
 		settings.Routes{Service: settingsService, Authenticator: authn},
 		live.Routes{Hub: hub, Tenants: tx, Authenticator: authn, Origins: cfg.WebOrigins},
 		notify.Routes{Service: notify.NewService(tx, notifications), Authenticator: authn},
-		files.Routes{Service: files.NewService(tx, storage, settingsService), Authenticator: authn},
+		files.Routes{Service: files.NewService(tx, ext.Storage, settingsService), Authenticator: authn},
+		delivery.Routes{Service: delivery.NewService(tx), Authenticator: authn},
 	)
-	workers := []Worker{live.NewListener(pool, hub), live.NewPruner(pool, liveRetention, pruneEvery)}
-	if storage != nil {
-		workers = append(workers, files.NewSweeper(pool, storage, uploadDeadline, sweepEvery))
+	dispatcher := delivery.NewDispatcher(pool, delivery.DispatcherConfig{
+		Texts:       delivery.NewTexts(registry.NotificationTypes()...),
+		Preferences: profileService,
+		Settings:    settingsService,
+		Directory:   identity.Store{},
+		Pusher:      ext.Pusher,
+		Mailer:      ext.Mailer,
+		AppURL:      cfg.AppURL,
+		Every:       dispatchEvery,
+	})
+	workers := []Worker{live.NewListener(pool, hub), live.NewPruner(pool, liveRetention, pruneEvery), dispatcher}
+	if ext.Storage != nil {
+		workers = append(workers, files.NewSweeper(pool, ext.Storage, uploadDeadline, sweepEvery))
 	}
 	return Server{
 		Handler:    handler,

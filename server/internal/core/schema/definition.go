@@ -35,6 +35,11 @@ func (d Definition) Validate(raw json.RawMessage) error {
 		if err = json.Unmarshal(raw, &v); err == nil && !slices.Contains(d.Options, v) {
 			err = fmt.Errorf("%q is not an option", v)
 		}
+	case TimeZone:
+		var v string
+		if err = json.Unmarshal(raw, &v); err == nil && v != "" {
+			err = validZone(v)
+		}
 	default:
 		err = fmt.Errorf("type %q", d.Type)
 	}

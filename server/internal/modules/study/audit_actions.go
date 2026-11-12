@@ -20,3 +20,11 @@ const (
 	ActionAssignmentDeleted   = "study.assignment.deleted"
 	ActionGraded              = "study.assignment.graded"
 )
+
+const (
+	ActionSeriesCreated  = "study.series.created"
+	ActionSeriesUpdated  = "study.series.updated"
+	ActionSeriesDeleted  = "study.series.deleted"
+	ActionLessonChanged  = "study.lesson.changed"
+	ActionLessonRestored = "study.lesson.restored"
+)

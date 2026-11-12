@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -109,4 +110,26 @@ func assignmentError(err error) error {
 		return fmt.Errorf("save assignment: %w", err)
 	}
 	return nil
+}
+
+func (AssignmentStore) Due(ctx context.Context, tx pgx.Tx, courseIDs []string, from, to time.Time) ([]Assignment, error) {
+	rows, err := tx.Query(ctx, `
+		SELECT `+assignmentColumns+` FROM study.assignments a
+		WHERE a.course_id::text = ANY($1) AND a.published_at IS NOT NULL AND a.due_at >= $2 AND a.due_at < $3
+		ORDER BY a.due_at, a.id`, courseIDs, from, to)
+	if err != nil {
+		return nil, fmt.Errorf("due assignments: %w", err)
+	}
+	return pgx.CollectRows(rows, scanAssignment)
+}
+
+func (AssignmentStore) DueBetween(ctx context.Context, tx pgx.Tx, from, to time.Time) ([]Assignment, error) {
+	rows, err := tx.Query(ctx, `
+		SELECT `+assignmentColumns+` FROM study.assignments a JOIN study.courses c ON c.id = a.course_id
+		WHERE a.published_at IS NOT NULL AND c.archived_at IS NULL AND a.due_at >= $1 AND a.due_at < $2
+		ORDER BY a.due_at, a.id`, from, to)
+	if err != nil {
+		return nil, fmt.Errorf("due assignments: %w", err)
+	}
+	return pgx.CollectRows(rows, scanAssignment)
 }

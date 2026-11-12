@@ -2,10 +2,12 @@ package study_test
 
 import (
 	"context"
+	"encoding/json"
 	"sync"
 	"testing"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/babakapaa/lodestar/server/internal/core/access"
 	"github.com/babakapaa/lodestar/server/internal/core/audit"
@@ -33,7 +35,21 @@ type world struct {
 	work      study.AssignmentService
 	files     files.Service
 	sent      *outbox
+	settings  *fakeSettings
+	pool      *pgxpool.Pool
 	admin     auth.Principal
+}
+
+type fakeSettings struct {
+	values map[string]any
+}
+
+func (f *fakeSettings) Value(_ context.Context, _ pgx.Tx, key string) (json.RawMessage, error) {
+	return json.Marshal(f.values[key])
+}
+
+func (f *fakeSettings) ModuleEnabled(context.Context, string, string) (bool, error) {
+	return true, nil
 }
 
 type outbox struct {
@@ -93,6 +109,8 @@ func newWorld(t *testing.T) *world {
 		study:     study.NewService(tx, acc),
 		work:      study.NewAssignmentService(tx, acc, sent),
 		sent:      sent,
+		settings:  &fakeSettings{values: map[string]any{study.TimeZoneSetting: "Asia/Almaty", study.TeachersEditSchedule: true}},
+		pool:      pool,
 	}
 	w.files = files.NewService(tx, nil, nil, study.Module{}.FileLinks(module.Kernel{Tenants: tx, Access: acc})...)
 	w.admin = w.user("admin", "admin@kaznu.kz")
@@ -179,4 +197,8 @@ func (w *world) file(owner auth.Principal, name string) string {
 		w.t.Fatalf("file: %v", err)
 	}
 	return id
+}
+
+func (w *world) kernel() module.Kernel {
+	return module.Kernel{Pool: w.pool, Tenants: w.tx, Access: w.access, Notifier: w.sent, Settings: w.settings}
 }

@@ -9,6 +9,10 @@ const (
 )
 
 func (Module) NotificationTypes() []module.NotificationType {
+	return append(workTypes(), scheduleTypes()...)
+}
+
+func workTypes() []module.NotificationType {
 	return []module.NotificationType{
 		{
 			Key: NotifyPublished, InApp: true, Push: true,
@@ -35,6 +39,34 @@ func (Module) NotificationTypes() []module.NotificationType {
 				"ru": {Title: "Работа проверена: {assignment}", Body: "{course}"},
 				"kk": {Title: "Жұмыс тексерілді: {assignment}", Body: "{course}"},
 				"en": {Title: "Work reviewed: {assignment}", Body: "{course}"},
+			},
+		},
+	}
+}
+
+const (
+	NotifyScheduleChanged = "study.schedule_changed"
+	NotifyDeadline        = "study.deadline"
+)
+
+func scheduleTypes() []module.NotificationType {
+	return []module.NotificationType{
+		{
+			Key: NotifyScheduleChanged, InApp: true, Push: true,
+			Names: map[string]string{"ru": "Изменения в расписании", "kk": "Кестедегі өзгерістер", "en": "Schedule changes"},
+			Texts: map[string]module.NotificationText{
+				"ru": {Title: "Изменение в расписании: {course}", Body: "{date}"},
+				"kk": {Title: "Кестедегі өзгеріс: {course}", Body: "{date}"},
+				"en": {Title: "Schedule change: {course}", Body: "{date}"},
+			},
+		},
+		{
+			Key: NotifyDeadline, InApp: true, Push: true,
+			Names: map[string]string{"ru": "Скорые сроки сдачи", "kk": "Жақындаған тапсыру мерзімдері", "en": "Upcoming deadlines"},
+			Texts: map[string]module.NotificationText{
+				"ru": {Title: "Скоро срок: {assignment}", Body: "{course}"},
+				"kk": {Title: "Мерзімі жақын: {assignment}", Body: "{course}"},
+				"en": {Title: "Due soon: {assignment}", Body: "{course}"},
 			},
 		},
 	}

@@ -23,6 +23,10 @@ const (
 	CodeInvalidGrade       = "invalid_grade"
 	CodeNotStudent         = "not_course_student"
 	CodeBadFile            = "file_not_usable"
+	CodeSeriesNotFound     = "series_not_found"
+	CodeInvalidSeries      = "invalid_series"
+	CodeInvalidChange      = "invalid_change"
+	CodeInvalidRange       = "invalid_range"
 )
 
 var errorCodes = []struct {
@@ -44,6 +48,10 @@ var errorCodes = []struct {
 	{ErrInvalidGrade, http.StatusBadRequest, CodeInvalidGrade},
 	{ErrNotStudent, http.StatusNotFound, CodeNotStudent},
 	{ErrBadFile, http.StatusBadRequest, CodeBadFile},
+	{ErrSeriesNotFound, http.StatusNotFound, CodeSeriesNotFound},
+	{ErrInvalidSeries, http.StatusBadRequest, CodeInvalidSeries},
+	{ErrInvalidChange, http.StatusBadRequest, CodeInvalidChange},
+	{ErrInvalidRange, http.StatusBadRequest, CodeInvalidRange},
 }
 
 func writeError(w http.ResponseWriter, err error) {

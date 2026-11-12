@@ -18,6 +18,9 @@ class FakeStudy {
     },
   ];
   final List<Map<String, Object?>> submissions = [];
+  final List<Map<String, Object?>> lessons = [];
+  final List<Map<String, Object?>> deadlines = [];
+  final Map<String, Map<String, Object?>> grades = {};
   int _next = 1;
 
   static const _student = {
@@ -67,6 +70,16 @@ class FakeStudy {
         id,
       ),
       ('GET', ['assignments', final id, 'work']) => _json(200, [_work(id)]),
+      ('GET', ['assignments', final id, 'students', 'u2', 'submissions']) =>
+        _json(200, _mine(id)),
+      ('PUT', ['assignments', final id, 'grades', 'u2']) => _grade(request, id),
+      ('GET', ['agenda']) => _json(200, {
+        'date': '2026-11-12',
+        'timeZone': 'Asia/Almaty',
+        'lessons': lessons,
+        'deadlines': deadlines,
+      }),
+      ('GET', ['schedule']) => _json(200, lessons),
       _ => _json(404, {'code': 'not_found'}),
     };
   }
@@ -101,7 +114,7 @@ class FakeStudy {
       'student': _student,
       'latest': mine.isEmpty ? null : mine.first,
       'attempts': mine.length,
-      'grade': null,
+      'grade': grades[id],
     };
   }
 
@@ -164,6 +177,17 @@ class FakeStudy {
     };
     submissions.add(submission);
     return _json(201, submission);
+  }
+
+  http.Response _grade(http.Request request, String id) {
+    final grade = {
+      ..._body(request),
+      'assignmentId': id,
+      'studentId': 'u2',
+      'gradedAt': '2026-11-12T11:00:00Z',
+    };
+    grades[id] = grade;
+    return _json(200, grade);
   }
 
   Map<String, Object?> _body(http.Request request) =>

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
@@ -6,6 +8,7 @@ import '../../core/api/api_error_text.dart';
 import '../../core/api/api_exception.dart';
 import '../../core/navigation/app_routes.dart';
 import '../../core/notifications/app_notification.dart';
+import '../../core/notifications/notifications_controller.dart';
 import '../../core/notifications/notifications_providers.dart';
 import '../../design/components/empty_state.dart';
 import '../../design/components/form_error.dart';
@@ -31,6 +34,18 @@ class NotificationsScreen extends ConsumerWidget {
         SnackBar(content: Text(ApiErrorText.of(l10n, error))),
       );
     }
+  }
+
+  Future<void> _open(
+    BuildContext context,
+    NotificationsController controller,
+    AppNotification item,
+  ) async {
+    final route = item.route;
+    if (route != null) {
+      unawaited(context.push(route));
+    }
+    await _run(context, () => controller.markRead(item));
   }
 
   @override
@@ -78,8 +93,7 @@ class NotificationsScreen extends ConsumerWidget {
                       NotificationTile(
                         notification: item,
                         type: types[item.type],
-                        onTap: () =>
-                            _run(context, () => controller.markRead(item)),
+                        onTap: () => _open(context, controller, item),
                       ),
                     if (value.hasMore)
                       Padding(

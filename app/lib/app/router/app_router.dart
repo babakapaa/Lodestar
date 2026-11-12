@@ -26,6 +26,8 @@ import '../../features/settings/settings_screen.dart';
 import '../../features/study/assignment_edit_screen.dart';
 import '../../features/study/assignment_screen.dart';
 import '../../features/study/course_screen.dart';
+import '../../features/study/grade_screen.dart';
+import '../../features/study/schedule_screen.dart';
 import '../../features/study/study_screen.dart';
 import '../../features/today/today_screen.dart';
 import '../../features/units/units_screen.dart';
@@ -87,6 +89,23 @@ class AppRouter {
           _param(
             AppRoutes.assignmentEdit(':id'),
             (id) => AssignmentEditScreen(assignmentId: id),
+          ),
+          GoRoute(
+            path: AppRoutes.grade(':id', ':student'),
+            pageBuilder: (context, state) => _fade(
+              state,
+              GradeScreen(
+                assignmentId: state.pathParameters['id']!,
+                studentId: state.pathParameters['student']!,
+              ),
+            ),
+          ),
+          GoRoute(
+            path: AppRoutes.schedulePath,
+            pageBuilder: (context, state) => _fade(
+              state,
+              ScheduleScreen(date: state.uri.queryParameters['date']),
+            ),
           ),
         ],
       );

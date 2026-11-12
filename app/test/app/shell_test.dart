@@ -10,7 +10,7 @@ void main() {
     expect(find.byType(NavigationBar), findsOneWidget);
     expect(find.byType(NavigationRail), findsNothing);
     expect(find.byType(NavigationDestination), findsNWidgets(5));
-    expect(find.text('Здесь появится план на день'), findsOneWidget);
+    expect(find.text('Сегодня свободно'), findsOneWidget);
   });
 
   testWidgets('tablet shows a compact side rail', (tester) async {

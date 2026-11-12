@@ -6,13 +6,16 @@ import (
 	"encoding/base64"
 	"slices"
 	"testing"
+	"time"
 
 	"github.com/babakapaa/lodestar/server/internal/app"
 	"github.com/babakapaa/lodestar/server/internal/app/demo"
 	"github.com/babakapaa/lodestar/server/internal/core/access"
 	"github.com/babakapaa/lodestar/server/internal/core/auth"
 	"github.com/babakapaa/lodestar/server/internal/core/identity"
+	"github.com/babakapaa/lodestar/server/internal/core/module"
 	"github.com/babakapaa/lodestar/server/internal/core/structure"
+	"github.com/babakapaa/lodestar/server/internal/modules/study"
 	"github.com/babakapaa/lodestar/server/internal/platform/database"
 	"github.com/babakapaa/lodestar/server/internal/platform/database/dbtest"
 	"github.com/babakapaa/lodestar/server/internal/platform/secretbox"
@@ -21,7 +24,11 @@ import (
 func TestSeedIsRepeatableAndGivesEachPersonTheirRole(t *testing.T) {
 	ctx := context.Background()
 	pool := dbtest.New(t)
-	if err := database.NewMigrator(pool).Apply(ctx, app.CoreMigrations()...); err != nil {
+	registry, err := module.NewRegistry(app.Modules()...)
+	if err != nil {
+		t.Fatalf("registry: %v", err)
+	}
+	if err := database.NewMigrator(pool).Apply(ctx, append(app.CoreMigrations(), registry.Migrations()...)...); err != nil {
 		t.Fatalf("migrate: %v", err)
 	}
 	box, err := secretbox.New(base64.StdEncoding.EncodeToString(bytes.Repeat([]byte{5}, secretbox.KeySize)))
@@ -30,11 +37,11 @@ func TestSeedIsRepeatableAndGivesEachPersonTheirRole(t *testing.T) {
 	}
 	cfg := demo.Config{Issuer: "http://idp.test", ClientID: "lodestar-demo", ClientSecret: "secret", PublicURL: "http://lodestar.test"}
 
-	first, err := demo.Seed(ctx, pool, box, cfg)
+	first, err := demo.Seed(ctx, pool, box, registry, cfg)
 	if err != nil {
 		t.Fatalf("seed: %v", err)
 	}
-	second, err := demo.Seed(ctx, pool, box, cfg)
+	second, err := demo.Seed(ctx, pool, box, registry, cfg)
 	if err != nil {
 		t.Fatalf("seed again: %v", err)
 	}
@@ -48,12 +55,15 @@ func TestSeedIsRepeatableAndGivesEachPersonTheirRole(t *testing.T) {
 		t.Fatalf("catalog: %v", err)
 	}
 	service := access.NewService(tx, catalog, structure.Tree{})
-	permissionsOf := func(email string) []access.Permission {
+	principalOf := func(email string) auth.Principal {
 		users, err := identity.NewStore(tx).ByEmail(ctx, first.Tenant.ID, email)
 		if err != nil || len(users) != 1 {
 			t.Fatalf("user %s: %v %d", email, err, len(users))
 		}
-		perms, err := service.Permissions(ctx, auth.Principal{TenantID: first.Tenant.ID, UserID: users[0].ID}, "")
+		return auth.Principal{TenantID: first.Tenant.ID, UserID: users[0].ID}
+	}
+	permissionsOf := func(email string) []access.Permission {
+		perms, err := service.Permissions(ctx, principalOf(email), "")
 		if err != nil {
 			t.Fatalf("permissions %s: %v", email, err)
 		}
@@ -68,5 +78,24 @@ func TestSeedIsRepeatableAndGivesEachPersonTheirRole(t *testing.T) {
 	}
 	if student := permissionsOf(demo.Student.Email); slices.Contains(student, structure.ManageMembers) {
 		t.Errorf("student permissions = %v", student)
+	}
+
+	core, err := app.NewCore(pool, registry)
+	if err != nil {
+		t.Fatalf("core: %v", err)
+	}
+	student := principalOf(demo.Student.Email)
+	courses, err := study.NewService(tx, core.Access).Mine(ctx, student, false)
+	if err != nil || len(courses) != 1 || courses[0].Role != study.RoleStudent {
+		t.Fatalf("student courses = %+v, %v", courses, err)
+	}
+	items, err := study.NewAssignmentService(tx, core.Access, core.Kernel.Notifier).List(ctx, student, courses[0].ID)
+	if err != nil || len(items) != 1 {
+		t.Fatalf("assignments = %+v, %v", items, err)
+	}
+	today := study.DayOf(time.Now())
+	lessons, err := study.NewScheduleService(core.Kernel).Mine(ctx, student, today, today.AddDays(6))
+	if err != nil || len(lessons) != 2 {
+		t.Fatalf("week lessons = %+v, %v", lessons, err)
 	}
 }

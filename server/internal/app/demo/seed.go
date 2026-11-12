@@ -3,6 +3,7 @@ package demo
 import (
 	"context"
 	"errors"
+	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 
@@ -10,6 +11,7 @@ import (
 	"github.com/babakapaa/lodestar/server/internal/core/access"
 	"github.com/babakapaa/lodestar/server/internal/core/auth"
 	"github.com/babakapaa/lodestar/server/internal/core/identity"
+	"github.com/babakapaa/lodestar/server/internal/core/module"
 	"github.com/babakapaa/lodestar/server/internal/core/structure"
 	"github.com/babakapaa/lodestar/server/internal/core/tenant"
 	"github.com/babakapaa/lodestar/server/internal/platform/database"
@@ -23,7 +25,11 @@ const (
 	TeacherRole = "Преподаватель"
 )
 
-func Seed(ctx context.Context, pool *pgxpool.Pool, box secretbox.Box, cfg Config) (Result, error) {
+func Seed(ctx context.Context, pool *pgxpool.Pool, box secretbox.Box, registry *module.Registry, cfg Config) (Result, error) {
+	core, err := app.NewCore(pool, registry)
+	if err != nil {
+		return Result{}, err
+	}
 	t, err := ensureTenant(ctx, pool)
 	if err != nil {
 		return Result{}, err
@@ -58,7 +64,10 @@ func Seed(ctx context.Context, pool *pgxpool.Pool, box secretbox.Box, cfg Config
 	if _, err := access.NewBootstrap(tx).GrantTopRole(ctx, t.ID, ids[Admin.Subject]); err != nil {
 		return Result{}, err
 	}
-	if err := grantTeacher(ctx, tx, t.ID, ids[Admin.Subject], ids[Teacher.Subject]); err != nil {
+	if err := grantTeacher(ctx, core.Access, t.ID, ids[Admin.Subject], ids[Teacher.Subject]); err != nil {
+		return Result{}, err
+	}
+	if err := seedStudy(ctx, core, t.ID, ids, time.Now()); err != nil {
 		return Result{}, err
 	}
 	return Result{Tenant: t, Callback: auth.CallbackURL(cfg.PublicURL, t.Slug, ProviderKey)}, nil
@@ -76,12 +85,7 @@ func ensureTenant(ctx context.Context, pool *pgxpool.Pool) (tenant.Tenant, error
 	return t, access.NewBootstrap(database.NewTenantTx(pool)).EnsureDefaults(ctx, t.ID)
 }
 
-func grantTeacher(ctx context.Context, tx database.TenantTx, tenantID, adminID, teacherID string) error {
-	catalog, err := access.NewCatalog(app.CorePermissions()...)
-	if err != nil {
-		return err
-	}
-	service := access.NewService(tx, catalog, structure.Tree{})
+func grantTeacher(ctx context.Context, service access.Service, tenantID, adminID, teacherID string) error {
 	admin := auth.Principal{TenantID: tenantID, UserID: adminID}
 	roles, err := service.Roles(ctx, admin)
 	if err != nil {

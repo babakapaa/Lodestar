@@ -1,5 +1,7 @@
+import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../core/navigation/app_routes.dart';
 import '../../l10n/l10n_context.dart';
 import 'assignment.dart';
 import 'student_work.dart';
@@ -31,6 +33,8 @@ class StudentWorkTile extends StatelessWidget {
             : l10n.myWorkSentAt(labels.time(latest.submittedAt)),
       ),
       trailing: grade == null ? null : Text(labels.grade(grade, assignment)),
+      onTap: () =>
+          context.push(AppRoutes.grade(assignment.id, work.student.userId)),
     );
   }
 }

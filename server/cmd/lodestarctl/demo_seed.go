@@ -27,7 +27,7 @@ func seedDemo(ctx context.Context, args []string) error {
 	}
 	defer e.pool.Close()
 
-	result, err := demo.Seed(ctx, e.pool, e.box, demo.Config{
+	result, err := demo.Seed(ctx, e.pool, e.box, e.registry, demo.Config{
 		Issuer:       *issuer,
 		ClientID:     *clientID,
 		ClientSecret: secret,

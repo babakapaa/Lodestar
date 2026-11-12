@@ -5,6 +5,7 @@ import 'assignment.dart';
 import 'course_role.dart';
 import 'grade.dart';
 import 'grading.dart';
+import 'lesson_status.dart';
 
 class StudyLabels {
   const StudyLabels(this._l10n, this._locale);
@@ -23,6 +24,30 @@ class StudyLabels {
     Grading.pass => _l10n.gradingPass,
     Grading.none => _l10n.gradingNone,
   };
+
+  String kind(String kind) => switch (kind) {
+    'lecture' => _l10n.lessonKindLecture,
+    'practice' => _l10n.lessonKindPractice,
+    'lab' => _l10n.lessonKindLab,
+    'seminar' => _l10n.lessonKindSeminar,
+    'exam' => _l10n.lessonKindExam,
+    'consultation' => _l10n.lessonKindConsultation,
+    _ => kind,
+  };
+
+  String? status(LessonStatus status) => switch (status) {
+    LessonStatus.planned => null,
+    LessonStatus.changed => _l10n.lessonChanged,
+    LessonStatus.cancelled => _l10n.lessonCancelled,
+  };
+
+  String clock(DateTime at) => DateFormat.Hm(_locale).format(at.toLocal());
+
+  String day(DateTime day) => DateFormat.MMMMEEEEd(_locale).format(day);
+
+  String shortDay(DateTime day) => DateFormat.MMMd(_locale).format(day);
+
+  String points(double value) => _number(value);
 
   String time(DateTime at) =>
       DateFormat.MMMd(_locale).add_Hm().format(at.toLocal());

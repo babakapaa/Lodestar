@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/babakapaa/lodestar/server/internal/core/access"
+	"github.com/babakapaa/lodestar/server/internal/core/audit"
 	"github.com/babakapaa/lodestar/server/internal/core/auth"
 	"github.com/babakapaa/lodestar/server/internal/core/identity"
 	"github.com/babakapaa/lodestar/server/internal/core/tenant"
@@ -20,7 +21,7 @@ import (
 func TestRoutesEnforcePermissions(t *testing.T) {
 	ctx := context.Background()
 	pool := dbtest.New(t)
-	err := database.NewMigrator(pool).Apply(ctx, tenant.Migrations(), identity.Migrations(), auth.Migrations(), access.Migrations())
+	err := database.NewMigrator(pool).Apply(ctx, tenant.Migrations(), identity.Migrations(), audit.Migrations(), auth.Migrations(), access.Migrations())
 	if err != nil {
 		t.Fatalf("migrate: %v", err)
 	}

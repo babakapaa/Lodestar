@@ -7,6 +7,7 @@ import (
 	"github.com/jackc/pgx/v5"
 
 	"github.com/babakapaa/lodestar/server/internal/core/access"
+	"github.com/babakapaa/lodestar/server/internal/core/audit"
 	"github.com/babakapaa/lodestar/server/internal/core/auth"
 	"github.com/babakapaa/lodestar/server/internal/core/identity"
 	"github.com/babakapaa/lodestar/server/internal/core/tenant"
@@ -36,6 +37,7 @@ type world struct {
 	t       *testing.T
 	ctx     context.Context
 	service access.Service
+	tx      database.TenantTx
 	tenant  string
 	users   identity.Store
 	admin   auth.Principal
@@ -45,7 +47,7 @@ func newWorld(t *testing.T) *world {
 	t.Helper()
 	ctx := context.Background()
 	pool := dbtest.New(t)
-	err := database.NewMigrator(pool).Apply(ctx, tenant.Migrations(), identity.Migrations(), access.Migrations())
+	err := database.NewMigrator(pool).Apply(ctx, tenant.Migrations(), identity.Migrations(), audit.Migrations(), access.Migrations())
 	if err != nil {
 		t.Fatalf("migrate: %v", err)
 	}
@@ -62,6 +64,7 @@ func newWorld(t *testing.T) *world {
 		t:       t,
 		ctx:     ctx,
 		service: access.NewService(tx, catalog, nestedTree{}),
+		tx:      tx,
 		tenant:  created.ID,
 		users:   identity.NewStore(tx),
 	}

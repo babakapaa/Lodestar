@@ -6,6 +6,7 @@ import (
 
 	"github.com/jackc/pgx/v5"
 
+	"github.com/babakapaa/lodestar/server/internal/core/audit"
 	"github.com/babakapaa/lodestar/server/internal/core/auth"
 	"github.com/babakapaa/lodestar/server/internal/platform/database"
 )
@@ -17,6 +18,7 @@ type Service struct {
 	roles       RoleStore
 	assignments AssignmentStore
 	overrides   OverrideStore
+	log         audit.Log
 }
 
 func NewService(tenants database.TenantTx, catalog Catalog, tree ScopeTree) Service {
@@ -62,6 +64,14 @@ func (s Service) Require(ctx context.Context, tx pgx.Tx, p auth.Principal, sc Sc
 	return nil
 }
 
+func (s Service) AllowedInTenant(ctx context.Context, tx pgx.Tx, p auth.Principal, permission string) (bool, error) {
+	g, err := s.resolver.ForUser(ctx, tx, p.TenantID, p.UserID, TenantScope(p.TenantID))
+	if err != nil {
+		return false, err
+	}
+	return g.Permissions.Has(Permission(permission)), nil
+}
+
 func (s Service) Preview(ctx context.Context, p auth.Principal, roleID, scope string) ([]Permission, error) {
 	var perms []Permission
 	err := s.tenants.Run(ctx, p.TenantID, func(tx pgx.Tx) error {
@@ -101,8 +111,13 @@ func (s Service) CreateRole(ctx context.Context, p auth.Principal, in RoleInput)
 		if !actor.Permissions.Covers(in.Permissions) {
 			return ErrPermissionNotHeld
 		}
-		role, err = s.roles.Insert(ctx, tx, in, actor.Top)
-		return err
+		if role, err = s.roles.Insert(ctx, tx, in, actor.Top); err != nil {
+			return err
+		}
+		return s.log.Record(ctx, tx, p.UserID, audit.Change{
+			Action: ActionRoleCreated, TargetKind: "role", TargetID: role.ID,
+			Details: map[string]any{"name": role.Name, "permissions": role.Permissions},
+		})
 	})
 	return role, err
 }
@@ -120,8 +135,16 @@ func (s Service) UpdateRole(ctx context.Context, p auth.Principal, id string, in
 		if !actor.Permissions.Covers(changed(current.Permissions, in.Permissions)) {
 			return ErrPermissionNotHeld
 		}
-		role, err = s.roles.Update(ctx, tx, id, in)
-		return err
+		if role, err = s.roles.Update(ctx, tx, id, in); err != nil {
+			return err
+		}
+		return s.log.Record(ctx, tx, p.UserID, audit.Change{
+			Action: ActionRoleUpdated, TargetKind: "role", TargetID: id,
+			Details: map[string]any{
+				"before": map[string]any{"name": current.Name, "permissions": current.Permissions},
+				"after":  map[string]any{"name": role.Name, "permissions": role.Permissions},
+			},
+		})
 	})
 	return role, err
 }
@@ -135,7 +158,13 @@ func (s Service) DeleteRole(ctx context.Context, p auth.Principal, id string) er
 		if current.Default {
 			return ErrDefaultRole
 		}
-		return s.roles.Delete(ctx, tx, current)
+		if err := s.roles.Delete(ctx, tx, current); err != nil {
+			return err
+		}
+		return s.log.Record(ctx, tx, p.UserID, audit.Change{
+			Action: ActionRoleDeleted, TargetKind: "role", TargetID: id,
+			Details: map[string]any{"name": current.Name, "permissions": current.Permissions},
+		})
 	})
 }
 
@@ -151,7 +180,13 @@ func (s Service) MoveRole(ctx context.Context, p auth.Principal, id string, posi
 		if position < 1 || position >= actor.Top {
 			return ErrInvalidPosition
 		}
-		return s.roles.Move(ctx, tx, current, position)
+		if err := s.roles.Move(ctx, tx, current, position); err != nil {
+			return err
+		}
+		return s.log.Record(ctx, tx, p.UserID, audit.Change{
+			Action: ActionRoleMoved, TargetKind: "role", TargetID: id,
+			Details: map[string]any{"name": current.Name, "from": current.Position, "to": position},
+		})
 	})
 }
 
@@ -165,8 +200,13 @@ func (s Service) Assign(ctx context.Context, p auth.Principal, in AssignInput) (
 		if err := s.checkAssignable(ctx, tx, p, in.RoleID, sc); err != nil {
 			return err
 		}
-		a, err = s.assignments.Upsert(ctx, tx, in, sc, &p.UserID)
-		return err
+		if a, err = s.assignments.Upsert(ctx, tx, in, sc, &p.UserID); err != nil {
+			return err
+		}
+		return s.log.Record(ctx, tx, p.UserID, audit.Change{
+			Action: ActionRoleAssigned, TargetKind: "user", TargetID: a.UserID,
+			Details: map[string]any{"roleId": a.RoleID, "scope": a.Scope, "expiresAt": a.ExpiresAt},
+		})
 	})
 	return a, err
 }
@@ -180,7 +220,13 @@ func (s Service) Unassign(ctx context.Context, p auth.Principal, id string) erro
 		if err := s.checkAssignable(ctx, tx, p, a.RoleID, sc); err != nil {
 			return err
 		}
-		return s.assignments.Delete(ctx, tx, id)
+		if err := s.assignments.Delete(ctx, tx, id); err != nil {
+			return err
+		}
+		return s.log.Record(ctx, tx, p.UserID, audit.Change{
+			Action: ActionRoleUnassigned, TargetKind: "user", TargetID: a.UserID,
+			Details: map[string]any{"roleId": a.RoleID, "scope": a.Scope},
+		})
 	})
 }
 
@@ -237,7 +283,13 @@ func (s Service) SetOverride(ctx context.Context, p auth.Principal, scope string
 		if !actor.Permissions.Covers(touched) {
 			return ErrPermissionNotHeld
 		}
-		return s.overrides.Put(ctx, tx, sc, o)
+		if err := s.overrides.Put(ctx, tx, sc, o); err != nil {
+			return err
+		}
+		return s.log.Record(ctx, tx, p.UserID, audit.Change{
+			Action: ActionOverrideSet, TargetKind: "role", TargetID: o.RoleID,
+			Details: map[string]any{"scope": scope, "allow": o.Allow, "deny": o.Deny},
+		})
 	})
 }
 

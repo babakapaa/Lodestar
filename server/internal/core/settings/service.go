@@ -7,6 +7,7 @@ import (
 	"github.com/jackc/pgx/v5"
 
 	"github.com/babakapaa/lodestar/server/internal/core/access"
+	"github.com/babakapaa/lodestar/server/internal/core/audit"
 	"github.com/babakapaa/lodestar/server/internal/core/auth"
 	"github.com/babakapaa/lodestar/server/internal/core/module"
 	"github.com/babakapaa/lodestar/server/internal/core/schema"
@@ -20,6 +21,7 @@ type Service struct {
 	registry *module.Registry
 	settings SettingStore
 	modules  ModuleStore
+	log      audit.Log
 }
 
 func NewService(tenants database.TenantTx, acc access.Service, catalog schema.Catalog, registry *module.Registry) Service {
@@ -67,7 +69,17 @@ func (s Service) Set(ctx context.Context, p auth.Principal, key string, value js
 		return err
 	}
 	return s.managed(ctx, p, func(tx pgx.Tx) error {
-		return s.settings.Put(ctx, tx, key, value, p.UserID)
+		before, err := s.Value(ctx, tx, key)
+		if err != nil {
+			return err
+		}
+		if err := s.settings.Put(ctx, tx, key, value, p.UserID); err != nil {
+			return err
+		}
+		return s.log.Record(ctx, tx, p.UserID, audit.Change{
+			Action: ActionSettingChanged, TargetKind: "setting", TargetID: key,
+			Details: map[string]json.RawMessage{"before": before, "after": value},
+		})
 	})
 }
 
@@ -76,7 +88,10 @@ func (s Service) Reset(ctx context.Context, p auth.Principal, key string) error 
 		return err
 	}
 	return s.managed(ctx, p, func(tx pgx.Tx) error {
-		return s.settings.Delete(ctx, tx, key)
+		if err := s.settings.Delete(ctx, tx, key); err != nil {
+			return err
+		}
+		return s.log.Record(ctx, tx, p.UserID, audit.Change{Action: ActionSettingReset, TargetKind: "setting", TargetID: key})
 	})
 }
 
@@ -111,7 +126,14 @@ func (s Service) SetModule(ctx context.Context, p auth.Principal, name string, e
 		return ErrRequiredModule
 	}
 	return s.managed(ctx, p, func(tx pgx.Tx) error {
-		return s.modules.Set(ctx, tx, name, enabled, p.UserID)
+		if err := s.modules.Set(ctx, tx, name, enabled, p.UserID); err != nil {
+			return err
+		}
+		action := ActionModuleDisabled
+		if enabled {
+			action = ActionModuleEnabled
+		}
+		return s.log.Record(ctx, tx, p.UserID, audit.Change{Action: action, TargetKind: "module", TargetID: name})
 	})
 }
 

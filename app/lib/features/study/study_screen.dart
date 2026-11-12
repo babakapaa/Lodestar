@@ -1,21 +1,45 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/navigation/tab_page.dart';
 import '../../design/components/empty_state.dart';
+import '../../design/components/section.dart';
 import '../../l10n/l10n_context.dart';
+import 'course_tile.dart';
+import 'loaded_list_view.dart';
+import 'outbox_section.dart';
+import 'study_providers.dart';
 
-class StudyScreen extends StatelessWidget {
+class StudyScreen extends ConsumerWidget {
   const StudyScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     return TabPage(
       title: l10n.tabStudy,
-      child: EmptyState(
-        icon: Icons.school_outlined,
-        title: l10n.emptyStudyTitle,
-        body: l10n.emptyStudyBody,
+      child: LoadedListView(
+        value: ref.watch(myCoursesProvider),
+        onRefresh: () => ref.refresh(myCoursesProvider.future),
+        builder: (courses) => [
+          const OutboxSection(),
+          if (courses.isEmpty)
+            EmptyState(
+              icon: Icons.school_outlined,
+              title: l10n.studyNoCourses,
+              body: l10n.studyNoCoursesBody,
+            )
+          else
+            Section(
+              title: l10n.studyCourses,
+              child: Column(
+                children: [
+                  for (final course in courses)
+                    CourseTile(key: ValueKey(course.id), course: course),
+                ],
+              ),
+            ),
+        ],
       ),
     );
   }

@@ -20,4 +20,13 @@ abstract final class AppRoutes {
   static String personRoles(String id) => '/admin/people/$id';
 
   static String unit(String id) => '/admin/units/$id';
+
+  static String course(String id) => '/study/courses/$id';
+
+  static String assignmentNew(String courseId) =>
+      '/study/courses/$courseId/new';
+
+  static String assignment(String id) => '/study/assignments/$id';
+
+  static String assignmentEdit(String id) => '/study/assignments/$id/edit';
 }

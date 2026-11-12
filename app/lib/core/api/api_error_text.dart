@@ -6,7 +6,14 @@ abstract final class ApiErrorText {
     if (error is! ApiException) {
       return l10n.errorGeneric;
     }
-    return switch (error.code) {
+    if (error.code == 'unknown' && error.statusCode == 404) {
+      return l10n.errorNotLodestar;
+    }
+    return ofCode(l10n, error.code);
+  }
+
+  static String ofCode(AppLocalizations l10n, String code) {
+    return switch (code) {
       ApiException.unreachable => l10n.errorUnreachable,
       ApiException.loginFailed || 'invalid_grant' => l10n.errorLoginFailed,
       'tenant_not_found' => l10n.errorTenantNotFound,
@@ -22,7 +29,14 @@ abstract final class ApiErrorText {
       'unit_cycle' => l10n.errorUnitCycle,
       'unit_archived' => l10n.errorUnitArchived,
       'invalid_unit' => l10n.errorInvalidUnit,
-      'unknown' when error.statusCode == 404 => l10n.errorNotLodestar,
+      'invalid_assignment' => l10n.errorInvalidAssignment,
+      'assignment_has_work' => l10n.errorAssignmentHasWork,
+      'invalid_submission' => l10n.errorInvalidSubmission,
+      'course_archived' => l10n.errorCourseArchived,
+      'assignment_not_found' => l10n.errorAssignmentNotFound,
+      'course_not_found' => l10n.errorCourseNotFound,
+      'assignment_not_published' => l10n.errorNotPublished,
+      'not_course_student' => l10n.errorNotStudent,
       _ => l10n.errorGeneric,
     };
   }

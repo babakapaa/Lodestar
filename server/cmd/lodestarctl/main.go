@@ -12,7 +12,9 @@ const usage = `Использование:
   lodestarctl secret-key
   lodestarctl tenant create -slug kaznu -name "Казахский национальный университет"
   lodestarctl oidc set -tenant kaznu -key microsoft -name "Microsoft" -issuer URL -client-id ID
-      секрет клиента берётся из LODESTAR_OIDC_CLIENT_SECRET`
+      секрет клиента берётся из LODESTAR_OIDC_CLIENT_SECRET
+  lodestarctl role grant-top -tenant kaznu -email admin@kaznu.kz
+      выдаёт высшую роль человеку, который уже входил в Lodestar`
 
 func main() {
 	if err := run(os.Args[1:]); err != nil {
@@ -35,6 +37,8 @@ func run(args []string) error {
 		return createTenant(ctx, args[2:])
 	case "oidc set":
 		return setOIDC(ctx, args[2:])
+	case "role grant-top":
+		return grantTopRole(ctx, args[2:])
 	default:
 		return fmt.Errorf("%s", usage)
 	}

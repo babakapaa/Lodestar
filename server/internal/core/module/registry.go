@@ -49,6 +49,16 @@ func (r *Registry) Migrations() []database.Migrations {
 	return sets
 }
 
+func (r *Registry) Permissions() []string {
+	var perms []string
+	for _, m := range r.modules {
+		if p, ok := m.(Permissioned); ok {
+			perms = append(perms, p.Permissions()...)
+		}
+	}
+	return perms
+}
+
 func (r *Registry) Mount(mux *http.ServeMux) {
 	for _, m := range r.modules {
 		m.Mount(mux)

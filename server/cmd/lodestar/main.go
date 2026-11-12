@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/babakapaa/lodestar/server/internal/app"
+	"github.com/babakapaa/lodestar/server/internal/core/access"
 	"github.com/babakapaa/lodestar/server/internal/core/auth"
 	"github.com/babakapaa/lodestar/server/internal/core/module"
 	"github.com/babakapaa/lodestar/server/internal/platform/config"
@@ -64,6 +65,14 @@ func run() error {
 		PublicURL:  cfg.PublicURL,
 		HTTPClient: &http.Client{Timeout: 10 * time.Second},
 	})
-	srv := httpserver.New(cfg.HTTPAddr, app.NewRouter(version, registry, pool, authRoutes))
+	catalog, err := access.NewCatalog(registry.Permissions()...)
+	if err != nil {
+		return err
+	}
+	accessRoutes := access.Routes{
+		Service:       access.NewService(database.NewTenantTx(pool), catalog, access.FlatTree{}),
+		Authenticator: authRoutes.Authenticator,
+	}
+	srv := httpserver.New(cfg.HTTPAddr, app.NewRouter(version, registry, pool, authRoutes, accessRoutes))
 	return httpserver.Run(ctx, srv, cfg.ShutdownTimeout)
 }

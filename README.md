@@ -31,7 +31,11 @@ docker compose -f deploy/compose.yaml exec -e LODESTAR_OIDC_CLIENT_SECRET=... se
   /lodestarctl oidc set -tenant kaznu -key microsoft -name "Microsoft" -issuer https://login.microsoftonline.com/<id>/v2.0 -client-id <id>
 ```
 
-Команда напечатает адрес возврата, его нужно указать в настройках приложения у провайдера.
+Команда напечатает адрес возврата, его нужно указать в настройках приложения у провайдера. Когда администратор вуза войдёт первый раз, выдайте ему высшую роль:
+
+```sh
+docker compose -f deploy/compose.yaml exec server /lodestarctl role grant-top -tenant kaznu -email admin@kaznu.kz
+```
 
 ## Разработка
 

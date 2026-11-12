@@ -2,12 +2,17 @@ package study_test
 
 import (
 	"context"
+	"sync"
 	"testing"
+
+	"github.com/jackc/pgx/v5"
 
 	"github.com/babakapaa/lodestar/server/internal/core/access"
 	"github.com/babakapaa/lodestar/server/internal/core/audit"
 	"github.com/babakapaa/lodestar/server/internal/core/auth"
+	"github.com/babakapaa/lodestar/server/internal/core/files"
 	"github.com/babakapaa/lodestar/server/internal/core/identity"
+	"github.com/babakapaa/lodestar/server/internal/core/module"
 	"github.com/babakapaa/lodestar/server/internal/core/search"
 	"github.com/babakapaa/lodestar/server/internal/core/structure"
 	"github.com/babakapaa/lodestar/server/internal/core/tenant"
@@ -25,7 +30,34 @@ type world struct {
 	access    access.Service
 	structure structure.Service
 	study     study.Service
+	work      study.AssignmentService
+	files     files.Service
+	sent      *outbox
 	admin     auth.Principal
+}
+
+type outbox struct {
+	mu   sync.Mutex
+	list []module.Notification
+}
+
+func (o *outbox) Notify(_ context.Context, _ pgx.Tx, _ string, n module.Notification) error {
+	o.mu.Lock()
+	defer o.mu.Unlock()
+	o.list = append(o.list, n)
+	return nil
+}
+
+func (o *outbox) of(kind string) []module.Notification {
+	o.mu.Lock()
+	defer o.mu.Unlock()
+	var out []module.Notification
+	for _, n := range o.list {
+		if n.Type == kind {
+			out = append(out, n)
+		}
+	}
+	return out
 }
 
 func newWorld(t *testing.T) *world {
@@ -34,7 +66,7 @@ func newWorld(t *testing.T) *world {
 	pool := dbtest.New(t)
 	sets := []database.Migrations{
 		tenant.Migrations(), search.Migrations(), identity.Migrations(), audit.Migrations(), access.Migrations(),
-		structure.Migrations(), study.Module{}.Migrations(),
+		structure.Migrations(), files.Migrations(), study.Module{}.Migrations(),
 	}
 	if err := database.NewMigrator(pool).Apply(ctx, sets...); err != nil {
 		t.Fatalf("migrate: %v", err)
@@ -49,6 +81,7 @@ func newWorld(t *testing.T) *world {
 	}
 	tx := database.NewTenantTx(pool)
 	acc := access.NewService(tx, catalog, structure.Tree{})
+	sent := &outbox{}
 	w := &world{
 		t:         t,
 		ctx:       ctx,
@@ -58,7 +91,10 @@ func newWorld(t *testing.T) *world {
 		access:    acc,
 		structure: structure.NewService(tx, acc),
 		study:     study.NewService(tx, acc),
+		work:      study.NewAssignmentService(tx, acc, sent),
+		sent:      sent,
 	}
+	w.files = files.NewService(tx, nil, nil, study.Module{}.FileLinks(module.Kernel{Tenants: tx, Access: acc})...)
 	w.admin = w.user("admin", "admin@kaznu.kz")
 	if _, err := access.NewBootstrap(tx).GrantTopRole(ctx, w.tenant, w.admin.UserID); err != nil {
 		t.Fatalf("grant: %v", err)
@@ -125,4 +161,22 @@ func (w *world) grantAt(p auth.Principal, u structure.Unit, perms ...access.Perm
 	if err != nil {
 		w.t.Fatalf("assign: %v", err)
 	}
+}
+
+func (w *world) file(owner auth.Principal, name string) string {
+	w.t.Helper()
+	var id string
+	err := w.tx.Run(w.ctx, w.tenant, func(tx pgx.Tx) error {
+		f, err := files.FileStore{}.Create(w.ctx, tx, owner.UserID, files.FileInput{Name: name, ContentType: "text/plain", Size: 1})
+		if err != nil {
+			return err
+		}
+		id = f.ID
+		_, err = files.FileStore{}.MarkReady(w.ctx, tx, f.ID)
+		return err
+	})
+	if err != nil {
+		w.t.Fatalf("file: %v", err)
+	}
+	return id
 }

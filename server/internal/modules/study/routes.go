@@ -3,7 +3,8 @@ package study
 import "net/http"
 
 type Routes struct {
-	Service Service
+	Service     Service
+	Assignments AssignmentService
 }
 
 func (r Routes) Mount(mux *http.ServeMux) {
@@ -16,6 +17,16 @@ func (r Routes) Mount(mux *http.ServeMux) {
 	mux.Handle("POST /v1/study/courses/{id}/archive", ArchiveCourseHandler{service: s, archived: true})
 	mux.Handle("POST /v1/study/courses/{id}/restore", ArchiveCourseHandler{service: s})
 	mux.Handle("GET /v1/study/courses/{id}/students", StudentsHandler{service: s})
+	a := r.Assignments
+	mux.Handle("GET /v1/study/courses/{id}/assignments", AssignmentsHandler{service: a})
+	mux.Handle("POST /v1/study/courses/{id}/assignments", CreateAssignmentHandler{service: a})
+	mux.Handle("GET /v1/study/assignments/{id}", AssignmentHandler{service: a})
+	mux.Handle("PUT /v1/study/assignments/{id}", UpdateAssignmentHandler{service: a})
+	mux.Handle("DELETE /v1/study/assignments/{id}", DeleteAssignmentHandler{service: a})
+	mux.Handle("POST /v1/study/assignments/{id}/submissions", SubmitHandler{service: a})
+	mux.Handle("GET /v1/study/assignments/{id}/work", WorkHandler{service: a})
+	mux.Handle("GET /v1/study/assignments/{id}/students/{student}/submissions", AttemptsHandler{service: a})
+	mux.Handle("PUT /v1/study/assignments/{id}/grades/{student}", GradeHandler{service: a})
 	for _, list := range []List{ListTeachers, ListUnits, ListStudents} {
 		path := "/v1/study/courses/{id}/" + string(list) + "/{member}"
 		mux.Handle("PUT "+path, RosterChangeHandler{service: s, list: list, add: true})

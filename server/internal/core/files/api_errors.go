@@ -15,6 +15,7 @@ const (
 	CodeNotUploaded    = "file_not_uploaded"
 	CodeSizeMismatch   = "file_size_mismatch"
 	CodeUnavailable    = "files_unavailable"
+	CodeInUse          = "file_in_use"
 )
 
 func writeError(w http.ResponseWriter, err error) {
@@ -29,6 +30,8 @@ func writeError(w http.ResponseWriter, err error) {
 		apierror.Write(w, http.StatusConflict, CodeNotUploaded)
 	case errors.Is(err, ErrSizeMismatch):
 		apierror.Write(w, http.StatusConflict, CodeSizeMismatch)
+	case errors.Is(err, ErrInUse):
+		apierror.Write(w, http.StatusConflict, CodeInUse)
 	case errors.Is(err, ErrUnavailable):
 		apierror.Write(w, http.StatusServiceUnavailable, CodeUnavailable)
 	default:

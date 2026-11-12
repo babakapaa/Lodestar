@@ -14,6 +14,7 @@ import '../../l10n/l10n_context.dart';
 import 'assignment_details.dart';
 import 'assignment_input.dart';
 import 'grading.dart';
+import 'points_text.dart';
 import 'study_labels_context.dart';
 import 'study_providers.dart';
 
@@ -34,16 +35,13 @@ class _AssignmentFormState extends ConsumerState<AssignmentForm> {
     text: _assignment?.description ?? '',
   );
   late final _maxPoints = TextEditingController(
-    text: _points(_assignment?.maxPoints ?? 100),
+    text: PointsText.of(_assignment?.maxPoints ?? 100),
   );
   late DateTime? _dueAt = _assignment?.dueAt?.toLocal();
   late Grading _grading = _assignment?.grading ?? Grading.points;
   late bool _published = _assignment?.published ?? false;
   String? _error;
   bool _busy = false;
-
-  static String _points(double value) =>
-      value == value.roundToDouble() ? '${value.toInt()}' : '$value';
 
   @override
   void dispose() {

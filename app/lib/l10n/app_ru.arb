@@ -22,10 +22,8 @@
   "languageKazakh": "Қазақша",
   "languageRussian": "Русский",
   "languageEnglish": "English",
-  "emptyTodayTitle": "Здесь появится план на день",
-  "emptyTodayBody": "Расписание, дедлайны и следующий шаг по заданиям.",
-  "emptyStudyTitle": "Курсы и задания появятся здесь",
-  "emptyStudyBody": "После входа через вуз здесь будут ваши курсы.",
+  "emptyTodayTitle": "Сегодня свободно",
+  "emptyTodayBody": "Занятий и сроков сдачи на сегодня нет.",
   "emptyNavigatorTitle": "Навигатор поможет разобраться в теме",
   "emptyNavigatorBody": "Он подскажет, где искать, и не напишет работу за вас.",
   "emptyNotesTitle": "Заметки и карта поиска",
@@ -392,5 +390,42 @@
   "errorAssignmentNotFound": "Задание не найдено.",
   "errorCourseNotFound": "Курс не найден.",
   "errorNotPublished": "Задание ещё не опубликовано.",
-  "errorNotStudent": "Вы не студент этого курса."
+  "errorNotStudent": "Вы не студент этого курса.",
+  "todayLessons": "Занятия",
+  "todayDeadlines": "Сроки сдачи",
+  "todayWeek": "Расписание на неделю",
+  "scheduleTitle": "Расписание",
+  "scheduleEmpty": "На этой неделе занятий нет",
+  "schedulePrevWeek": "Предыдущая неделя",
+  "scheduleNextWeek": "Следующая неделя",
+  "lessonCancelled": "Отменено",
+  "lessonChanged": "Изменено",
+  "lessonKindLecture": "Лекция",
+  "lessonKindPractice": "Практика",
+  "lessonKindLab": "Лабораторная",
+  "lessonKindSeminar": "Семинар",
+  "lessonKindExam": "Экзамен",
+  "lessonKindConsultation": "Консультация",
+  "deadlineAt": "до {time}",
+  "@deadlineAt": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "gradeTitle": "Оценка",
+  "gradeSave": "Сохранить оценку",
+  "gradeComment": "Комментарий",
+  "gradePointsLabel": "Баллы, максимум {max}",
+  "@gradePointsLabel": {
+    "placeholders": {
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "gradeAttempts": "Попытки",
+  "gradeNoWork": "Работы пока нет, но оценку можно поставить.",
+  "errorInvalidGrade": "Проверьте оценку. Без оценки нужен комментарий."
 }

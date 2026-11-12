@@ -145,4 +145,49 @@ void main() {
     expect(find.text('Ерлан Ким'), findsOneWidget);
     expect(find.text('Не сдано'), findsOneWidget);
   });
+
+  testWidgets('a teacher grades submitted work', (tester) async {
+    final server = FakeServer();
+    server.study.role = 'teacher';
+    server.study.submissions.add({
+      'id': 's1',
+      'assignmentId': 'a1',
+      'clientId': 'x',
+      'body': 'Ядро, мембрана, цитоплазма',
+      'submittedAt': '2026-11-11T10:00:00Z',
+      'files': <Object?>[],
+    });
+    await pumpApp(tester, size: const Size(390, 1400), server: server);
+    await openAssignment(tester);
+
+    await tester.tap(find.text('Ерлан Ким'));
+    await tester.pumpAndSettle();
+    expect(find.text('Ядро, мембрана, цитоплазма'), findsOneWidget);
+
+    await tester.enterText(
+      find.widgetWithText(TextField, 'Баллы, максимум 10'),
+      '11',
+    );
+    await tester.tap(find.text('Сохранить оценку'));
+    await tester.pumpAndSettle();
+    expect(
+      find.text('Проверьте оценку. Без оценки нужен комментарий.'),
+      findsOneWidget,
+    );
+
+    await tester.enterText(
+      find.widgetWithText(TextField, 'Баллы, максимум 10'),
+      '8,5',
+    );
+    await tester.enterText(
+      find.widgetWithText(TextField, 'Комментарий'),
+      'Хорошо, но мало про митохондрии',
+    );
+    await tester.tap(find.text('Сохранить оценку'));
+    await tester.pumpAndSettle();
+
+    expect(server.study.grades['a1']!['points'], 8.5);
+    expect(server.study.grades['a1']!['passed'], isNull);
+    expect(find.text('8,5 из 10'), findsOneWidget);
+  });
 }

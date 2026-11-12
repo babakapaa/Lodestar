@@ -53,8 +53,7 @@ func NewServer(version string, cfg config.Config, box secretbox.Box, pool *pgxpo
 	})
 	authn := authRoutes.Authenticator
 
-	permissions := append(CorePermissions(), registry.Permissions()...)
-	catalog, err := access.NewCatalog(permissions...)
+	core, err := NewCore(pool, registry)
 	if err != nil {
 		return Server{}, err
 	}
@@ -62,18 +61,11 @@ func NewServer(version string, cfg config.Config, box secretbox.Box, pool *pgxpo
 	if err != nil {
 		return Server{}, err
 	}
-	tenantSettings, err := schema.NewCatalog(append(coreSettings(), registry.Settings()...)...)
-	if err != nil {
-		return Server{}, err
-	}
-	notifications, err := notify.NewCatalog(registry.NotificationTypes()...)
-	if err != nil {
-		return Server{}, err
-	}
 	hub := live.NewHub()
 
-	accessService := access.NewService(tx, catalog, structure.Tree{})
-	settingsService := settings.NewService(tx, accessService, tenantSettings, registry)
+	accessService := core.Access
+	settingsService := core.Settings
+	kernel := core.Kernel
 	profileService := profile.NewService(tx, preferences)
 	sources := append([]search.Source{profile.PeopleSource{}, structure.UnitsSource{}}, registry.SearchSources()...)
 	searchService, err := search.NewService(tx, settingsService, sources...)
@@ -84,13 +76,6 @@ func NewServer(version string, cfg config.Config, box secretbox.Box, pool *pgxpo
 	if err != nil {
 		return Server{}, err
 	}
-	kernel := module.Kernel{
-		Pool:     pool,
-		Tenants:  tx,
-		Access:   accessService,
-		Notifier: moduleNotifier{notifier: notify.NewNotifier(notifications)},
-		Settings: settingsService,
-	}
 	handler := NewRouter(version, registry, pool, settings.NewGate(settingsService, authn), kernel,
 		authRoutes,
 		access.Routes{Service: accessService, Authenticator: authn},
@@ -98,7 +83,7 @@ func NewServer(version string, cfg config.Config, box secretbox.Box, pool *pgxpo
 		profile.Routes{Service: profileService, Authenticator: authn},
 		settings.Routes{Service: settingsService, Authenticator: authn},
 		live.Routes{Hub: hub, Tenants: tx, Authenticator: authn, Origins: cfg.WebOrigins},
-		notify.Routes{Service: notify.NewService(tx, notifications), Authenticator: authn},
+		notify.Routes{Service: notify.NewService(tx, core.Notifications), Authenticator: authn},
 		files.Routes{Service: files.NewService(tx, ext.Storage, settingsService, registry.FileLinks(kernel)...), Authenticator: authn},
 		delivery.Routes{Service: delivery.NewService(tx), Authenticator: authn},
 		search.Routes{Service: searchService, Authenticator: authn},

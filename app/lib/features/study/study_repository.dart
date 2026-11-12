@@ -2,13 +2,17 @@ import '../../core/api/api_client.dart';
 import '../../core/offline/cached_body.dart';
 import '../../core/offline/cached_reader.dart';
 import '../../core/offline/loaded.dart';
+import 'agenda.dart';
 import 'assignment.dart';
 import 'assignment_details.dart';
 import 'assignment_input.dart';
 import 'assignment_item.dart';
 import 'course.dart';
 import 'course_details.dart';
+import 'grade_input.dart';
+import 'lesson.dart';
 import 'student_work.dart';
+import 'submission.dart';
 import 'submission_draft.dart';
 
 class StudyRepository {
@@ -65,6 +69,34 @@ class StudyRepository {
             as List<Object?>)
       StudentWork.fromJson(item! as Map<String, Object?>),
   ];
+
+  Future<List<Submission>> attempts(
+    String assignmentId,
+    String studentId,
+  ) async => [
+    for (final item
+        in (await _api.get(
+              '/v1/study/assignments/${_id(assignmentId)}/students/${_id(studentId)}/submissions',
+            ))!
+            as List<Object?>)
+      Submission.fromJson(item! as Map<String, Object?>),
+  ];
+
+  Future<void> grade(String assignmentId, String studentId, GradeInput input) =>
+      _api.put(
+        '/v1/study/assignments/${_id(assignmentId)}/grades/${_id(studentId)}',
+        input.toJson(),
+      );
+
+  Future<Loaded<Agenda>> agenda(String? date) async => _one(
+    await _reader.get('/v1/study/agenda', {'date': ?date}),
+    Agenda.fromJson,
+  );
+
+  Future<Loaded<List<Lesson>>> schedule(String from, String to) async => _list(
+    await _reader.get('/v1/study/schedule', {'from': from, 'to': to}),
+    Lesson.fromJson,
+  );
 
   Loaded<List<T>> _list<T>(
     CachedBody cached,

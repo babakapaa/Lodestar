@@ -37,6 +37,7 @@ abstract final class ApiErrorText {
       'course_not_found' => l10n.errorCourseNotFound,
       'assignment_not_published' => l10n.errorNotPublished,
       'not_course_student' => l10n.errorNotStudent,
+      'invalid_grade' => l10n.errorInvalidGrade,
       _ => l10n.errorGeneric,
     };
   }

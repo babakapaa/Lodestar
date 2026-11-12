@@ -2,16 +2,21 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/babakapaa/lodestar/server/internal/app"
+	"github.com/babakapaa/lodestar/server/internal/core/auth"
 	"github.com/babakapaa/lodestar/server/internal/core/module"
 	"github.com/babakapaa/lodestar/server/internal/platform/config"
 	"github.com/babakapaa/lodestar/server/internal/platform/database"
 	"github.com/babakapaa/lodestar/server/internal/platform/httpserver"
+	"github.com/babakapaa/lodestar/server/internal/platform/secretbox"
 )
 
 var version = "dev"
@@ -28,6 +33,10 @@ func run() error {
 	cfg, err := config.Load()
 	if err != nil {
 		return err
+	}
+	box, err := secretbox.New(cfg.SecretKey)
+	if err != nil {
+		return fmt.Errorf("LODESTAR_SECRET_KEY: %w", err)
 	}
 	registry, err := module.NewRegistry(app.Modules()...)
 	if err != nil {
@@ -48,6 +57,13 @@ func run() error {
 		return err
 	}
 
-	srv := httpserver.New(cfg.HTTPAddr, app.NewRouter(version, registry, pool))
+	authRoutes := auth.NewRoutes(pool, auth.Settings{
+		Box:        box,
+		Lifetimes:  app.Lifetimes(cfg),
+		Redirects:  cfg.AppRedirects,
+		PublicURL:  cfg.PublicURL,
+		HTTPClient: &http.Client{Timeout: 10 * time.Second},
+	})
+	srv := httpserver.New(cfg.HTTPAddr, app.NewRouter(version, registry, pool, authRoutes))
 	return httpserver.Run(ctx, srv, cfg.ShutdownTimeout)
 }

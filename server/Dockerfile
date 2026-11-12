@@ -4,10 +4,11 @@ COPY go.mod go.sum ./
 RUN go mod download
 COPY . .
 ARG VERSION=dev
-RUN CGO_ENABLED=0 go build -trimpath -ldflags "-s -w -X main.version=${VERSION}" -o /out/lodestar ./cmd/lodestar
+RUN CGO_ENABLED=0 go build -trimpath -ldflags "-s -w -X main.version=${VERSION}" -o /out/lodestar ./cmd/lodestar \
+ && CGO_ENABLED=0 go build -trimpath -ldflags "-s -w" -o /out/lodestarctl ./cmd/lodestarctl
 
 FROM gcr.io/distroless/static-debian12:nonroot
-COPY --from=build /out/lodestar /lodestar
+COPY --from=build /out/lodestar /out/lodestarctl /
 EXPOSE 8080
 USER nonroot:nonroot
 ENTRYPOINT ["/lodestar"]

@@ -61,3 +61,21 @@ func TestRegistryMountsRoutes(t *testing.T) {
 		t.Fatalf("status = %d, want 204", rec.Code)
 	}
 }
+
+type permissionedModule struct {
+	stubModule
+}
+
+func (permissionedModule) Permissions() []string {
+	return []string{"study.grades.view"}
+}
+
+func TestRegistryCollectsPermissions(t *testing.T) {
+	registry, err := NewRegistry(stubModule{name: "notes"}, permissionedModule{stubModule{name: "study"}})
+	if err != nil {
+		t.Fatalf("NewRegistry: %v", err)
+	}
+	if got := registry.Permissions(); len(got) != 1 || got[0] != "study.grades.view" {
+		t.Fatalf("Permissions = %v", got)
+	}
+}

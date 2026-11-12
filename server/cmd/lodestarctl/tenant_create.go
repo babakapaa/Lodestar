@@ -5,7 +5,9 @@ import (
 	"flag"
 	"fmt"
 
+	"github.com/babakapaa/lodestar/server/internal/core/access"
 	"github.com/babakapaa/lodestar/server/internal/core/tenant"
+	"github.com/babakapaa/lodestar/server/internal/platform/database"
 )
 
 func createTenant(ctx context.Context, args []string) error {
@@ -23,6 +25,9 @@ func createTenant(ctx context.Context, args []string) error {
 
 	created, err := tenant.NewStore(e.pool).Create(ctx, *slug, *name)
 	if err != nil {
+		return err
+	}
+	if err := access.NewBootstrap(database.NewTenantTx(e.pool)).EnsureDefaults(ctx, created.ID); err != nil {
 		return err
 	}
 	fmt.Printf("Вуз создан: %s (%s)\n", created.Name, created.Slug)

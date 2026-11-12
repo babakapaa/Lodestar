@@ -13,6 +13,8 @@ tags:
     description: Состояние сервера и сведения о нём
   - name: auth
     description: Вход через систему вуза и сессии на устройствах
+  - name: access
+    description: Роли и права как в Discord
 paths:
   /healthz:
     get:
@@ -248,6 +250,367 @@ paths:
           $ref: "#/components/responses/Error"
         default:
           $ref: "#/components/responses/Error"
+  /v1/permissions:
+    get:
+      tags: [access]
+      operationId: listPermissionCatalog
+      summary: Все права, которые знают ядро и модули
+      security:
+        - bearer: []
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/me/permissions:
+    get:
+      tags: [access]
+      operationId: getMyPermissions
+      summary: Мои права в области
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Scope"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/roles:
+    get:
+      tags: [access]
+      operationId: listRoles
+      summary: Роли вуза сверху вниз
+      security:
+        - bearer: []
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Role"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+    post:
+      tags: [access]
+      operationId: createRole
+      summary: Создать роль сразу под своей высшей ролью
+      security:
+        - bearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RoleInput"
+      responses:
+        "201":
+          description: Роль создана
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Role"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/roles/{id}:
+    put:
+      tags: [access]
+      operationId: updateRole
+      summary: Изменить роль ниже своей
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RoleInput"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Role"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+    delete:
+      tags: [access]
+      operationId: deleteRole
+      summary: Удалить роль ниже своей
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "204":
+          description: Готово
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/roles/{id}/move:
+    post:
+      tags: [access]
+      operationId: moveRole
+      summary: Поставить роль на новое место в списке
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MoveInput"
+      responses:
+        "204":
+          description: Готово
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/roles/{id}/preview:
+    get:
+      tags: [access]
+      operationId: previewRole
+      summary: Права, которые увидит человек только с этой ролью
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+        - $ref: "#/components/parameters/Scope"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/users/{id}/roles:
+    get:
+      tags: [access]
+      operationId: listUserRoles
+      summary: Роли человека
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Assignment"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/role-assignments:
+    post:
+      tags: [access]
+      operationId: assignRole
+      summary: Выдать роль человеку в области, можно на срок
+      security:
+        - bearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AssignInput"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Assignment"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/role-assignments/{id}:
+    delete:
+      tags: [access]
+      operationId: unassignRole
+      summary: Снять роль
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "204":
+          description: Готово
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/overrides:
+    get:
+      tags: [access]
+      operationId: listOverrides
+      summary: Переопределения прав в области
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Scope"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Override"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/overrides/{role}:
+    put:
+      tags: [access]
+      operationId: setOverride
+      summary: Разрешить или запретить права роли в области, пустые списки убирают переопределение
+      security:
+        - bearer: []
+      parameters:
+        - name: role
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - $ref: "#/components/parameters/Scope"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OverrideInput"
+      responses:
+        "204":
+          description: Готово
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
 components:
   securitySchemes:
     bearer:
@@ -255,6 +618,20 @@ components:
       scheme: bearer
       description: Токен доступа из /v1/auth/token
   parameters:
+    Id:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    Scope:
+      name: scope
+      in: query
+      description: Область. Пусто или tenant означает весь вуз, иначе вид:id, например group:42
+      schema:
+        type: string
+        examples: ["group:42"]
     Tenant:
       name: tenant
       in: path
@@ -381,6 +758,115 @@ components:
         current:
           type: boolean
           description: Это сессия того устройства, с которого пришёл запрос
+    Role:
+      type: object
+      required: [id, name, color, icon, position, permissions, default]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        color:
+          type: string
+          description: Пусто или #RRGGBB
+        icon:
+          type: string
+        position:
+          type: integer
+          description: Чем больше, тем выше роль. У роли по умолчанию 0
+        permissions:
+          type: array
+          items:
+            type: string
+        default:
+          type: boolean
+          description: Роль, которая есть у всех
+    RoleInput:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+        color:
+          type: string
+        icon:
+          type: string
+        permissions:
+          type: array
+          items:
+            type: string
+    MoveInput:
+      type: object
+      required: [position]
+      properties:
+        position:
+          type: integer
+    Assignment:
+      type: object
+      required: [id, roleId, userId, scope, expiresAt, grantedBy, grantedAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        roleId:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        scope:
+          type: string
+        expiresAt:
+          type: [string, "null"]
+          format: date-time
+        grantedBy:
+          type: [string, "null"]
+          format: uuid
+        grantedAt:
+          type: string
+          format: date-time
+    AssignInput:
+      type: object
+      required: [roleId, userId]
+      properties:
+        roleId:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        scope:
+          type: string
+        expiresAt:
+          type: [string, "null"]
+          format: date-time
+    Override:
+      type: object
+      required: [roleId, allow, deny]
+      properties:
+        roleId:
+          type: string
+          format: uuid
+        allow:
+          type: array
+          items:
+            type: string
+        deny:
+          type: array
+          items:
+            type: string
+    OverrideInput:
+      type: object
+      properties:
+        allow:
+          type: array
+          items:
+            type: string
+        deny:
+          type: array
+          items:
+            type: string
     Error:
       type: object
       required: [code]

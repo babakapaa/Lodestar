@@ -61,3 +61,21 @@ func scanUser(row pgx.Row) (User, error) {
 	err := row.Scan(&u.ID, &u.TenantID, &u.Email, &u.DisplayName, &u.CreatedAt)
 	return u, err
 }
+
+func (s Store) ByEmail(ctx context.Context, tenantID, email string) ([]User, error) {
+	var users []User
+	err := s.tenants.Run(ctx, tenantID, func(tx pgx.Tx) error {
+		rows, err := tx.Query(ctx, `SELECT `+userColumns+` FROM core.users WHERE lower(email) = lower($1)`, email)
+		if err != nil {
+			return err
+		}
+		users, err = pgx.CollectRows(rows, func(row pgx.CollectableRow) (User, error) {
+			return scanUser(row)
+		})
+		return err
+	})
+	if err != nil {
+		return nil, fmt.Errorf("find users by email: %w", err)
+	}
+	return users, nil
+}

@@ -31,5 +31,70 @@
   "emptyNotesTitle": "Заметки и карта поиска",
   "emptyNotesBody": "Здесь будут ваши заметки и найденные источники.",
   "emptyChatsTitle": "Чаты курса и команд",
-  "emptyChatsBody": "Чаты групп и курсов создаются сами из расписания."
+  "emptyChatsBody": "Чаты групп и курсов создаются сами из расписания.",
+  "profileTitle": "Профиль",
+  "profileEdit": "Изменить профиль",
+  "profileName": "Имя",
+  "profileNameHint": "Пусто, значит имя из учётной записи вуза",
+  "profileAbout": "О себе",
+  "contactsTitle": "Контакты",
+  "contactKind": "Тип",
+  "contactValue": "Контакт",
+  "contactPublic": "Видят все в вузе",
+  "contactAdd": "Добавить контакт",
+  "contactRemove": "Убрать",
+  "contactPhone": "Телефон",
+  "contactEmail": "Почта",
+  "contactWebsite": "Сайт",
+  "contactOther": "Другое",
+  "sessionsTitle": "Устройства",
+  "sessionsCurrent": "Это устройство",
+  "sessionsLastUsed": "Был вход {time}",
+  "@sessionsLastUsed": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "sessionsRevoke": "Выйти на этом устройстве",
+  "signOut": "Выйти",
+  "actionSave": "Сохранить",
+  "actionRetry": "Повторить",
+  "connectTitle": "Подключите свой вуз",
+  "connectBody": "Адрес сервера и код вуза выдаёт ваш вуз.",
+  "connectServer": "Адрес сервера",
+  "connectTenant": "Код вуза",
+  "connectTenantHint": "Латиница, цифры и дефис",
+  "connectAction": "Подключиться",
+  "connectInvalid": "Проверьте адрес сервера и код вуза",
+  "loginTitle": "Вход",
+  "loginBody": "Вуз «{tenant}» на {host}",
+  "@loginBody": {
+    "placeholders": {
+      "tenant": {
+        "type": "String"
+      },
+      "host": {
+        "type": "String"
+      }
+    }
+  },
+  "loginWith": "Войти через {provider}",
+  "@loginWith": {
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
+  "loginNoProviders": "Вуз ещё не настроил вход. Обратитесь к администратору вуза.",
+  "loginChangeUniversity": "Сменить вуз",
+  "errorGeneric": "Что-то пошло не так. Попробуйте ещё раз.",
+  "errorUnreachable": "Не удалось связаться с сервером. Проверьте адрес и интернет.",
+  "errorLoginFailed": "Вход не удался. Попробуйте ещё раз.",
+  "errorTenantNotFound": "На этом сервере нет вуза с таким кодом.",
+  "errorRedirectRejected": "Сервер вуза не разрешает вход из этого приложения. Обратитесь к администратору.",
+  "errorInvalidProfile": "Проверьте поля: имя до 100 знаков, о себе до 2000.",
+  "errorNotLodestar": "По этому адресу нет сервера Lodestar."
 }

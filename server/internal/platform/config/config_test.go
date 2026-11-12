@@ -24,8 +24,8 @@ func TestLoadDefaults(t *testing.T) {
 	if cfg.AccessTTL != 15*time.Minute {
 		t.Errorf("AccessTTL = %v, want 15m", cfg.AccessTTL)
 	}
-	if len(cfg.AppRedirects) != 1 {
-		t.Errorf("AppRedirects = %v, want one default", cfg.AppRedirects)
+	if len(cfg.AppRedirects) != 2 {
+		t.Errorf("AppRedirects = %v, want mobile and desktop defaults", cfg.AppRedirects)
 	}
 }
 

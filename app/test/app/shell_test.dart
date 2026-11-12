@@ -45,7 +45,11 @@ void main() {
     await pumpApp(
       tester,
       size: const Size(390, 844),
-      stored: const {'settings.language': 'kk'},
+      stored: const {
+        'settings.language': 'kk',
+        'connection.server': 'https://campus.example.edu',
+        'connection.tenant': 'kaznu',
+      },
     );
 
     expect(find.text('Бүгін'), findsWidgets);

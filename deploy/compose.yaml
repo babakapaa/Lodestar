@@ -11,7 +11,7 @@ services:
       LODESTAR_DATABASE_URL: postgres://lodestar:${POSTGRES_PASSWORD}@postgres:5432/lodestar?sslmode=disable
       LODESTAR_PUBLIC_URL: ${LODESTAR_PUBLIC_URL:-http://localhost:8080}
       LODESTAR_SECRET_KEY: ${LODESTAR_SECRET_KEY:?set LODESTAR_SECRET_KEY in deploy/.env}
-      LODESTAR_APP_REDIRECTS: ${LODESTAR_APP_REDIRECTS:-io.github.babakapaa.lodestar:/auth}
+      LODESTAR_APP_REDIRECTS: ${LODESTAR_APP_REDIRECTS:-io.github.babakapaa.lodestar:/auth,http://localhost:43823/auth}
       LODESTAR_WEB_ORIGINS: ${LODESTAR_WEB_ORIGINS:-}
       LODESTAR_S3_ENDPOINT: http://minio:9000
       LODESTAR_S3_PUBLIC_ENDPOINT: ${LODESTAR_S3_PUBLIC_ENDPOINT:-http://localhost:9000}

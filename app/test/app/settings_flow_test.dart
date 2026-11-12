@@ -10,14 +10,20 @@ LodestarTokens tokensOf(WidgetTester tester) {
   return Theme.of(context).extension<LodestarTokens>()!;
 }
 
+Future<void> openSettings(WidgetTester tester) async {
+  await tester.tap(find.byTooltip('Профиль и настройки'));
+  await tester.pumpAndSettle();
+  await tester.tap(find.text('Настройки'));
+  await tester.pumpAndSettle();
+}
+
 void main() {
   testWidgets('choosing a theme and dark mode restyles the app', (
     tester,
   ) async {
     await pumpApp(tester, size: const Size(390, 844));
 
-    await tester.tap(find.byTooltip('Профиль и настройки'));
-    await tester.pumpAndSettle();
+    await openSettings(tester);
     expect(find.text('Настройки'), findsOneWidget);
 
     await tester.tap(find.text('Лаборатория'));
@@ -34,8 +40,7 @@ void main() {
   ) async {
     await pumpApp(tester, size: const Size(390, 844));
 
-    await tester.tap(find.byTooltip('Профиль и настройки'));
-    await tester.pumpAndSettle();
+    await openSettings(tester);
     await tester.tap(find.text('English'));
     await tester.pumpAndSettle();
 

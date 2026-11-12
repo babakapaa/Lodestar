@@ -5,6 +5,8 @@ import 'package:flutter_localizations/flutter_localizations.dart'
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../core/auth/auth_providers.dart';
+import '../core/auth/auth_state.dart';
 import '../core/settings/settings_providers.dart';
 import '../design/lodestar_theme.dart';
 import '../design/tokens/motion.dart';
@@ -19,11 +21,21 @@ class LodestarApp extends ConsumerStatefulWidget {
 }
 
 class _LodestarAppState extends ConsumerState<LodestarApp> {
-  final _router = AppRouter();
+  late final ValueNotifier<AuthState> _auth;
+  late final AppRouter _router;
+
+  @override
+  void initState() {
+    super.initState();
+    _auth = ValueNotifier(ref.read(authProvider));
+    _router = AppRouter(_auth);
+    ref.listenManual(authProvider, (previous, next) => _auth.value = next);
+  }
 
   @override
   void dispose() {
     _router.config.dispose();
+    _auth.dispose();
     super.dispose();
   }
 

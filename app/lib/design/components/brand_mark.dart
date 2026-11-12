@@ -1,7 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 
-import '../../design/tokens/spacing.dart';
-import '../../design/tokens/tokens_context.dart';
+import '../tokens/spacing.dart';
+import '../tokens/tokens_context.dart';
 import '../../l10n/l10n_context.dart';
 
 class BrandMark extends StatelessWidget {

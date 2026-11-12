@@ -3,7 +3,9 @@ package files_test
 import (
 	"context"
 	"encoding/json"
+	"io"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -41,6 +43,16 @@ func (m *memoryStorage) Size(_ context.Context, key string) (int64, error) {
 		return 0, objectstore.ErrMissing
 	}
 	return size, nil
+}
+
+func (m *memoryStorage) Open(_ context.Context, key string) (io.ReadCloser, error) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	size, ok := m.objects[key]
+	if !ok {
+		return nil, objectstore.ErrMissing
+	}
+	return io.NopCloser(strings.NewReader(strings.Repeat("x", int(size)))), nil
 }
 
 func (m *memoryStorage) Delete(_ context.Context, key string) error {

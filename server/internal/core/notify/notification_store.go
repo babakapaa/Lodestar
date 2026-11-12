@@ -70,3 +70,16 @@ func (NotificationStore) MarkAllRead(ctx context.Context, tx pgx.Tx, userID stri
 	_, err := tx.Exec(ctx, `UPDATE core.notifications SET read_at = now() WHERE user_id::text = $1 AND read_at IS NULL`, userID)
 	return err
 }
+
+func (NotificationStore) All(ctx context.Context, tx pgx.Tx, userID string) ([]Notification, error) {
+	rows, err := tx.Query(ctx, `
+		SELECT `+notificationColumns+` FROM core.notifications WHERE user_id::text = $1 ORDER BY created_at, id`, userID)
+	if err != nil {
+		return nil, fmt.Errorf("export notifications: %w", err)
+	}
+	return pgx.CollectRows(rows, func(row pgx.CollectableRow) (Notification, error) {
+		var n Notification
+		err := row.Scan(&n.ID, &n.Type, &n.Params, &n.Link, &n.CreatedAt, &n.ReadAt)
+		return n, err
+	})
+}

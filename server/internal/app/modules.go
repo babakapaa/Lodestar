@@ -10,6 +10,7 @@ import (
 	"github.com/babakapaa/lodestar/server/internal/core/live"
 	"github.com/babakapaa/lodestar/server/internal/core/module"
 	"github.com/babakapaa/lodestar/server/internal/core/notify"
+	"github.com/babakapaa/lodestar/server/internal/core/privacy"
 	"github.com/babakapaa/lodestar/server/internal/core/profile"
 	"github.com/babakapaa/lodestar/server/internal/core/search"
 	"github.com/babakapaa/lodestar/server/internal/core/settings"
@@ -24,7 +25,7 @@ func Modules() []module.Module {
 
 func CoreMigrations() []database.Migrations {
 	return []database.Migrations{
-		tenant.Migrations(), search.Migrations(), identity.Migrations(), audit.Migrations(), auth.Migrations(), access.Migrations(), structure.Migrations(),
+		tenant.Migrations(), search.Migrations(), identity.Migrations(), audit.Migrations(), privacy.Migrations(), auth.Migrations(), access.Migrations(), structure.Migrations(),
 		profile.Migrations(), settings.Migrations(), live.Migrations(), notify.Migrations(),
 		files.Migrations(), delivery.Migrations(),
 	}

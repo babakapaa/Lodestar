@@ -7,6 +7,7 @@ import (
 	"regexp"
 	"slices"
 
+	"github.com/babakapaa/lodestar/server/internal/core/privacy"
 	"github.com/babakapaa/lodestar/server/internal/core/schema"
 	"github.com/babakapaa/lodestar/server/internal/core/search"
 	"github.com/babakapaa/lodestar/server/internal/platform/database"
@@ -19,6 +20,8 @@ var ErrUnnamedModule = errors.New("module has no name")
 var ErrReservedName = errors.New("module name is reserved or malformed")
 
 var ErrForeignSearchKind = errors.New("module search kind must start with the module name")
+
+var ErrForeignSection = errors.New("module privacy section must start with the module name")
 
 var namePattern = regexp.MustCompile(`^[a-z][a-z0-9]{1,29}$`)
 
@@ -46,6 +49,9 @@ func NewRegistry(modules ...Module) (*Registry, error) {
 		}
 		seen[name] = struct{}{}
 		if err := checkSearchKinds(m); err != nil {
+			return nil, err
+		}
+		if err := checkPrivacySections(m); err != nil {
 			return nil, err
 		}
 	}
@@ -118,6 +124,16 @@ func (r *Registry) SearchSources() []search.Source {
 		}
 	}
 	return sources
+}
+
+func (r *Registry) PrivacySections() []privacy.Section {
+	var sections []privacy.Section
+	for _, m := range r.modules {
+		if p, ok := m.(Private); ok {
+			sections = append(sections, p.PrivacySections()...)
+		}
+	}
+	return sections
 }
 
 func (r *Registry) Find(name string) (Manifest, bool) {

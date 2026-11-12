@@ -26,7 +26,7 @@ const (
 )
 
 func Seed(ctx context.Context, pool *pgxpool.Pool, box secretbox.Box, registry *module.Registry, cfg Config) (Result, error) {
-	core, err := app.NewCore(pool, registry)
+	core, err := app.NewCore(pool, registry, box)
 	if err != nil {
 		return Result{}, err
 	}

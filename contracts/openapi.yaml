@@ -33,6 +33,8 @@ tags:
     description: Мои данные, их выгрузка и удаление аккаунта
   - name: study
     description: Учёба, курсы, задания и расписание
+  - name: notes
+    description: Заметки, совместная правка и версии
 paths:
   /healthz:
     get:
@@ -3024,6 +3026,396 @@ paths:
           $ref: "#/components/responses/Error"
         default:
           $ref: "#/components/responses/Error"
+  /v1/notes:
+    get:
+      tags: [notes]
+      operationId: listNotes
+      summary: Мои заметки и заметки, которыми со мной поделились
+      description: Включает заметки в корзине (deletedAt). Содержимое заметок хранится зашифрованным, ключ лежит отдельно от базы.
+      security:
+        - bearer: []
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Note"
+        "401":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+    post:
+      tags: [notes]
+      operationId: createNote
+      summary: Создать заметку
+      description: id создаёт устройство, поэтому заметку можно создать без сети. Повтор с тем же id возвращает 200.
+      security:
+        - bearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NoteCreate"
+      responses:
+        "201":
+          description: Создано
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Note"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        "413":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/notes/{id}:
+    get:
+      tags: [notes]
+      operationId: getNote
+      summary: Заметка
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Note"
+        "401":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+    delete:
+      tags: [notes]
+      operationId: deleteNote
+      summary: Убрать заметку в корзину
+      description: Только владелец. Корзина очищается через notes.trash_days дней.
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "204":
+          description: Готово
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/notes/{id}/restore:
+    post:
+      tags: [notes]
+      operationId: restoreNote
+      summary: Вернуть заметку из корзины
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "204":
+          description: Готово
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/notes/{id}/meta:
+    put:
+      tags: [notes]
+      operationId: setNoteMeta
+      summary: Путь, теги и связи заметки
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NoteMeta"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Note"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        "413":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/notes/{id}/updates:
+    get:
+      tags: [notes]
+      operationId: noteUpdates
+      summary: Правки заметки после номера
+      description: Если старые правки уже свёрнуты в снимок, сначала приходит снимок, затем правки после него.
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+        - name: after
+          in: query
+          description: Последний номер правки, который уже есть на устройстве
+          schema:
+            type: integer
+            format: int64
+            minimum: 0
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NoteChanges"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+    post:
+      tags: [notes]
+      operationId: pushNoteUpdate
+      summary: Отправить правку
+      description: Правка в формате Yjs, сервер её не разбирает. Повтор с тем же key возвращает 200 и прежний номер. Участники заметки получают живое событие notes.changed.
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NoteUpdateInput"
+      responses:
+        "201":
+          description: Принято
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NoteSeq"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        "413":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/notes/{id}/versions:
+    get:
+      tags: [notes]
+      operationId: noteVersions
+      summary: История версий
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/NoteVersion"
+        "401":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+    post:
+      tags: [notes]
+      operationId: compactNote
+      summary: Свернуть правки в снимок и сохранить версию
+      description: Устройство присылает полное состояние на номер seq и текст заметки в Markdown. Правки до seq удаляются.
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NoteSnapshotInput"
+      responses:
+        "201":
+          description: Создано
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NoteVersion"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        "413":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/notes/{id}/versions/{version}:
+    get:
+      tags: [notes]
+      operationId: noteVersion
+      summary: Версия заметки
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+        - name: version
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NoteVersionContent"
+        "401":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/notes/{id}/members:
+    get:
+      tags: [notes]
+      operationId: noteMembers
+      summary: С кем заметка поделена
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/NoteMember"
+        "401":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/notes/{id}/members/{user}:
+    put:
+      tags: [notes]
+      operationId: shareNote
+      summary: Поделиться заметкой
+      description: Только владелец.
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+        - name: user
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NoteMemberInput"
+      responses:
+        "204":
+          description: Готово
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+    delete:
+      tags: [notes]
+      operationId: unshareNote
+      summary: Закрыть доступ
+      description: Владелец закрывает доступ любому, участник может выйти сам.
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+        - name: user
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: Готово
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
 components:
   securitySchemes:
     bearer:
@@ -4237,6 +4629,193 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/Deadline"
+    NoteMeta:
+      type: object
+      required: [path]
+      properties:
+        path:
+          type: string
+          maxLength: 1000
+          description: Путь в хранилище как в Obsidian, например Биология/Клетка
+        tags:
+          type: array
+          maxItems: 200
+          items:
+            type: string
+        links:
+          type: array
+          maxItems: 2000
+          description: Цели ссылок [[...]] из текста
+          items:
+            type: string
+        assignmentId:
+          type: [string, "null"]
+          format: uuid
+        lessonId:
+          type: [string, "null"]
+    Note:
+      type: object
+      required: [id, ownerId, role, meta, seq, bytes, createdAt, changedAt, deletedAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        ownerId:
+          type: string
+          format: uuid
+        role:
+          type: string
+          enum: [owner, editor, reader]
+        meta:
+          $ref: "#/components/schemas/NoteMeta"
+        seq:
+          type: integer
+          format: int64
+        bytes:
+          type: integer
+          format: int64
+        createdAt:
+          type: string
+          format: date-time
+        changedAt:
+          type: string
+          format: date-time
+        deletedAt:
+          type: [string, "null"]
+          format: date-time
+    NoteCreate:
+      type: object
+      required: [id, meta]
+      properties:
+        id:
+          type: string
+          format: uuid
+        meta:
+          $ref: "#/components/schemas/NoteMeta"
+    NoteUpdate:
+      type: object
+      required: [seq, key, authorId, data, createdAt]
+      properties:
+        seq:
+          type: integer
+          format: int64
+        key:
+          type: string
+        authorId:
+          type: [string, "null"]
+          format: uuid
+        data:
+          type: string
+          format: byte
+        createdAt:
+          type: string
+          format: date-time
+    NoteChanges:
+      type: object
+      required: [seq, snapshot, updates]
+      properties:
+        seq:
+          type: integer
+          format: int64
+        snapshot:
+          oneOf:
+            - type: "null"
+            - type: object
+              required: [seq, data]
+              properties:
+                seq:
+                  type: integer
+                  format: int64
+                data:
+                  type: string
+                  format: byte
+        updates:
+          type: array
+          items:
+            $ref: "#/components/schemas/NoteUpdate"
+    NoteUpdateInput:
+      type: object
+      required: [key, data]
+      properties:
+        key:
+          type: string
+          maxLength: 100
+          description: Ключ правки с устройства, защищает от двойной отправки
+        data:
+          type: string
+          format: byte
+    NoteSeq:
+      type: object
+      required: [seq]
+      properties:
+        seq:
+          type: integer
+          format: int64
+    NoteSnapshotInput:
+      type: object
+      required: [seq, data, body]
+      properties:
+        seq:
+          type: integer
+          format: int64
+        data:
+          type: string
+          format: byte
+        body:
+          type: string
+          description: Текст заметки в Markdown на момент снимка
+    NoteVersion:
+      type: object
+      required: [id, seq, authorId, bytes, createdAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        seq:
+          type: integer
+          format: int64
+        authorId:
+          type: [string, "null"]
+          format: uuid
+        bytes:
+          type: integer
+          format: int64
+        createdAt:
+          type: string
+          format: date-time
+    NoteVersionContent:
+      allOf:
+        - $ref: "#/components/schemas/NoteVersion"
+        - type: object
+          required: [data, body]
+          properties:
+            data:
+              type: string
+              format: byte
+            body:
+              type: string
+    NoteMember:
+      type: object
+      required: [userId, displayName, email, canEdit, addedAt]
+      properties:
+        userId:
+          type: string
+          format: uuid
+        displayName:
+          type: string
+        email:
+          type: string
+        canEdit:
+          type: boolean
+        addedAt:
+          type: string
+          format: date-time
+    NoteMemberInput:
+      type: object
+      required: [canEdit]
+      properties:
+        canEdit:
+          type: boolean
     Person:
       type: object
       required: [userId, displayName, email]

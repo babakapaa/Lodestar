@@ -41,7 +41,7 @@ var errorCodes = []struct {
 	{ErrDefaultRole, http.StatusBadRequest, CodeDefaultRole},
 }
 
-func writeError(w http.ResponseWriter, err error) {
+func WriteError(w http.ResponseWriter, err error) {
 	for _, e := range errorCodes {
 		if errors.Is(err, e.err) {
 			apierror.Write(w, e.status, e.code)

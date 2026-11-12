@@ -17,7 +17,7 @@ func (h MoveRoleHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err := h.service.MoveRole(r.Context(), principal(r), r.PathValue("id"), in.Position); err != nil {
-		writeError(w, err)
+		WriteError(w, err)
 		return
 	}
 	w.WriteHeader(http.StatusNoContent)

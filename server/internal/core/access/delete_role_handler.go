@@ -8,7 +8,7 @@ type DeleteRoleHandler struct {
 
 func (h DeleteRoleHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if err := h.service.DeleteRole(r.Context(), principal(r), r.PathValue("id")); err != nil {
-		writeError(w, err)
+		WriteError(w, err)
 		return
 	}
 	w.WriteHeader(http.StatusNoContent)

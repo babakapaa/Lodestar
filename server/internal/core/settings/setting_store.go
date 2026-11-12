@@ -3,6 +3,7 @@ package settings
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 
 	"github.com/jackc/pgx/v5"
@@ -43,4 +44,16 @@ func (SettingStore) Put(ctx context.Context, tx pgx.Tx, key string, value json.R
 func (SettingStore) Delete(ctx context.Context, tx pgx.Tx, key string) error {
 	_, err := tx.Exec(ctx, `DELETE FROM core.tenant_settings WHERE key = $1`, key)
 	return err
+}
+
+func (SettingStore) Get(ctx context.Context, tx pgx.Tx, key string) (json.RawMessage, bool, error) {
+	var value []byte
+	err := tx.QueryRow(ctx, `SELECT value FROM core.tenant_settings WHERE key = $1`, key).Scan(&value)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return nil, false, nil
+	}
+	if err != nil {
+		return nil, false, fmt.Errorf("read setting: %w", err)
+	}
+	return value, true, nil
 }

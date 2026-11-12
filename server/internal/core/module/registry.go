@@ -20,7 +20,7 @@ var ErrReservedName = errors.New("module name is reserved or malformed")
 var namePattern = regexp.MustCompile(`^[a-z][a-z0-9]{1,29}$`)
 
 var reservedNames = []string{
-	"auth", "events", "live", "me", "meta", "modules", "notifications", "overrides", "permissions",
+	"auth", "events", "files", "live", "me", "meta", "modules", "notifications", "overrides", "permissions",
 	"preferences", "role-assignments", "roles", "sessions", "settings", "units", "users",
 }
 

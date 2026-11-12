@@ -23,6 +23,8 @@ tags:
     description: Настройки вуза и модули
   - name: live
     description: Живые обновления и уведомления
+  - name: files
+    description: Файлы, загрузка напрямую в хранилище вуза
 paths:
   /healthz:
     get:
@@ -1622,6 +1624,173 @@ paths:
           $ref: "#/components/responses/Error"
         default:
           $ref: "#/components/responses/Error"
+  /v1/files:
+    get:
+      tags: [files]
+      operationId: listFiles
+      summary: Мои загруженные файлы, новые сверху, по 50
+      security:
+        - bearer: []
+      parameters:
+        - name: before
+          in: query
+          description: createdAt последнего файла прошлой страницы
+          schema:
+            type: string
+            format: date-time
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/File"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+    post:
+      tags: [files]
+      operationId: createFile
+      summary: Начать загрузку файла
+      description: |
+        Сервер создаёт запись и отдаёт подписанную ссылку. Приложение отправляет содержимое прямо в хранилище запросом upload.method на upload.url с заголовками upload.headers и ровно size байт, затем вызывает /v1/files/{id}/complete.
+        Наибольший размер задаёт вуз настройкой core.files.max_file_mb, иначе ответ 413 file_too_large. Незавершённые загрузки удаляются через сутки.
+      security:
+        - bearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FileInput"
+      responses:
+        "201":
+          description: Запись создана, можно загружать
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreatedFile"
+        "413":
+          $ref: "#/components/responses/Error"
+        "503":
+          $ref: "#/components/responses/Error"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/files/{id}:
+    get:
+      tags: [files]
+      operationId: getFile
+      summary: Сведения о файле
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/File"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+    delete:
+      tags: [files]
+      operationId: deleteFile
+      summary: Удалить файл вместе с содержимым
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "204":
+          description: Готово
+        "503":
+          $ref: "#/components/responses/Error"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/files/{id}/complete:
+    post:
+      tags: [files]
+      operationId: completeFile
+      summary: Сообщить, что содержимое загружено
+      description: Сервер проверяет, что содержимое есть в хранилище и его размер совпадает. Иначе 409 file_not_uploaded или file_size_mismatch.
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Файл готов
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/File"
+        "409":
+          $ref: "#/components/responses/Error"
+        "503":
+          $ref: "#/components/responses/Error"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/files/{id}/download:
+    get:
+      tags: [files]
+      operationId: downloadFile
+      summary: Ссылка на скачивание, действует 5 минут
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FileDownload"
+        "409":
+          $ref: "#/components/responses/Error"
+        "503":
+          $ref: "#/components/responses/Error"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
 components:
   securitySchemes:
     bearer:
@@ -2161,6 +2330,78 @@ components:
           type: boolean
         email:
           type: boolean
+    File:
+      type: object
+      required: [id, ownerId, name, contentType, size, status, createdAt, uploadedAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        ownerId:
+          type: string
+          format: uuid
+        name:
+          type: string
+        contentType:
+          type: string
+        size:
+          type: integer
+          format: int64
+        status:
+          type: string
+          enum: [pending, ready]
+        createdAt:
+          type: string
+          format: date-time
+        uploadedAt:
+          type: [string, "null"]
+          format: date-time
+    FileInput:
+      type: object
+      required: [name, size]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+          description: Имя без косых черт, прямых и обратных
+        contentType:
+          type: string
+          description: По умолчанию application/octet-stream
+        size:
+          type: integer
+          format: int64
+          minimum: 1
+    Upload:
+      type: object
+      required: [url, method, headers, expiresAt]
+      properties:
+        url:
+          type: string
+        method:
+          type: string
+          examples: [PUT]
+        headers:
+          type: object
+          additionalProperties:
+            type: string
+        expiresAt:
+          type: string
+          format: date-time
+    CreatedFile:
+      type: object
+      required: [file, upload]
+      properties:
+        file:
+          $ref: "#/components/schemas/File"
+        upload:
+          $ref: "#/components/schemas/Upload"
+    FileDownload:
+      type: object
+      required: [url]
+      properties:
+        url:
+          type: string
     Error:
       type: object
       required: [code]

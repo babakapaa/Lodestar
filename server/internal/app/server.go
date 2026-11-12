@@ -8,6 +8,7 @@ import (
 
 	"github.com/babakapaa/lodestar/server/internal/core/access"
 	"github.com/babakapaa/lodestar/server/internal/core/auth"
+	"github.com/babakapaa/lodestar/server/internal/core/files"
 	"github.com/babakapaa/lodestar/server/internal/core/live"
 	"github.com/babakapaa/lodestar/server/internal/core/module"
 	"github.com/babakapaa/lodestar/server/internal/core/notify"
@@ -21,8 +22,10 @@ import (
 )
 
 const (
-	liveRetention = 7 * 24 * time.Hour
-	pruneEvery    = time.Hour
+	liveRetention  = 7 * 24 * time.Hour
+	pruneEvery     = time.Hour
+	uploadDeadline = 24 * time.Hour
+	sweepEvery     = time.Hour
 )
 
 type Server struct {
@@ -31,7 +34,7 @@ type Server struct {
 	OnShutdown []func()
 }
 
-func NewServer(version string, cfg config.Config, box secretbox.Box, pool *pgxpool.Pool, registry *module.Registry) (Server, error) {
+func NewServer(version string, cfg config.Config, box secretbox.Box, pool *pgxpool.Pool, registry *module.Registry, storage files.Storage) (Server, error) {
 	tx := database.NewTenantTx(pool)
 	authRoutes := auth.NewRoutes(pool, auth.Settings{
 		Box:        box,
@@ -51,7 +54,7 @@ func NewServer(version string, cfg config.Config, box secretbox.Box, pool *pgxpo
 	if err != nil {
 		return Server{}, err
 	}
-	tenantSettings, err := schema.NewCatalog(append(settings.CoreSettings(), registry.Settings()...)...)
+	tenantSettings, err := schema.NewCatalog(append(append(settings.CoreSettings(), files.CoreSettings()...), registry.Settings()...)...)
 	if err != nil {
 		return Server{}, err
 	}
@@ -71,10 +74,15 @@ func NewServer(version string, cfg config.Config, box secretbox.Box, pool *pgxpo
 		settings.Routes{Service: settingsService, Authenticator: authn},
 		live.Routes{Hub: hub, Tenants: tx, Authenticator: authn, Origins: cfg.WebOrigins},
 		notify.Routes{Service: notify.NewService(tx, notifications), Authenticator: authn},
+		files.Routes{Service: files.NewService(tx, storage, settingsService), Authenticator: authn},
 	)
+	workers := []Worker{live.NewListener(pool, hub), live.NewPruner(pool, liveRetention, pruneEvery)}
+	if storage != nil {
+		workers = append(workers, files.NewSweeper(pool, storage, uploadDeadline, sweepEvery))
+	}
 	return Server{
 		Handler:    handler,
-		Workers:    []Worker{live.NewListener(pool, hub), live.NewPruner(pool, liveRetention, pruneEvery)},
+		Workers:    workers,
 		OnShutdown: []func(){hub.Close},
 	}, nil
 }

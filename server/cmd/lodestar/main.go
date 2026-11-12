@@ -54,7 +54,11 @@ func run() error {
 		return err
 	}
 
-	server, err := app.NewServer(version, cfg, box, pool, registry)
+	storage, err := app.OpenStorage(ctx, cfg.Storage)
+	if err != nil {
+		return err
+	}
+	server, err := app.NewServer(version, cfg, box, pool, registry, storage)
 	if err != nil {
 		return err
 	}

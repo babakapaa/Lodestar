@@ -43,6 +43,21 @@ func (s Service) Values(ctx context.Context, p auth.Principal) ([]schema.Value, 
 	return s.catalog.Resolve(stored), nil
 }
 
+func (s Service) Value(ctx context.Context, tx pgx.Tx, key string) (json.RawMessage, error) {
+	d, err := s.catalog.Lookup(key)
+	if err != nil {
+		return nil, err
+	}
+	stored, found, err := s.settings.Get(ctx, tx, key)
+	if err != nil {
+		return nil, err
+	}
+	if found && d.Validate(stored) == nil {
+		return stored, nil
+	}
+	return d.DefaultValue(), nil
+}
+
 func (s Service) Set(ctx context.Context, p auth.Principal, key string, value json.RawMessage) error {
 	d, err := s.catalog.Lookup(key)
 	if err != nil {

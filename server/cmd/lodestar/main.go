@@ -10,6 +10,7 @@ import (
 	"github.com/babakapaa/lodestar/server/internal/app"
 	"github.com/babakapaa/lodestar/server/internal/core/module"
 	"github.com/babakapaa/lodestar/server/internal/platform/config"
+	"github.com/babakapaa/lodestar/server/internal/platform/database"
 	"github.com/babakapaa/lodestar/server/internal/platform/httpserver"
 )
 
@@ -36,6 +37,17 @@ func run() error {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
-	srv := httpserver.New(cfg.HTTPAddr, app.NewRouter(version, registry))
+	pool, err := database.Open(ctx, cfg.DatabaseURL)
+	if err != nil {
+		return err
+	}
+	defer pool.Close()
+
+	migrations := append(app.CoreMigrations(), registry.Migrations()...)
+	if err := database.NewMigrator(pool).Apply(ctx, migrations...); err != nil {
+		return err
+	}
+
+	srv := httpserver.New(cfg.HTTPAddr, app.NewRouter(version, registry, pool))
 	return httpserver.Run(ctx, srv, cfg.ShutdownTimeout)
 }

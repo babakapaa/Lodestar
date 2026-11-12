@@ -9,9 +9,10 @@ import (
 	"github.com/babakapaa/lodestar/server/internal/core/module"
 )
 
-func NewRouter(version string, registry *module.Registry) http.Handler {
+func NewRouter(version string, registry *module.Registry, db health.Pinger) http.Handler {
 	mux := http.NewServeMux()
 	mux.Handle("GET /healthz", health.Handler{})
+	mux.Handle("GET /readyz", health.NewReadyHandler(db))
 	mux.Handle("GET /v1/meta", meta.NewHandler(version, registry))
 	registry.Mount(mux)
 	mux.HandleFunc("/", apierror.NotFound)

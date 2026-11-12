@@ -24,6 +24,24 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Health"
+  /readyz:
+    get:
+      tags: [system]
+      operationId: getReadiness
+      summary: Готов ли сервер принимать запросы (база доступна)
+      responses:
+        "200":
+          description: Сервер готов
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Health"
+        "503":
+          description: Сервер не готов, код ошибки not_ready
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
   /v1/meta:
     get:
       tags: [system]

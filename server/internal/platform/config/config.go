@@ -1,6 +1,7 @@
 package config
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"time"
@@ -8,6 +9,7 @@ import (
 
 type Config struct {
 	HTTPAddr        string
+	DatabaseURL     string
 	ShutdownTimeout time.Duration
 }
 
@@ -16,8 +18,13 @@ func Load() (Config, error) {
 	if err != nil {
 		return Config{}, err
 	}
+	databaseURL := stringEnv("LODESTAR_DATABASE_URL", "")
+	if databaseURL == "" {
+		return Config{}, errors.New("LODESTAR_DATABASE_URL is required")
+	}
 	return Config{
 		HTTPAddr:        stringEnv("LODESTAR_HTTP_ADDR", ":8080"),
+		DatabaseURL:     databaseURL,
 		ShutdownTimeout: shutdown,
 	}, nil
 }

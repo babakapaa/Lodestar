@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+
+	"github.com/babakapaa/lodestar/server/internal/platform/database"
 )
 
 var ErrDuplicateModule = errors.New("module registered twice")
@@ -35,6 +37,16 @@ func (r *Registry) Manifests() []Manifest {
 		manifests = append(manifests, m.Manifest())
 	}
 	return manifests
+}
+
+func (r *Registry) Migrations() []database.Migrations {
+	var sets []database.Migrations
+	for _, m := range r.modules {
+		if migrating, ok := m.(Migrating); ok {
+			sets = append(sets, migrating.Migrations())
+		}
+	}
+	return sets
 }
 
 func (r *Registry) Mount(mux *http.ServeMux) {

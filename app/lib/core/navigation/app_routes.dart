@@ -18,6 +18,8 @@ abstract final class AppRoutes {
   static const notesPath = '/notes';
   static const notesTrash = '/notes/trash';
   static const notesGraph = '/notes/graph';
+  static const sourcesPath = '/notes/sources';
+  static const sourceNew = '/notes/sources/new';
 
   static String role(String id) => '/admin/roles/$id';
 
@@ -38,6 +40,8 @@ abstract final class AppRoutes {
       '/study/assignments/$assignmentId/students/$studentId';
 
   static String note(String id) => '/notes/$id';
+
+  static String source(String id) => '/notes/sources/$id';
 
   static String noteMembers(String id) => '/notes/$id/members';
 

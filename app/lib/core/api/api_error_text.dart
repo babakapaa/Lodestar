@@ -45,6 +45,9 @@ abstract final class ApiErrorText {
       'notes_quota_exceeded' => l10n.errorNotesQuota,
       'not_note_owner' => l10n.errorNotNoteOwner,
       'stale_snapshot' => l10n.errorNoNewEdits,
+      'invalid_source' => l10n.errorInvalidSource,
+      'source_not_found' => l10n.errorSourceNotFound,
+      'source_lookup_failed' => l10n.errorSourceLookup,
       _ => l10n.errorGeneric,
     };
   }

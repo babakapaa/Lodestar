@@ -19,6 +19,10 @@ import '../../features/notes/note_versions_screen.dart';
 import '../../features/notes/notes_graph_screen.dart';
 import '../../features/notes/notes_screen.dart';
 import '../../features/notes/notes_trash_screen.dart';
+import '../../features/notes/source.dart';
+import '../../features/notes/source_edit_screen.dart';
+import '../../features/notes/source_screen.dart';
+import '../../features/notes/sources_screen.dart';
 import '../../features/notifications/notification_settings_screen.dart';
 import '../../features/notifications/notifications_screen.dart';
 import '../../features/roles/people_roles_screen.dart';
@@ -108,6 +112,22 @@ class AppRouter {
           ),
           _route(AppRoutes.notesTrash, const NotesTrashScreen()),
           _route(AppRoutes.notesGraph, const NotesGraphScreen()),
+          _route(AppRoutes.sourcesPath, const SourcesScreen()),
+          GoRoute(
+            path: AppRoutes.sourceNew,
+            pageBuilder: (context, state) =>
+                _fade(state, SourceEditScreen(source: state.extra as Source?)),
+          ),
+          GoRoute(
+            path: AppRoutes.source(':id'),
+            pageBuilder: (context, state) => _fade(
+              state,
+              SourceScreen(
+                sourceId: state.pathParameters['id']!,
+                source: state.extra as Source?,
+              ),
+            ),
+          ),
           _param(AppRoutes.note(':id'), (id) => NoteScreen(noteId: id)),
           _param(
             AppRoutes.noteMembers(':id'),

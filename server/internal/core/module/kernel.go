@@ -5,6 +5,7 @@ import (
 
 	"github.com/babakapaa/lodestar/server/internal/core/access"
 	"github.com/babakapaa/lodestar/server/internal/platform/database"
+	"github.com/babakapaa/lodestar/server/internal/platform/secretbox"
 )
 
 type Kernel struct {
@@ -13,4 +14,5 @@ type Kernel struct {
 	Access   access.Service
 	Notifier Notifier
 	Settings Settings
+	Secrets  secretbox.Box
 }

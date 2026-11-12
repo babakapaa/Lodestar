@@ -33,7 +33,7 @@ func Load() (Config, error) {
 		DatabaseURL:  stringEnv("LODESTAR_DATABASE_URL", ""),
 		PublicURL:    strings.TrimRight(stringEnv("LODESTAR_PUBLIC_URL", "http://localhost:8080"), "/"),
 		SecretKey:    stringEnv("LODESTAR_SECRET_KEY", ""),
-		AppRedirects: listEnv("LODESTAR_APP_REDIRECTS", "io.github.babakapaa.lodestar:/auth"),
+		AppRedirects: listEnv("LODESTAR_APP_REDIRECTS", "io.github.babakapaa.lodestar:/auth,http://localhost:43823/auth"),
 		WebOrigins:   listEnv("LODESTAR_WEB_ORIGINS", ""),
 		Storage: objectstore.Config{
 			Endpoint:       stringEnv("LODESTAR_S3_ENDPOINT", ""),

@@ -3,7 +3,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../design/tokens/spacing.dart';
 import '../../l10n/l10n_context.dart';
 import '../router/app_tab.dart';
-import 'brand_mark.dart';
+import '../../design/components/brand_mark.dart';
 import '../../core/navigation/profile_button.dart';
 
 class SidePanel extends StatelessWidget {

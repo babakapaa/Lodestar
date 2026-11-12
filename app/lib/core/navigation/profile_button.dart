@@ -20,7 +20,7 @@ class ProfileButton extends StatelessWidget {
       backgroundColor: tokens.palette.accentSoft,
       child: Icon(Icons.person_outline, size: 18, color: tokens.palette.accent),
     );
-    void open() => context.push(AppRoutes.settings);
+    void open() => context.push(AppRoutes.profile);
 
     if (!showLabel) {
       return IconButton(tooltip: label, onPressed: open, icon: avatar);

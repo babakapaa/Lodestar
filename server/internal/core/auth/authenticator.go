@@ -17,8 +17,20 @@ func NewAuthenticator(sessions SessionStore) Authenticator {
 }
 
 func (a Authenticator) Require(next http.Handler) http.Handler {
+	return a.require(next, false)
+}
+
+func (a Authenticator) RequireStream(next http.Handler) http.Handler {
+	return a.require(next, true)
+}
+
+func (a Authenticator) require(next http.Handler, allowQuery bool) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		value, ok := strings.CutPrefix(r.Header.Get("Authorization"), "Bearer ")
+		if !ok && allowQuery {
+			value = r.URL.Query().Get("access_token")
+			ok = value != ""
+		}
 		if !ok {
 			apierror.Write(w, http.StatusUnauthorized, CodeUnauthorized)
 			return

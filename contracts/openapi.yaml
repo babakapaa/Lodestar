@@ -21,6 +21,8 @@ tags:
     description: Профиль и личные настройки
   - name: settings
     description: Настройки вуза и модули
+  - name: live
+    description: Живые обновления и уведомления
 paths:
   /healthz:
     get:
@@ -1417,6 +1419,209 @@ paths:
           $ref: "#/components/responses/Error"
         default:
           $ref: "#/components/responses/Error"
+  /v1/live:
+    get:
+      tags: [live]
+      operationId: openLiveStream
+      summary: WebSocket с живыми событиями
+      description: |
+        Сервер шлёт JSON-сообщения формата Event. Токен передаётся в заголовке Authorization или в параметре access_token, потому что браузер не умеет ставить заголовок для WebSocket.
+        С параметром after сервер сначала досылает пропущенные события. Если пропущено слишком много или клиент не успевает читать, приходит событие core.resync с полем latest в payload: клиенту нужно перечитать данные и переподключиться с after=latest.
+      security:
+        - bearer: []
+        - {}
+      parameters:
+        - $ref: "#/components/parameters/After"
+        - name: access_token
+          in: query
+          schema:
+            type: string
+      responses:
+        "101":
+          description: Соединение открыто
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/events:
+    get:
+      tags: [live]
+      operationId: listEvents
+      summary: События после указанного номера, если WebSocket недоступен
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/After"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EventsPage"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/notifications:
+    get:
+      tags: [live]
+      operationId: listNotifications
+      summary: Мои уведомления, новые сверху, по 50
+      security:
+        - bearer: []
+      parameters:
+        - name: before
+          in: query
+          description: createdAt последнего уведомления прошлой страницы
+          schema:
+            type: string
+            format: date-time
+        - name: unread
+          in: query
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Notification"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/notifications/unread:
+    get:
+      tags: [live]
+      operationId: countUnreadNotifications
+      summary: Сколько непрочитанных
+      security:
+        - bearer: []
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnreadCount"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/notifications/read-all:
+    post:
+      tags: [live]
+      operationId: readAllNotifications
+      summary: Отметить все прочитанными
+      security:
+        - bearer: []
+      responses:
+        "204":
+          description: Готово
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/notifications/{id}/read:
+    post:
+      tags: [live]
+      operationId: readNotification
+      summary: Отметить уведомление прочитанным
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "204":
+          description: Готово
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/me/notification-channels:
+    get:
+      tags: [live]
+      operationId: listNotificationChannels
+      summary: Куда приходят уведомления каждого типа
+      security:
+        - bearer: []
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/NotificationChannels"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/me/notification-channels/{type}:
+    put:
+      tags: [live]
+      operationId: setNotificationChannels
+      summary: Выбрать каналы для типа уведомлений
+      description: Обязательный тип нельзя выключить в приложении, ответ 400 notification_required.
+      security:
+        - bearer: []
+      parameters:
+        - name: type
+          in: path
+          required: true
+          schema:
+            type: string
+            examples: [study.deadline]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NotificationChannelsInput"
+      responses:
+        "204":
+          description: Готово
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
 components:
   securitySchemes:
     bearer:
@@ -1424,6 +1629,14 @@ components:
       scheme: bearer
       description: Токен доступа из /v1/auth/token
   parameters:
+    After:
+      name: after
+      in: query
+      description: Номер последнего полученного события
+      schema:
+        type: integer
+        format: int64
+        minimum: 0
     Id:
       name: id
       in: path
@@ -1872,6 +2085,81 @@ components:
       required: [enabled]
       properties:
         enabled:
+          type: boolean
+    Event:
+      type: object
+      required: [id, type, payload, at]
+      properties:
+        id:
+          type: integer
+          format: int64
+        type:
+          type: string
+          examples: [core.notification]
+        payload: {}
+        at:
+          type: string
+          format: date-time
+    EventsPage:
+      type: object
+      required: [events, more]
+      properties:
+        events:
+          type: array
+          items:
+            $ref: "#/components/schemas/Event"
+        more:
+          type: boolean
+          description: true, если событий больше и нужно запросить следующую страницу
+    Notification:
+      type: object
+      required: [id, type, params, link, createdAt, readAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        type:
+          type: string
+        params:
+          type: object
+          description: Данные для текста. Текст по типу подставляет приложение.
+        link:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        readAt:
+          type: [string, "null"]
+          format: date-time
+    UnreadCount:
+      type: object
+      required: [unread]
+      properties:
+        unread:
+          type: integer
+    NotificationChannels:
+      type: object
+      required: [type, required, inApp, push, email]
+      properties:
+        type:
+          type: string
+        required:
+          type: boolean
+        inApp:
+          type: boolean
+        push:
+          type: boolean
+        email:
+          type: boolean
+    NotificationChannelsInput:
+      type: object
+      required: [inApp, push, email]
+      properties:
+        inApp:
+          type: boolean
+        push:
+          type: boolean
+        email:
           type: boolean
     Error:
       type: object

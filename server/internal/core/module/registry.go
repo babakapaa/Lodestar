@@ -20,8 +20,8 @@ var ErrReservedName = errors.New("module name is reserved or malformed")
 var namePattern = regexp.MustCompile(`^[a-z][a-z0-9]{1,29}$`)
 
 var reservedNames = []string{
-	"auth", "me", "meta", "modules", "overrides", "permissions", "preferences",
-	"role-assignments", "roles", "sessions", "settings", "units", "users",
+	"auth", "events", "live", "me", "meta", "modules", "notifications", "overrides", "permissions",
+	"preferences", "role-assignments", "roles", "sessions", "settings", "units", "users",
 }
 
 type Registry struct {
@@ -92,6 +92,16 @@ func (r *Registry) Settings() []schema.Definition {
 		}
 	}
 	return defs
+}
+
+func (r *Registry) NotificationTypes() []NotificationType {
+	var types []NotificationType
+	for _, m := range r.modules {
+		if n, ok := m.(Notifying); ok {
+			types = append(types, n.NotificationTypes()...)
+		}
+	}
+	return types
 }
 
 func (r *Registry) Find(name string) (Manifest, bool) {

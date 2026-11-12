@@ -18,7 +18,7 @@ func (h AssignHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	a, err := h.service.Assign(r.Context(), principal(r), in)
 	if err != nil {
-		writeError(w, err)
+		WriteError(w, err)
 		return
 	}
 	jsonhttp.Write(w, http.StatusOK, a)

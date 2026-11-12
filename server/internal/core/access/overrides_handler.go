@@ -13,7 +13,7 @@ type OverridesHandler struct {
 func (h OverridesHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	list, err := h.service.Overrides(r.Context(), principal(r), r.URL.Query().Get("scope"))
 	if err != nil {
-		writeError(w, err)
+		WriteError(w, err)
 		return
 	}
 	if list == nil {

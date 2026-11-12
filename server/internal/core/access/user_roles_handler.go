@@ -13,7 +13,7 @@ type UserRolesHandler struct {
 func (h UserRolesHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	list, err := h.service.UserRoles(r.Context(), principal(r), r.PathValue("id"))
 	if err != nil {
-		writeError(w, err)
+		WriteError(w, err)
 		return
 	}
 	if list == nil {

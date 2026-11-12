@@ -15,6 +15,8 @@ tags:
     description: Вход через систему вуза и сессии на устройствах
   - name: access
     description: Роли и права как в Discord
+  - name: structure
+    description: Факультеты, кафедры, группы и их участники
 paths:
   /healthz:
     get:
@@ -611,6 +613,447 @@ paths:
           $ref: "#/components/responses/Error"
         default:
           $ref: "#/components/responses/Error"
+  /v1/units:
+    get:
+      tags: [structure]
+      operationId: listUnits
+      summary: Подразделения внутри родителя, без parent корневые
+      security:
+        - bearer: []
+      parameters:
+        - name: parent
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: archived
+          in: query
+          description: Показать и архивные
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Unit"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+    post:
+      tags: [structure]
+      operationId: createUnit
+      summary: Создать подразделение
+      security:
+        - bearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UnitInput"
+      responses:
+        "201":
+          description: Создано
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Unit"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/units/import:
+    post:
+      tags: [structure]
+      operationId: importUnits
+      summary: Загрузить подразделения из таблицы, всё или ничего
+      security:
+        - bearer: []
+      requestBody:
+        required: true
+        content:
+          text/csv:
+            schema:
+              type: string
+              description: Столбцы code, parent_code, kind, name. Родитель выше ребёнка
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ImportReport"
+        "422":
+          description: В файле есть ошибки, ничего не сохранено
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ImportReport"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/units/import-members:
+    post:
+      tags: [structure]
+      operationId: importUnitMembers
+      summary: Загрузить участников из таблицы, всё или ничего
+      security:
+        - bearer: []
+      requestBody:
+        required: true
+        content:
+          text/csv:
+            schema:
+              type: string
+              description: Столбцы unit_code, email
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ImportReport"
+        "422":
+          description: В файле есть ошибки, ничего не сохранено
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ImportReport"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/units/{id}:
+    get:
+      tags: [structure]
+      operationId: getUnit
+      summary: Подразделение и путь к нему от корня
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnitDetails"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+    put:
+      tags: [structure]
+      operationId: updateUnit
+      summary: Изменить вид, название или код
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UnitInput"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Unit"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/units/{id}/move:
+    post:
+      tags: [structure]
+      operationId: moveUnit
+      summary: Перенести под другого родителя
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UnitMoveInput"
+      responses:
+        "204":
+          description: Готово
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/units/{id}/archive:
+    post:
+      tags: [structure]
+      operationId: archiveUnit
+      summary: Убрать в архив вместе со всем внутри
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "204":
+          description: Готово
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/units/{id}/restore:
+    post:
+      tags: [structure]
+      operationId: restoreUnit
+      summary: Вернуть из архива
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "204":
+          description: Готово
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/units/{id}/members:
+    get:
+      tags: [structure]
+      operationId: listUnitMembers
+      summary: Участники подразделения
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/UnitMember"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/units/{id}/members/{user}:
+    put:
+      tags: [structure]
+      operationId: addUnitMember
+      summary: Добавить участника
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+        - name: user
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: Готово
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+    delete:
+      tags: [structure]
+      operationId: removeUnitMember
+      summary: Убрать участника
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+        - name: user
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: Готово
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/units/{id}/history:
+    get:
+      tags: [structure]
+      operationId: listUnitHistory
+      summary: История изменений, новые сверху, по 50
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+        - name: before
+          in: query
+          description: id события, после которого продолжить
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/UnitEvent"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/users/{id}/units:
+    get:
+      tags: [structure]
+      operationId: listUserUnits
+      summary: Подразделения человека
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Unit"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
 components:
   securitySchemes:
     bearer:
@@ -867,6 +1310,112 @@ components:
           type: array
           items:
             type: string
+    Unit:
+      type: object
+      required: [id, parentId, kind, name, code, archivedAt, createdAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        parentId:
+          type: [string, "null"]
+          format: uuid
+        kind:
+          type: string
+          description: Вид подразделения, вуз выбирает сам, например faculty, department, stream, group
+          examples: [faculty]
+        name:
+          type: string
+        code:
+          type: [string, "null"]
+          description: Код из системы вуза для импорта
+        archivedAt:
+          type: [string, "null"]
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+    UnitDetails:
+      allOf:
+        - $ref: "#/components/schemas/Unit"
+        - type: object
+          required: [path]
+          properties:
+            path:
+              type: array
+              description: Родители от корня
+              items:
+                $ref: "#/components/schemas/Unit"
+    UnitInput:
+      type: object
+      required: [kind, name]
+      properties:
+        parentId:
+          type: [string, "null"]
+          format: uuid
+          description: Только при создании, перенос через move
+        kind:
+          type: string
+        name:
+          type: string
+        code:
+          type: [string, "null"]
+    UnitMoveInput:
+      type: object
+      properties:
+        parentId:
+          type: [string, "null"]
+          format: uuid
+    UnitMember:
+      type: object
+      required: [userId, displayName, email, joinedAt]
+      properties:
+        userId:
+          type: string
+          format: uuid
+        displayName:
+          type: string
+        email:
+          type: string
+        joinedAt:
+          type: string
+          format: date-time
+    UnitEvent:
+      type: object
+      required: [id, actorId, action, data, at]
+      properties:
+        id:
+          type: integer
+        actorId:
+          type: [string, "null"]
+          format: uuid
+        action:
+          type: string
+          enum: [created, updated, moved, archived, restored, member_added, member_removed]
+        data:
+          type: object
+        at:
+          type: string
+          format: date-time
+    ImportReport:
+      type: object
+      required: [created, updated, errors]
+      properties:
+        created:
+          type: integer
+        updated:
+          type: integer
+        errors:
+          type: array
+          items:
+            type: object
+            required: [line, code]
+            properties:
+              line:
+                type: integer
+              code:
+                type: string
+                enum: [missing_parent, invalid_unit, cycle, missing_unit, unknown_user, ambiguous_user]
     Error:
       type: object
       required: [code]

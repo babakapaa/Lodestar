@@ -18,7 +18,7 @@ func (h CreateRoleHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	role, err := h.service.CreateRole(r.Context(), principal(r), in)
 	if err != nil {
-		writeError(w, err)
+		WriteError(w, err)
 		return
 	}
 	jsonhttp.Write(w, http.StatusCreated, role)

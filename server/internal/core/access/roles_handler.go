@@ -13,7 +13,7 @@ type RolesHandler struct {
 func (h RolesHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	roles, err := h.service.Roles(r.Context(), principal(r))
 	if err != nil {
-		writeError(w, err)
+		WriteError(w, err)
 		return
 	}
 	if roles == nil {

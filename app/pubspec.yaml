@@ -9,6 +9,8 @@ environment:
 dependencies:
   crypto: ^3.0.8
   cupertino_ui: ^1.1.6
+  drift: ^2.35.4
+  drift_flutter: ^0.3.1
   file_saver: ^0.7.0
   flutter:
     sdk: flutter
@@ -20,6 +22,8 @@ dependencies:
   go_router: ^18.1.4
   http: ^1.6.0
   intl: ^0.20.3
+  lodestar_crdt:
+    path: packages/lodestar_crdt
   material_ui: ^1.1.0
   shared_preferences: ^2.5.6
   web_socket_channel: ^3.0.3
@@ -28,6 +32,8 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
+  drift_dev: ^2.35.3
+  build_runner: ^2.17.1
 flutter:
   uses-material-design: true
   generate: true

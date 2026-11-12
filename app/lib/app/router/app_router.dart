@@ -5,6 +5,9 @@ import 'package:material_ui/material_ui.dart';
 import '../../core/auth/auth_state.dart';
 import '../../core/navigation/app_routes.dart';
 import '../../design/tokens/motion.dart';
+import '../../features/admin/admin_screen.dart';
+import '../../features/admin/audit_screen.dart';
+import '../../features/admin/tenant_settings_screen.dart';
 import '../../features/chats/chats_screen.dart';
 import '../../features/connect/connect_screen.dart';
 import '../../features/login/login_screen.dart';
@@ -51,6 +54,9 @@ class AppRouter {
             const NotificationSettingsScreen(),
           ),
           _route(AppRoutes.settings, const SettingsScreen()),
+          _route(AppRoutes.admin, const AdminScreen()),
+          _route(AppRoutes.adminSettings, const TenantSettingsScreen()),
+          _route(AppRoutes.adminAudit, const AuditScreen()),
         ],
       );
 

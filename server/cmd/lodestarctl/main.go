@@ -14,7 +14,10 @@ const usage = `Использование:
   lodestarctl oidc set -tenant kaznu -key microsoft -name "Microsoft" -issuer URL -client-id ID
       секрет клиента берётся из LODESTAR_OIDC_CLIENT_SECRET
   lodestarctl role grant-top -tenant kaznu -email admin@kaznu.kz
-      выдаёт высшую роль человеку, который уже входил в Lodestar`
+      выдаёт высшую роль человеку, который уже входил в Lodestar
+  lodestarctl demo seed -issuer http://localhost:8090
+      создаёт тестовый вуз demo со студентом, преподавателем и администратором,
+      секрет демо-входа берётся из LODESTAR_OIDC_CLIENT_SECRET`
 
 func main() {
 	if err := run(os.Args[1:]); err != nil {
@@ -39,6 +42,8 @@ func run(args []string) error {
 		return setOIDC(ctx, args[2:])
 	case "role grant-top":
 		return grantTopRole(ctx, args[2:])
+	case "demo seed":
+		return seedDemo(ctx, args[2:])
 	default:
 		return fmt.Errorf("%s", usage)
 	}

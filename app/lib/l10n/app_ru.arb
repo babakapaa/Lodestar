@@ -144,5 +144,46 @@
   },
   "deletionCancel": "Отменить удаление",
   "actionCancel": "Отмена",
-  "errorDeletionByUniversity": "Удаление аккаунта в вашем вузе проводит администрация."
+  "errorDeletionByUniversity": "Удаление аккаунта в вашем вузе проводит администрация.",
+  "adminTitle": "Администрирование",
+  "adminSettingsTitle": "Настройки вуза",
+  "adminSettingsBody": "Язык и тема по умолчанию, файлы, хранение данных, модули",
+  "adminModulesTitle": "Модули",
+  "adminModulesEmpty": "Модули пока не установлены.",
+  "adminModuleRequired": "Обязательный модуль",
+  "settingDefaultLanguage": "Язык по умолчанию",
+  "settingDefaultTheme": "Тема по умолчанию",
+  "settingTimeZone": "Часовой пояс вуза",
+  "settingMaxFile": "Наибольший размер файла, МБ",
+  "settingAuditRetention": "Сколько дней хранить журнал действий",
+  "settingSelfDeletion": "Люди сами удаляют свой аккаунт",
+  "settingDeletionGrace": "Дней до удаления аккаунта",
+  "settingRange": "От {min} до {max}",
+  "@settingRange": {
+    "placeholders": {
+      "min": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "auditTitle": "Журнал действий",
+  "auditBody": "Кто и когда менял роли, настройки и модули",
+  "auditEmptyTitle": "Журнал пока пуст",
+  "auditEmptyBody": "Здесь появятся изменения ролей, настроек и модулей.",
+  "auditBySystem": "Сервер",
+  "auditRoleCreated": "Создана роль",
+  "auditRoleUpdated": "Изменена роль",
+  "auditRoleDeleted": "Удалена роль",
+  "auditRoleMoved": "Изменён порядок ролей",
+  "auditRoleAssigned": "Выдана роль",
+  "auditRoleUnassigned": "Снята роль",
+  "auditOverrideSet": "Изменены права в подразделении",
+  "auditSettingChanged": "Изменена настройка",
+  "auditSettingReset": "Настройка сброшена",
+  "auditModuleEnabled": "Включён модуль",
+  "auditModuleDisabled": "Выключен модуль",
+  "auditAccountDeleted": "Удалён аккаунт"
 }

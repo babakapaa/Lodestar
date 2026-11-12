@@ -53,7 +53,7 @@ func NewServer(version string, cfg config.Config, box secretbox.Box, pool *pgxpo
 	})
 	authn := authRoutes.Authenticator
 
-	permissions := append(append(append(structure.Permissions(), settings.Permissions()...), audit.Permissions()...), registry.Permissions()...)
+	permissions := append(CorePermissions(), registry.Permissions()...)
 	catalog, err := access.NewCatalog(permissions...)
 	if err != nil {
 		return Server{}, err

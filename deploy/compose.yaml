@@ -35,6 +35,19 @@ services:
         condition: service_started
     restart: unless-stopped
 
+  demo-idp:
+    profiles: ["demo"]
+    build:
+      context: ../server
+    entrypoint: ["/lodestar-demo-idp"]
+    environment:
+      DEMO_IDP_ISSUER: ${DEMO_IDP_ISSUER:-http://localhost:8090}
+      DEMO_IDP_CLIENT_SECRET: ${DEMO_IDP_CLIENT_SECRET:-}
+      DEMO_IDP_REDIRECTS: ${LODESTAR_PUBLIC_URL:-http://localhost:8080}/v1/auth/demo/demo/callback
+    ports:
+      - "${DEMO_IDP_PORT:-8090}:8090"
+    restart: unless-stopped
+
   postgres:
     image: pgvector/pgvector:0.8.0-pg17
     environment:

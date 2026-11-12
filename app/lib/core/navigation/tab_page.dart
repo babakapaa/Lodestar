@@ -5,10 +5,16 @@ import 'notifications_button.dart';
 import 'profile_button.dart';
 
 class TabPage extends StatelessWidget {
-  const TabPage({required this.title, required this.child, super.key});
+  const TabPage({
+    required this.title,
+    required this.child,
+    this.floatingActionButton,
+    super.key,
+  });
 
   final String title;
   final Widget child;
+  final Widget? floatingActionButton;
 
   @override
   Widget build(BuildContext context) {
@@ -22,6 +28,7 @@ class TabPage extends StatelessWidget {
           if (compact) const ProfileButton(showLabel: false),
         ],
       ),
+      floatingActionButton: floatingActionButton,
       body: SafeArea(top: false, child: child),
     );
   }

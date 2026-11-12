@@ -12,7 +12,10 @@ import '../../features/chats/chats_screen.dart';
 import '../../features/connect/connect_screen.dart';
 import '../../features/login/login_screen.dart';
 import '../../features/navigator/navigator_screen.dart';
+import '../../features/notes/note_members_screen.dart';
+import '../../features/notes/note_screen.dart';
 import '../../features/notes/notes_screen.dart';
+import '../../features/notes/notes_trash_screen.dart';
 import '../../features/notifications/notification_settings_screen.dart';
 import '../../features/notifications/notifications_screen.dart';
 import '../../features/roles/people_roles_screen.dart';
@@ -99,6 +102,12 @@ class AppRouter {
                 studentId: state.pathParameters['student']!,
               ),
             ),
+          ),
+          _route(AppRoutes.notesTrash, const NotesTrashScreen()),
+          _param(AppRoutes.note(':id'), (id) => NoteScreen(noteId: id)),
+          _param(
+            AppRoutes.noteMembers(':id'),
+            (id) => NoteMembersScreen(noteId: id),
           ),
           GoRoute(
             path: AppRoutes.schedulePath,

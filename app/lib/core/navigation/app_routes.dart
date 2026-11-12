@@ -15,6 +15,8 @@ abstract final class AppRoutes {
   static const connect = '/connect';
   static const login = '/login';
   static const schedulePath = '/study/schedule';
+  static const notesPath = '/notes';
+  static const notesTrash = '/notes/trash';
 
   static String role(String id) => '/admin/roles/$id';
 
@@ -33,6 +35,10 @@ abstract final class AppRoutes {
 
   static String grade(String assignmentId, String studentId) =>
       '/study/assignments/$assignmentId/students/$studentId';
+
+  static String note(String id) => '/notes/$id';
+
+  static String noteMembers(String id) => '/notes/$id/members';
 
   static String schedule(String date) => '$schedulePath?date=$date';
 }

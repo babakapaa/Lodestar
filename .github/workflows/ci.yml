@@ -56,8 +56,12 @@ jobs:
           channel: stable
           flutter-version: 3.50.0
           cache: true
+      - run: rustup toolchain install
+        working-directory: app/packages/lodestar_crdt/rust
       - run: flutter pub get
       - run: flutter gen-l10n
+      - run: dart run build_runner build --delete-conflicting-outputs
+      - run: git diff --exit-code -- lib
       - run: dart format --output=none --set-exit-if-changed lib test
       - run: flutter analyze
       - run: flutter test

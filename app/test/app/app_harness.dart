@@ -1,3 +1,5 @@
+import 'package:drift/drift.dart' show DatabaseConnection;
+import 'package:drift/native.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lodestar/app/lodestar_app.dart';
@@ -5,6 +7,8 @@ import 'package:lodestar/core/api/token_pair.dart';
 import 'package:lodestar/core/auth/auth_providers.dart';
 import 'package:lodestar/core/live/live_providers.dart';
 import 'package:lodestar/core/settings/settings_providers.dart';
+import 'package:lodestar/features/notes/notes_database.dart';
+import 'package:lodestar/features/notes/notes_providers.dart';
 import 'package:lodestar/features/privacy/privacy_providers.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -58,6 +62,16 @@ Future<AppHarness> pumpApp(
         httpClientProvider.overrideWithValue(fake.client),
         liveSocketProvider.overrideWithValue(live),
         exportSaverProvider.overrideWithValue(saver),
+        notesDatabaseProvider.overrideWith((ref) {
+          final db = NotesDatabase(
+            DatabaseConnection(
+              NativeDatabase.memory(),
+              closeStreamsSynchronously: true,
+            ),
+          );
+          ref.onDispose(db.close);
+          return db;
+        }),
         webAuthenticatorProvider.overrideWithValue(
           authenticator ?? FakeAuthenticator(),
         ),

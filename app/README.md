@@ -23,5 +23,14 @@
 ```sh
 flutter pub get
 flutter test
+tool/web_assets.sh
 flutter run -d chrome
+```
+
+Нужен Rust из `packages/lodestar_crdt/rust/rust-toolchain.toml`: на нём собирается движок совместного редактирования заметок. Для веба `tool/web_assets.sh` один раз кладёт в `web/` движок в WebAssembly и SQLite для локальной базы, а для `wasm-bindgen` нужна версия из `Cargo.lock`.
+
+Локальная база заметок описана в `lib/features/notes/notes_database.dart`. После изменения таблиц:
+
+```sh
+dart run build_runner build --delete-conflicting-outputs
 ```

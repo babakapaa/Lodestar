@@ -14,5 +14,10 @@ class PermissionSet {
   bool has(String permission) =>
       _granted.contains(administrator) || _granted.contains(permission);
 
-  bool get administers => has(manageSettings) || has(viewAudit);
+  bool get administers =>
+      has(manageSettings) ||
+      has(viewAudit) ||
+      has(manageRoles) ||
+      has(manageStructure) ||
+      has(manageMembers);
 }

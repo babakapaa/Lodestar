@@ -15,12 +15,17 @@ import '../../features/navigator/navigator_screen.dart';
 import '../../features/notes/notes_screen.dart';
 import '../../features/notifications/notification_settings_screen.dart';
 import '../../features/notifications/notifications_screen.dart';
+import '../../features/roles/people_roles_screen.dart';
+import '../../features/roles/person_roles_screen.dart';
 import '../../features/privacy/privacy_screen.dart';
 import '../../features/profile/profile_edit_screen.dart';
 import '../../features/profile/profile_screen.dart';
+import '../../features/roles/role_edit_screen.dart';
+import '../../features/roles/roles_screen.dart';
 import '../../features/settings/settings_screen.dart';
 import '../../features/study/study_screen.dart';
 import '../../features/today/today_screen.dart';
+import '../../features/units/units_screen.dart';
 import '../shell/adaptive_shell.dart';
 import 'app_tab.dart';
 import 'auth_redirect.dart';
@@ -57,6 +62,16 @@ class AppRouter {
           _route(AppRoutes.admin, const AdminScreen()),
           _route(AppRoutes.adminSettings, const TenantSettingsScreen()),
           _route(AppRoutes.adminAudit, const AuditScreen()),
+          _route(AppRoutes.roles, const RolesScreen()),
+          _route(AppRoutes.roleNew, const RoleEditScreen()),
+          _param(AppRoutes.role(':id'), (id) => RoleEditScreen(roleId: id)),
+          _route(AppRoutes.people, const PeopleRolesScreen()),
+          _param(
+            AppRoutes.personRoles(':id'),
+            (id) => PersonRolesScreen(userId: id),
+          ),
+          _route(AppRoutes.units, const UnitsScreen()),
+          _param(AppRoutes.unit(':id'), (id) => UnitsScreen(unitId: id)),
         ],
       );
 
@@ -66,6 +81,14 @@ class AppRouter {
     return GoRoute(
       path: path,
       pageBuilder: (context, state) => _fade(state, screen),
+    );
+  }
+
+  static GoRoute _param(String path, Widget Function(String id) screen) {
+    return GoRoute(
+      path: path,
+      pageBuilder: (context, state) =>
+          _fade(state, screen(state.pathParameters['id']!)),
     );
   }
 

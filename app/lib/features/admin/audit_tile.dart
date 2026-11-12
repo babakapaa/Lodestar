@@ -3,7 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../l10n/l10n_context.dart';
-import 'actor_name_provider.dart';
+import '../people/people_providers.dart';
 import 'audit_entry.dart';
 import 'audit_labels.dart';
 
@@ -18,7 +18,7 @@ class AuditTile extends ConsumerWidget {
     final actorId = entry.actorId;
     final actor = actorId == null
         ? l10n.auditBySystem
-        : ref.watch(actorNameProvider(actorId)).value ?? '';
+        : ref.watch(personNameProvider(actorId)).value ?? '';
     final time = DateFormat.yMMMd(
       Localizations.localeOf(context).toLanguageTag(),
     ).add_Hm().format(entry.at.toLocal());

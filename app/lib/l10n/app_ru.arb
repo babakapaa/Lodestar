@@ -185,5 +185,89 @@
   "auditSettingReset": "Настройка сброшена",
   "auditModuleEnabled": "Включён модуль",
   "auditModuleDisabled": "Выключен модуль",
-  "auditAccountDeleted": "Удалён аккаунт"
+  "auditAccountDeleted": "Удалён аккаунт",
+  "adminRolesBody": "Названия, цвета и права ролей",
+  "adminPeopleBody": "Кому какие роли выданы",
+  "adminUnitsBody": "Факультеты, кафедры, потоки и группы",
+  "permissionAdministrator": "Полный доступ",
+  "permissionManageRoles": "Управление ролями",
+  "permissionManageSettings": "Настройки вуза",
+  "permissionManageStructure": "Структура вуза",
+  "permissionManageMembers": "Состав групп",
+  "permissionViewAudit": "Журнал изменений",
+  "rolesTitle": "Роли",
+  "rolesCreate": "Новая роль",
+  "rolesEdit": "Роль",
+  "rolesHint": "Роль выше по списку может управлять ролями ниже. Перетащите, чтобы изменить порядок.",
+  "rolesDefault": "Есть у всех",
+  "rolesName": "Название",
+  "rolesColor": "Цвет",
+  "rolesNoColor": "Без цвета",
+  "rolesPermissions": "Права",
+  "rolesDelete": "Удалить роль",
+  "rolesGrant": "Выдать роль",
+  "rolesNone": "Ролей пока нет",
+  "rolesRevoke": "Забрать роль",
+  "peopleRolesTitle": "Люди и роли",
+  "peopleSearchHint": "Имя или почта",
+  "peopleNotFound": "Никого не нашли",
+  "peoplePick": "Выберите человека",
+  "unitsTitle": "Подразделения",
+  "unitsTop": "Верхний уровень",
+  "unitsInside": "Внутри",
+  "unitsEmpty": "Здесь пока пусто",
+  "unitsCreate": "Добавить",
+  "unitsEdit": "Изменить",
+  "unitsMove": "Перенести",
+  "unitsArchive": "В архив",
+  "unitsRestore": "Вернуть из архива",
+  "unitsArchived": "В архиве",
+  "unitsShowArchived": "Показывать архив",
+  "unitsKind": "Тип",
+  "unitsName": "Название",
+  "unitsCode": "Код",
+  "unitsCodeHint": "Необязательно, например ИС-21",
+  "unitsRoot": "На верхний уровень",
+  "unitsUp": "Назад",
+  "unitsMoveHere": "Перенести сюда",
+  "unitsMembers": "Состав",
+  "unitsNoMembers": "Никого нет",
+  "unitsAddMember": "Добавить человека",
+  "unitsRemoveMember": "Убрать",
+  "unitFaculty": "Факультет",
+  "unitDepartment": "Кафедра",
+  "unitStream": "Поток",
+  "unitGroup": "Группа",
+  "errorForbidden": "Недостаточно прав для этого действия.",
+  "errorRoleHierarchy": "Эта роль стоит не ниже вашей.",
+  "errorPermissionNotHeld": "Нельзя выдать право, которого нет у вас.",
+  "errorInvalidRole": "Проверьте название и права роли.",
+  "errorUnitCodeTaken": "Такой код уже занят.",
+  "errorUnitCycle": "Нельзя перенести подразделение внутрь самого себя.",
+  "errorUnitArchived": "Подразделение в архиве.",
+  "errorInvalidUnit": "Проверьте название и тип.",
+  "rolesPermissionCount": "Прав: {count}",
+  "@rolesPermissionCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "rolesDeleteConfirm": "Удалить роль «{name}»? Она пропадёт у всех, кому выдана.",
+  "@rolesDeleteConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "rolesInScope": "в {scope}",
+  "@rolesInScope": {
+    "placeholders": {
+      "scope": {
+        "type": "String"
+      }
+    }
+  }
 }

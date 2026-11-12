@@ -324,5 +324,17 @@
   "errorNoteReadOnly": "This note is read-only.",
   "errorNoteDeleted": "The note is in the trash.",
   "errorNotesQuota": "Notes storage is full. Empty the trash or contact your university.",
-  "errorNotNoteOwner": "Only the note owner can do this."
+  "errorNotNoteOwner": "Only the note owner can do this.",
+  "notesGraph": "Link graph",
+  "notesHistory": "Version history",
+  "notesHistoryHint": "A version is saved automatically after many edits or with the button. Any version can be restored.",
+  "notesHistoryEmpty": "No saved versions yet",
+  "notesSaveVersion": "Save version",
+  "notesVersion": "Version",
+  "notesRestoreVersion": "Restore this version",
+  "notesExport": "Download all notes (.md)",
+  "notesImport": "Import notes (.md or .zip)",
+  "notesImported": "Notes added: {count}",
+  "errorNoNewEdits": "No new edits since the last version.",
+  "notesGraphLabel": "Link graph, notes: {count}"
 }

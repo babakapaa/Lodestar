@@ -48,6 +48,22 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
     final trashed = (all?.length ?? 0) - live.length;
     return TabPage(
       title: l10n.tabNotes,
+      actions: [
+        IconButton(
+          tooltip: l10n.notesGraph,
+          icon: const Icon(Icons.hub_outlined),
+          onPressed: () => context.push(AppRoutes.notesGraph),
+        ),
+        PopupMenuButton<String>(
+          onSelected: (action) => action == 'export'
+              ? NoteActions.exportVault(ref)
+              : NoteActions.importVault(context, ref),
+          itemBuilder: (context) => [
+            PopupMenuItem(value: 'export', child: Text(l10n.notesExport)),
+            PopupMenuItem(value: 'import', child: Text(l10n.notesImport)),
+          ],
+        ),
+      ],
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => NoteActions.create(context, ref),
         icon: const Icon(Icons.add),

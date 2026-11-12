@@ -14,6 +14,9 @@ import '../../features/login/login_screen.dart';
 import '../../features/navigator/navigator_screen.dart';
 import '../../features/notes/note_members_screen.dart';
 import '../../features/notes/note_screen.dart';
+import '../../features/notes/note_version_screen.dart';
+import '../../features/notes/note_versions_screen.dart';
+import '../../features/notes/notes_graph_screen.dart';
 import '../../features/notes/notes_screen.dart';
 import '../../features/notes/notes_trash_screen.dart';
 import '../../features/notifications/notification_settings_screen.dart';
@@ -104,10 +107,25 @@ class AppRouter {
             ),
           ),
           _route(AppRoutes.notesTrash, const NotesTrashScreen()),
+          _route(AppRoutes.notesGraph, const NotesGraphScreen()),
           _param(AppRoutes.note(':id'), (id) => NoteScreen(noteId: id)),
           _param(
             AppRoutes.noteMembers(':id'),
             (id) => NoteMembersScreen(noteId: id),
+          ),
+          _param(
+            AppRoutes.noteVersions(':id'),
+            (id) => NoteVersionsScreen(noteId: id),
+          ),
+          GoRoute(
+            path: AppRoutes.noteVersion(':id', ':version'),
+            pageBuilder: (context, state) => _fade(
+              state,
+              NoteVersionScreen(
+                noteId: state.pathParameters['id']!,
+                versionId: state.pathParameters['version']!,
+              ),
+            ),
           ),
           GoRoute(
             path: AppRoutes.schedulePath,

@@ -27,6 +27,17 @@ class NotesSync {
     await _forgetMissing({for (final note in remote) note.id});
   }
 
+  Future<void> saveVersion(String id) async {
+    await run();
+    final row = await _store.row(id);
+    if (row == null) {
+      return;
+    }
+    final doc = await _store.open(id);
+    await _api.compact(id, row.seq, doc.state, doc.text);
+    await _store.markSnapshotted(id);
+  }
+
   Future<void> _sendCreated() async {
     for (final row in await _store.rows()) {
       if (row.created) {

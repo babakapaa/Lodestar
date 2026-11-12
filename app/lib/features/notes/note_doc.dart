@@ -19,7 +19,7 @@ class NoteDoc {
 
   final String id;
   final CrdtText _text;
-  final _remote = StreamController<TextEdit>.broadcast();
+  final _outside = StreamController<TextEdit>.broadcast();
   late Uint8List _flushed;
   bool _dirty = false;
 
@@ -29,7 +29,7 @@ class NoteDoc {
 
   Uint8List get state => _text.diff(_empty);
 
-  Stream<TextEdit> get remoteEdits => _remote.stream;
+  Stream<TextEdit> get outsideEdits => _outside.stream;
 
   bool edit(String next) {
     final change = TextEdit.between(_text.text, next);
@@ -39,6 +39,16 @@ class NoteDoc {
     _text.edit(change.index, change.remove, change.insert);
     _dirty = true;
     return true;
+  }
+
+  void replace(String next) {
+    final change = TextEdit.between(_text.text, next);
+    if (change == null) {
+      return;
+    }
+    _text.edit(change.index, change.remove, change.insert);
+    _dirty = true;
+    _outside.add(change);
   }
 
   Uint8List? takeLocal() {
@@ -61,12 +71,12 @@ class NoteDoc {
     }
     final change = TextEdit.between(before, _text.text);
     if (change != null) {
-      _remote.add(change);
+      _outside.add(change);
     }
   }
 
   void dispose() {
-    _remote.close();
+    _outside.close();
     _text.dispose();
   }
 

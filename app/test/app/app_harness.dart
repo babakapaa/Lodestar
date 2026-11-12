@@ -9,12 +9,13 @@ import 'package:lodestar/core/live/live_providers.dart';
 import 'package:lodestar/core/settings/settings_providers.dart';
 import 'package:lodestar/features/notes/notes_database.dart';
 import 'package:lodestar/features/notes/notes_providers.dart';
-import 'package:lodestar/features/privacy/privacy_providers.dart';
+import 'package:lodestar/core/files/files_providers.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../support/fake_authenticator.dart';
 import '../support/fake_export_saver.dart';
+import '../support/fake_file_opener.dart';
 import '../support/fake_live_socket.dart';
 import '../support/fake_server.dart';
 import '../support/memory_token_store.dart';
@@ -26,11 +27,12 @@ const signedInStorage = <String, Object>{
 };
 
 class AppHarness {
-  const AppHarness(this.server, this.live, this.saver);
+  const AppHarness(this.server, this.live, this.saver, this.opener);
 
   final FakeServer server;
   final FakeLiveSocket live;
   final FakeExportSaver saver;
+  final FakeFileOpener opener;
 }
 
 Future<AppHarness> pumpApp(
@@ -49,6 +51,7 @@ Future<AppHarness> pumpApp(
   final fake = server ?? FakeServer();
   final live = FakeLiveSocket();
   final saver = FakeExportSaver();
+  final opener = FakeFileOpener();
   final tokens = MemoryTokenStore(
     signedIn
         ? const TokenPair(accessToken: 'access-1', refreshToken: 'refresh-1')
@@ -62,6 +65,7 @@ Future<AppHarness> pumpApp(
         httpClientProvider.overrideWithValue(fake.client),
         liveSocketProvider.overrideWithValue(live),
         exportSaverProvider.overrideWithValue(saver),
+        fileOpenerProvider.overrideWithValue(opener),
         notesDatabaseProvider.overrideWith((ref) {
           final db = NotesDatabase(
             DatabaseConnection(
@@ -80,5 +84,5 @@ Future<AppHarness> pumpApp(
     ),
   );
   await tester.pumpAndSettle();
-  return AppHarness(fake, live, saver);
+  return AppHarness(fake, live, saver, opener);
 }

@@ -5,6 +5,7 @@ import '../../core/api/api_client.dart';
 import 'note_changes.dart';
 import 'note_member.dart';
 import 'note_meta.dart';
+import 'note_version.dart';
 import 'remote_note.dart';
 
 class NotesApi {
@@ -44,6 +45,17 @@ class NotesApi {
         'data': base64Encode(data),
         'body': body,
       });
+
+  Future<List<NoteVersion>> versions(String id) async => [
+    for (final item
+        in (await _api.get('/v1/notes/${_id(id)}/versions'))! as List<Object?>)
+      NoteVersion.fromJson(item! as Map<String, Object?>),
+  ];
+
+  Future<String> versionBody(String id, String version) async =>
+      ((await _api.get('/v1/notes/${_id(id)}/versions/${_id(version)}'))!
+              as Map<String, Object?>)['body']!
+          as String;
 
   Future<List<NoteMember>> members(String id) async => [
     for (final item

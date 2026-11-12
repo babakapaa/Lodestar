@@ -12,6 +12,7 @@ import 'note_meta.dart';
 import 'note_role.dart';
 import 'notes_database.dart';
 import 'remote_note.dart';
+import 'vault_note.dart';
 
 class NotesStore {
   NotesStore(this._db, {this.flushDelay = const Duration(milliseconds: 400)});
@@ -67,6 +68,31 @@ class NotesStore {
     return id;
   }
 
+  Future<int> importAll(List<VaultNote> notes) async {
+    final taken = {for (final row in await rows()) row.path.toLowerCase()};
+    var imported = 0;
+    for (final note in notes) {
+      if (note.path.isEmpty) {
+        continue;
+      }
+      var path = note.path;
+      for (var n = 2; taken.contains(path.toLowerCase()); n++) {
+        path = '${note.path} $n';
+      }
+      taken.add(path.toLowerCase());
+      final id = await create(
+        NoteMeta(
+          path: path,
+          tags: note.tags,
+          links: NoteLinks.parse(note.body),
+        ),
+      );
+      await replaceText(id, note.body);
+      imported++;
+    }
+    return imported;
+  }
+
   Future<void> setMeta(String id, NoteMeta meta) => _serial(() async {
     final current = await row(id);
     if (current == null) {
@@ -99,6 +125,11 @@ class NotesStore {
     }
     _timers[doc.id]?.cancel();
     _timers[doc.id] = Timer(flushDelay, () => unawaited(flush(doc.id)));
+  }
+
+  Future<void> replaceText(String id, String text) async {
+    (await open(id)).replace(text);
+    await flush(id);
   }
 
   Future<void> flush(String id) => _serial(() => _flush(id));

@@ -10,6 +10,7 @@ import (
 	"github.com/babakapaa/lodestar/server/internal/core/settings"
 	"github.com/babakapaa/lodestar/server/internal/core/structure"
 	"github.com/babakapaa/lodestar/server/internal/platform/database"
+	"github.com/babakapaa/lodestar/server/internal/platform/secretbox"
 )
 
 type Core struct {
@@ -19,7 +20,7 @@ type Core struct {
 	Kernel        module.Kernel
 }
 
-func NewCore(pool *pgxpool.Pool, registry *module.Registry) (Core, error) {
+func NewCore(pool *pgxpool.Pool, registry *module.Registry, box secretbox.Box) (Core, error) {
 	tx := database.NewTenantTx(pool)
 	catalog, err := access.NewCatalog(append(CorePermissions(), registry.Permissions()...)...)
 	if err != nil {
@@ -45,6 +46,7 @@ func NewCore(pool *pgxpool.Pool, registry *module.Registry) (Core, error) {
 			Access:   accessService,
 			Notifier: moduleNotifier{notifier: notify.NewNotifier(notifications)},
 			Settings: settingsService,
+			Secrets:  box,
 		},
 	}, nil
 }

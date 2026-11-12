@@ -16,12 +16,13 @@ import (
 	"github.com/babakapaa/lodestar/server/internal/core/settings"
 	"github.com/babakapaa/lodestar/server/internal/core/structure"
 	"github.com/babakapaa/lodestar/server/internal/core/tenant"
+	"github.com/babakapaa/lodestar/server/internal/modules/notes"
 	"github.com/babakapaa/lodestar/server/internal/modules/study"
 	"github.com/babakapaa/lodestar/server/internal/platform/database"
 )
 
 func Modules() []module.Module {
-	return []module.Module{study.Module{}}
+	return []module.Module{study.Module{}, notes.Module{}}
 }
 
 func CoreMigrations() []database.Migrations {

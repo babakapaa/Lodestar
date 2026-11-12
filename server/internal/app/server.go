@@ -53,7 +53,7 @@ func NewServer(version string, cfg config.Config, box secretbox.Box, pool *pgxpo
 	})
 	authn := authRoutes.Authenticator
 
-	core, err := NewCore(pool, registry)
+	core, err := NewCore(pool, registry, box)
 	if err != nil {
 		return Server{}, err
 	}
@@ -72,7 +72,7 @@ func NewServer(version string, cfg config.Config, box secretbox.Box, pool *pgxpo
 	if err != nil {
 		return Server{}, err
 	}
-	sections, err := privacy.NewSections(append(privacySections(ext), registry.PrivacySections()...)...)
+	sections, err := privacy.NewSections(append(privacySections(ext), registry.PrivacySections(kernel)...)...)
 	if err != nil {
 		return Server{}, err
 	}

@@ -25,9 +25,11 @@ final notesDatabaseProvider = Provider<NotesDatabase>((ref) {
   return db;
 });
 
-final notesStoreProvider = Provider<NotesStore>(
-  (ref) => NotesStore(ref.watch(notesDatabaseProvider)),
-);
+final notesStoreProvider = Provider<NotesStore>((ref) {
+  final store = NotesStore(ref.watch(notesDatabaseProvider));
+  ref.onDispose(store.dispose);
+  return store;
+});
 
 final notesApiProvider = Provider<NotesApi>(
   (ref) => NotesApi(ref.watch(apiClientProvider)),

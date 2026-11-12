@@ -134,6 +134,9 @@ class FakeNotes {
 
   http.Response _unshare(String id, String user) {
     members[id]?.removeWhere((member) => member['userId'] == user);
+    if (user == 'u1' && notes[id]?['ownerId'] != 'u1') {
+      notes.remove(id);
+    }
     return http.Response('', 204);
   }
 

@@ -427,5 +427,57 @@
   },
   "gradeAttempts": "Попытки",
   "gradeNoWork": "Работы пока нет, но оценку можно поставить.",
-  "errorInvalidGrade": "Проверьте оценку. Без оценки нужен комментарий."
+  "errorInvalidGrade": "Проверьте оценку. Без оценки нужен комментарий.",
+  "notesNew": "Новая заметка",
+  "notesUntitled": "Без названия",
+  "notesSearch": "Поиск по заметкам",
+  "notesNothingFound": "Ничего не нашлось",
+  "notesOffline": "Нет связи с сервером. Правки сохранены на устройстве и уйдут, когда появится сеть.",
+  "notesTrash": "Корзина",
+  "notesTrashEmpty": "Корзина пуста",
+  "notesTrashHint": "Из корзины заметки со временем удаляются навсегда, срок задаёт вуз.",
+  "notesRestore": "Вернуть",
+  "notesDelete": "В корзину",
+  "notesInTrash": "Заметка в корзине",
+  "notesRename": "Название и папка",
+  "notesPathLabel": "Путь, например Биология/Клетка",
+  "notesTags": "Теги",
+  "notesTagsLabel": "Теги через запятую",
+  "notesLinks": "Связи",
+  "notesLinksOut": "Ссылки из заметки",
+  "notesLinksIn": "Ссылаются сюда",
+  "notesLinksNone": "Связей пока нет. Напишите [[название заметки]], чтобы связать.",
+  "notesLinkCreate": "Создать заметку «{name}»",
+  "@notesLinkCreate": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "notesEditorHint": "Начните писать. [[Название]] связывает заметки.",
+  "notesReadOnly": "Вы можете только читать эту заметку",
+  "notesNotFound": "Заметка не найдена",
+  "notesNotAccepted": "Сервер не принял изменения: {reason}",
+  "@notesNotAccepted": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "notesShare": "Совместный доступ",
+  "notesShareAdd": "Добавить человека",
+  "notesShareEmpty": "Заметкой пока никто не пользуется, кроме вас.",
+  "notesCanEdit": "Может править",
+  "notesCanRead": "Может читать",
+  "notesUnshare": "Закрыть доступ",
+  "notesLeave": "Выйти из заметки",
+  "notesSharedNote": "Общая заметка",
+  "errorNoteNotFound": "Заметка не найдена или доступ к ней закрыт.",
+  "errorInvalidNote": "Проверьте путь заметки: он не должен быть пустым.",
+  "errorNoteReadOnly": "Эту заметку можно только читать.",
+  "errorNoteDeleted": "Заметка в корзине.",
+  "errorNotesQuota": "Место для заметок закончилось. Освободите корзину или обратитесь в вуз.",
+  "errorNotNoteOwner": "Это может сделать только владелец заметки."
 }

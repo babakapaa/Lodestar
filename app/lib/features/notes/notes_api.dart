@@ -57,5 +57,10 @@ class NotesApi {
   Future<void> unshare(String id, String userId) =>
       _api.delete('/v1/notes/${_id(id)}/members/${_id(userId)}');
 
+  Future<void> leave(String id) async {
+    final me = (await _api.get('/v1/me'))! as Map<String, Object?>;
+    await unshare(id, me['id']! as String);
+  }
+
   static String _id(String id) => Uri.encodeComponent(id);
 }

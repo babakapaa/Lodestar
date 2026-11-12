@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../core/access/access_providers.dart';
 import '../../core/auth/auth_providers.dart';
 import '../../core/navigation/app_routes.dart';
 import '../../design/components/lodestar_button.dart';
@@ -17,6 +18,8 @@ class ProfileScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
+    final administers =
+        ref.watch(myPermissionsProvider).value?.administers ?? false;
     return Scaffold(
       appBar: AppBar(title: Text(l10n.profileTitle)),
       body: SafeArea(
@@ -38,6 +41,12 @@ class ProfileScreen extends ConsumerWidget {
                     AppRoutes.notificationSettings,
                   ),
                   (Icons.shield_outlined, l10n.privacyTitle, AppRoutes.privacy),
+                  if (administers)
+                    (
+                      Icons.admin_panel_settings_outlined,
+                      l10n.adminTitle,
+                      AppRoutes.admin,
+                    ),
                 ])
                   ListTile(
                     contentPadding: EdgeInsets.zero,

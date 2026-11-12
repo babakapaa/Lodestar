@@ -37,6 +37,20 @@ docker compose -f deploy/compose.yaml exec -e LODESTAR_OIDC_CLIENT_SECRET=... se
 docker compose -f deploy/compose.yaml exec server /lodestarctl role grant-top -tenant kaznu -email admin@kaznu.kz
 ```
 
+## Тестовый вуз
+
+Для показа и приёмки есть тестовый вуз `demo` со своим входом без паролей: студентка, преподаватель и администратор. Его нельзя включать у настоящего вуза.
+
+В `deploy/.env` впишите `DEMO_IDP_CLIENT_SECRET` (любая длинная строка) и `DEMO_IDP_ISSUER`. Это адрес демо-входа, который открывается и с телефона, и с сервера, например `http://192.168.1.10:8090`. `LODESTAR_PUBLIC_URL` должен открываться с телефона так же.
+
+```sh
+docker compose -f deploy/compose.yaml --profile demo up -d
+docker compose -f deploy/compose.yaml exec -e LODESTAR_OIDC_CLIENT_SECRET=$DEMO_IDP_CLIENT_SECRET server \
+  /lodestarctl demo seed -issuer $DEMO_IDP_ISSUER
+```
+
+В приложении укажите адрес сервера и код вуза `demo`, нажмите «Войти через Демо-вход» и выберите, кем войти.
+
 ## Разработка
 
 ```sh

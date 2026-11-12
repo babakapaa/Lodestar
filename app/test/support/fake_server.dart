@@ -48,6 +48,11 @@ class FakeServer {
   };
   final Map<String, Object?> preferences = {};
   Map<String, Object?>? deletion;
+  List<String> permissions = [];
+  final Map<String, Object?> settings = {};
+  final List<Map<String, Object?>> modules = [
+    {'name': 'study', 'version': '0.1.0', 'optional': true, 'enabled': true},
+  ];
   bool selfDeletion = true;
   String validAccess = 'access-1';
   int issued = 1;
@@ -116,6 +121,55 @@ class FakeServer {
             'set': preferences.containsKey(key),
           },
       ]),
+      'GET /v1/me/permissions' => _json(200, permissions),
+      'GET /v1/settings/schema' => _json(200, [
+        {
+          'key': 'core.default_language',
+          'type': 'choice',
+          'options': ['system', 'kk', 'ru', 'en'],
+          'default': 'system',
+        },
+        {'key': 'core.self_deletion', 'type': 'bool', 'default': true},
+        {
+          'key': 'core.deletion_grace_days',
+          'type': 'integer',
+          'min': 0,
+          'max': 90,
+          'default': 14,
+        },
+      ]),
+      'GET /v1/settings' => _json(200, [
+        for (final key in [
+          'core.default_language',
+          'core.self_deletion',
+          'core.deletion_grace_days',
+        ])
+          {
+            'key': key,
+            'value': settings[key] ?? _settingDefaults[key],
+            'set': settings.containsKey(key),
+          },
+      ]),
+      'GET /v1/modules' => _json(200, modules),
+      'PUT /v1/modules/study' => _setModule(request),
+      'GET /v1/audit' => _json(200, [
+        {
+          'id': 3,
+          'actorId': 'u1',
+          'action': 'core.setting.changed',
+          'targetKind': 'setting',
+          'targetId': 'core.self_deletion',
+          'details': {'key': 'core.self_deletion'},
+          'at': '2026-11-12T09:30:00Z',
+        },
+      ]),
+      'GET /v1/users/u1/profile' => _json(200, {
+        'userId': 'u1',
+        'displayName': 'Дана Ахметова',
+        'about': '',
+        'contacts': <Object?>[],
+      }),
+      _ when route.startsWith('PUT /v1/settings/') => _setSetting(request),
       'GET /v1/me/export' => http.Response.bytes([80, 75, 3, 4], 200),
       'GET /v1/me/deletion' =>
         deletion == null
@@ -174,6 +228,24 @@ class FakeServer {
     'core.quiet_from': 1320,
     'core.quiet_to': 420,
   };
+
+  static const _settingDefaults = <String, Object?>{
+    'core.default_language': 'system',
+    'core.self_deletion': true,
+    'core.deletion_grace_days': 14,
+  };
+
+  http.Response _setSetting(http.Request request) {
+    final key = Uri.decodeComponent(request.url.pathSegments.last);
+    settings[key] = (jsonDecode(request.body) as Map<String, Object?>)['value'];
+    return http.Response('', 204);
+  }
+
+  http.Response _setModule(http.Request request) {
+    modules.first['enabled'] =
+        (jsonDecode(request.body) as Map<String, Object?>)['enabled'];
+    return http.Response('', 204);
+  }
 
   http.Response _readAll() {
     for (final n in notifications) {

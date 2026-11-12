@@ -6,6 +6,8 @@ import (
 	"os"
 	"strings"
 	"time"
+
+	"github.com/babakapaa/lodestar/server/internal/platform/objectstore"
 )
 
 type Config struct {
@@ -15,6 +17,7 @@ type Config struct {
 	SecretKey       string
 	AppRedirects    []string
 	WebOrigins      []string
+	Storage         objectstore.Config
 	AccessTTL       time.Duration
 	RefreshTTL      time.Duration
 	ShutdownTimeout time.Duration
@@ -28,6 +31,14 @@ func Load() (Config, error) {
 		SecretKey:    stringEnv("LODESTAR_SECRET_KEY", ""),
 		AppRedirects: listEnv("LODESTAR_APP_REDIRECTS", "io.github.babakapaa.lodestar:/auth"),
 		WebOrigins:   listEnv("LODESTAR_WEB_ORIGINS", ""),
+		Storage: objectstore.Config{
+			Endpoint:       stringEnv("LODESTAR_S3_ENDPOINT", ""),
+			PublicEndpoint: stringEnv("LODESTAR_S3_PUBLIC_ENDPOINT", ""),
+			Region:         stringEnv("LODESTAR_S3_REGION", "us-east-1"),
+			Bucket:         stringEnv("LODESTAR_S3_BUCKET", "lodestar"),
+			AccessKey:      stringEnv("LODESTAR_S3_ACCESS_KEY", ""),
+			SecretKey:      stringEnv("LODESTAR_S3_SECRET_KEY", ""),
+		},
 	}
 	if cfg.DatabaseURL == "" {
 		return Config{}, errors.New("LODESTAR_DATABASE_URL is required")

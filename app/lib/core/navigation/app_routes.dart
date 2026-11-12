@@ -8,6 +8,16 @@ abstract final class AppRoutes {
   static const admin = '/admin';
   static const adminSettings = '/admin/settings';
   static const adminAudit = '/admin/audit';
+  static const roles = '/admin/roles';
+  static const roleNew = '/admin/roles/new';
+  static const people = '/admin/people';
+  static const units = '/admin/units';
   static const connect = '/connect';
   static const login = '/login';
+
+  static String role(String id) => '/admin/roles/$id';
+
+  static String personRoles(String id) => '/admin/people/$id';
+
+  static String unit(String id) => '/admin/units/$id';
 }

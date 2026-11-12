@@ -36,6 +36,34 @@ class AdminScreen extends ConsumerWidget {
                     trailing: const Icon(Icons.chevron_right),
                     onTap: () => context.push(AppRoutes.adminSettings),
                   ),
+                if (permissions.has(PermissionSet.manageRoles)) ...[
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: const Icon(Icons.badge_outlined),
+                    title: Text(l10n.rolesTitle),
+                    subtitle: Text(l10n.adminRolesBody),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => context.push(AppRoutes.roles),
+                  ),
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: const Icon(Icons.people_outline),
+                    title: Text(l10n.peopleRolesTitle),
+                    subtitle: Text(l10n.adminPeopleBody),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => context.push(AppRoutes.people),
+                  ),
+                ],
+                if (permissions.has(PermissionSet.manageStructure) ||
+                    permissions.has(PermissionSet.manageMembers))
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: const Icon(Icons.account_tree_outlined),
+                    title: Text(l10n.unitsTitle),
+                    subtitle: Text(l10n.adminUnitsBody),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => context.push(AppRoutes.units),
+                  ),
                 if (permissions.has(PermissionSet.viewAudit))
                   ListTile(
                     contentPadding: EdgeInsets.zero,

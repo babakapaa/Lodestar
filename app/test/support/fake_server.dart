@@ -3,8 +3,11 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 
+import 'fake_directory.dart';
+
 class FakeServer {
   final List<http.Request> requests = [];
+  final FakeDirectory directory = FakeDirectory();
   final Map<String, Object?> profile = {
     'userId': 'u1',
     'displayName': '',
@@ -180,7 +183,7 @@ class FakeServer {
       _ when route.startsWith('PUT /v1/me/preferences/') => _setPreference(
         request,
       ),
-      _ => _json(404, {'code': 'not_found'}),
+      _ => directory.handle(request),
     };
   }
 

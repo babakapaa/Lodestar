@@ -7,6 +7,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/babakapaa/lodestar/server/internal/core/access"
+	"github.com/babakapaa/lodestar/server/internal/core/audit"
 	"github.com/babakapaa/lodestar/server/internal/core/auth"
 	"github.com/babakapaa/lodestar/server/internal/core/delivery"
 	"github.com/babakapaa/lodestar/server/internal/core/files"
@@ -25,11 +26,12 @@ import (
 )
 
 const (
-	liveRetention  = 7 * 24 * time.Hour
-	pruneEvery     = time.Hour
-	uploadDeadline = 24 * time.Hour
-	sweepEvery     = time.Hour
-	dispatchEvery  = 5 * time.Second
+	liveRetention   = 7 * 24 * time.Hour
+	pruneEvery      = time.Hour
+	uploadDeadline  = 24 * time.Hour
+	sweepEvery      = time.Hour
+	dispatchEvery   = 5 * time.Second
+	auditPruneEvery = 24 * time.Hour
 )
 
 type Server struct {
@@ -49,7 +51,7 @@ func NewServer(version string, cfg config.Config, box secretbox.Box, pool *pgxpo
 	})
 	authn := authRoutes.Authenticator
 
-	permissions := append(append(structure.Permissions(), settings.Permissions()...), registry.Permissions()...)
+	permissions := append(append(append(structure.Permissions(), settings.Permissions()...), audit.Permissions()...), registry.Permissions()...)
 	catalog, err := access.NewCatalog(permissions...)
 	if err != nil {
 		return Server{}, err
@@ -58,7 +60,7 @@ func NewServer(version string, cfg config.Config, box secretbox.Box, pool *pgxpo
 	if err != nil {
 		return Server{}, err
 	}
-	tenantSettings, err := schema.NewCatalog(append(append(append(settings.CoreSettings(), files.CoreSettings()...), delivery.CoreSettings()...), registry.Settings()...)...)
+	tenantSettings, err := schema.NewCatalog(append(append(append(append(settings.CoreSettings(), files.CoreSettings()...), delivery.CoreSettings()...), audit.CoreSettings()...), registry.Settings()...)...)
 	if err != nil {
 		return Server{}, err
 	}
@@ -87,6 +89,7 @@ func NewServer(version string, cfg config.Config, box secretbox.Box, pool *pgxpo
 		files.Routes{Service: files.NewService(tx, ext.Storage, settingsService), Authenticator: authn},
 		delivery.Routes{Service: delivery.NewService(tx), Authenticator: authn},
 		search.Routes{Service: searchService, Authenticator: authn},
+		audit.Routes{Service: audit.NewService(tx, accessService), Authenticator: authn},
 	)
 	dispatcher := delivery.NewDispatcher(pool, delivery.DispatcherConfig{
 		Texts:       delivery.NewTexts(registry.NotificationTypes()...),
@@ -98,7 +101,12 @@ func NewServer(version string, cfg config.Config, box secretbox.Box, pool *pgxpo
 		AppURL:      cfg.AppURL,
 		Every:       dispatchEvery,
 	})
-	workers := []Worker{live.NewListener(pool, hub), live.NewPruner(pool, liveRetention, pruneEvery), dispatcher}
+	workers := []Worker{
+		live.NewListener(pool, hub),
+		live.NewPruner(pool, liveRetention, pruneEvery),
+		dispatcher,
+		audit.NewPruner(pool, settingsService, auditPruneEvery),
+	}
 	if ext.Storage != nil {
 		workers = append(workers, files.NewSweeper(pool, ext.Storage, uploadDeadline, sweepEvery))
 	}

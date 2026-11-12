@@ -2,6 +2,7 @@ package app
 
 import (
 	"github.com/babakapaa/lodestar/server/internal/core/access"
+	"github.com/babakapaa/lodestar/server/internal/core/audit"
 	"github.com/babakapaa/lodestar/server/internal/core/auth"
 	"github.com/babakapaa/lodestar/server/internal/core/delivery"
 	"github.com/babakapaa/lodestar/server/internal/core/files"
@@ -23,7 +24,7 @@ func Modules() []module.Module {
 
 func CoreMigrations() []database.Migrations {
 	return []database.Migrations{
-		tenant.Migrations(), search.Migrations(), identity.Migrations(), auth.Migrations(), access.Migrations(), structure.Migrations(),
+		tenant.Migrations(), search.Migrations(), identity.Migrations(), audit.Migrations(), auth.Migrations(), access.Migrations(), structure.Migrations(),
 		profile.Migrations(), settings.Migrations(), live.Migrations(), notify.Migrations(),
 		files.Migrations(), delivery.Migrations(),
 	}

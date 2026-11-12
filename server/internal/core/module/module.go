@@ -4,5 +4,5 @@ import "net/http"
 
 type Module interface {
 	Manifest() Manifest
-	Mount(mux *http.ServeMux)
+	Mount(mux *http.ServeMux, k Kernel)
 }

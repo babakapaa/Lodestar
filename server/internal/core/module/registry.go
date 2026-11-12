@@ -145,11 +145,11 @@ func (r *Registry) Find(name string) (Manifest, bool) {
 	return Manifest{}, false
 }
 
-func (r *Registry) Mount(mux *http.ServeMux, gate Gate) {
+func (r *Registry) Mount(mux *http.ServeMux, gate Gate, k Kernel) {
 	for _, m := range r.modules {
 		name := m.Manifest().Name
 		sub := http.NewServeMux()
-		m.Mount(sub)
+		m.Mount(sub, k)
 		mux.Handle("/v1/"+name+"/", gate.Wrap(name, sub))
 	}
 }

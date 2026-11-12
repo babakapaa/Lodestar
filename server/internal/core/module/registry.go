@@ -8,6 +8,7 @@ import (
 	"slices"
 
 	"github.com/babakapaa/lodestar/server/internal/core/schema"
+	"github.com/babakapaa/lodestar/server/internal/core/search"
 	"github.com/babakapaa/lodestar/server/internal/platform/database"
 )
 
@@ -17,11 +18,13 @@ var ErrUnnamedModule = errors.New("module has no name")
 
 var ErrReservedName = errors.New("module name is reserved or malformed")
 
+var ErrForeignSearchKind = errors.New("module search kind must start with the module name")
+
 var namePattern = regexp.MustCompile(`^[a-z][a-z0-9]{1,29}$`)
 
 var reservedNames = []string{
 	"auth", "events", "files", "live", "me", "meta", "modules", "notifications", "overrides", "permissions",
-	"preferences", "role-assignments", "roles", "sessions", "settings", "units", "users",
+	"preferences", "role-assignments", "roles", "search", "sessions", "settings", "units", "users",
 }
 
 type Registry struct {
@@ -42,6 +45,9 @@ func NewRegistry(modules ...Module) (*Registry, error) {
 			return nil, fmt.Errorf("%w: %s", ErrDuplicateModule, name)
 		}
 		seen[name] = struct{}{}
+		if err := checkSearchKinds(m); err != nil {
+			return nil, err
+		}
 	}
 	return &Registry{modules: modules}, nil
 }
@@ -102,6 +108,16 @@ func (r *Registry) NotificationTypes() []NotificationType {
 		}
 	}
 	return types
+}
+
+func (r *Registry) SearchSources() []search.Source {
+	var sources []search.Source
+	for _, m := range r.modules {
+		if s, ok := m.(Searchable); ok {
+			sources = append(sources, s.SearchSources()...)
+		}
+	}
+	return sources
 }
 
 func (r *Registry) Find(name string) (Manifest, bool) {

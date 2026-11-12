@@ -25,6 +25,8 @@ tags:
     description: Живые обновления и уведомления
   - name: files
     description: Файлы, загрузка напрямую в хранилище вуза
+  - name: search
+    description: Общий поиск по людям, подразделениям и модулям
 paths:
   /healthz:
     get:
@@ -1863,6 +1865,74 @@ paths:
           $ref: "#/components/responses/Error"
         default:
           $ref: "#/components/responses/Error"
+  /v1/search:
+    get:
+      tags: [search]
+      operationId: search
+      summary: Найти людей, подразделения и объекты модулей
+      description: Ищет по части слова, терпит опечатки, не различает «е» и «ё». Модуль, выключенный вузом, в поиске не участвует. Каждый модуль сам отдаёт только то, что человек вправе видеть.
+      security:
+        - bearer: []
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+            maxLength: 200
+        - name: kind
+          in: query
+          description: Где искать, можно несколько раз. По умолчанию везде.
+          schema:
+            type: array
+            items:
+              type: string
+              examples: [people, units]
+          explode: true
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 20
+      responses:
+        "200":
+          description: Готово, лучшие совпадения сверху
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SearchHit"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/search/kinds:
+    get:
+      tags: [search]
+      operationId: listSearchKinds
+      summary: Где можно искать в этом вузе
+      security:
+        - bearer: []
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
 components:
   securitySchemes:
     bearer:
@@ -2512,6 +2582,25 @@ components:
         language:
           type: string
           examples: [kk-KZ]
+    SearchHit:
+      type: object
+      required: [kind, id, title, subtitle, link, score]
+      properties:
+        kind:
+          type: string
+          examples: [people]
+        id:
+          type: string
+        title:
+          type: string
+        subtitle:
+          type: string
+        link:
+          type: string
+          description: Путь в приложении
+          examples: [/people/6f1c]
+        score:
+          type: number
     Error:
       type: object
       required: [code]

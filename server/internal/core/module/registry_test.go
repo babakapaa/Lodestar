@@ -21,7 +21,7 @@ func (s stubModule) Manifest() Manifest {
 	return Manifest{Name: s.name, Version: "1"}
 }
 
-func (s stubModule) Mount(mux *http.ServeMux) {
+func (s stubModule) Mount(mux *http.ServeMux, _ Kernel) {
 	mux.HandleFunc("GET /v1/"+s.name+"/ping", func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusNoContent)
 	})
@@ -58,7 +58,7 @@ func TestRegistryMountsRoutes(t *testing.T) {
 		t.Fatalf("NewRegistry: %v", err)
 	}
 	mux := http.NewServeMux()
-	registry.Mount(mux, closedGate{closed: "notes"})
+	registry.Mount(mux, closedGate{closed: "notes"}, Kernel{})
 
 	rec := httptest.NewRecorder()
 	mux.ServeHTTP(rec, httptest.NewRequest(http.MethodGet, "/v1/study/ping", nil))
@@ -85,7 +85,7 @@ func TestRegistryMountGoesThroughGate(t *testing.T) {
 		t.Fatalf("NewRegistry: %v", err)
 	}
 	mux := http.NewServeMux()
-	registry.Mount(mux, closedGate{closed: "notes"})
+	registry.Mount(mux, closedGate{closed: "notes"}, Kernel{})
 
 	rec := httptest.NewRecorder()
 	mux.ServeHTTP(rec, httptest.NewRequest(http.MethodGet, "/v1/notes/ping", nil))

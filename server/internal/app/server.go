@@ -84,7 +84,8 @@ func NewServer(version string, cfg config.Config, box secretbox.Box, pool *pgxpo
 	if err != nil {
 		return Server{}, err
 	}
-	handler := NewRouter(version, registry, pool, settings.NewGate(settingsService, authn),
+	kernel := module.Kernel{Tenants: tx, Access: accessService, Notifier: moduleNotifier{notifier: notify.NewNotifier(notifications)}}
+	handler := NewRouter(version, registry, pool, settings.NewGate(settingsService, authn), kernel,
 		authRoutes,
 		access.Routes{Service: accessService, Authenticator: authn},
 		structure.Routes{Service: structure.NewService(tx, accessService), Authenticator: authn},

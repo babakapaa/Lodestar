@@ -27,7 +27,7 @@ func (optionalModule) Manifest() module.Manifest {
 	return module.Manifest{Name: "notes", Version: "1", Optional: true}
 }
 
-func (optionalModule) Mount(mux *http.ServeMux) {
+func (optionalModule) Mount(mux *http.ServeMux, _ module.Kernel) {
 	mux.HandleFunc("GET /v1/notes/ping", func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusNoContent)
 	})

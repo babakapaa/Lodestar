@@ -31,6 +31,8 @@ tags:
     description: Журнал изменений ролей, прав и настроек вуза
   - name: privacy
     description: Мои данные, их выгрузка и удаление аккаунта
+  - name: study
+    description: Учёба, курсы, задания и расписание
 paths:
   /healthz:
     get:
@@ -2079,6 +2081,388 @@ paths:
           $ref: "#/components/responses/Error"
         default:
           $ref: "#/components/responses/Error"
+  /v1/study/courses:
+    get:
+      tags: [study]
+      operationId: listMyCourses
+      summary: Мои курсы, где я преподаю или учусь
+      description: Студент видит курс, если записан сам или состоит в группе, потоке или другом подразделении курса, в том числе вложенном.
+      security:
+        - bearer: []
+      parameters:
+        - name: archived
+          in: query
+          description: Показать и архивные
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MyCourse"
+        "401":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+    post:
+      tags: [study]
+      operationId: createCourse
+      summary: Создать курс
+      description: Нужно право study.courses.manage в подразделении курса, а для курса без подразделения во всём вузе.
+      security:
+        - bearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CourseInput"
+      responses:
+        "201":
+          description: Создано
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Course"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/study/catalog:
+    get:
+      tags: [study]
+      operationId: listCourseCatalog
+      summary: Курсы подразделения для тех, кто ими управляет
+      security:
+        - bearer: []
+      parameters:
+        - name: unit
+          in: query
+          description: Подразделение. Без него все курсы вуза
+          schema:
+            type: string
+            format: uuid
+        - name: archived
+          in: query
+          description: Показать и архивные
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Course"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/study/courses/{id}:
+    get:
+      tags: [study]
+      operationId: getCourse
+      summary: Курс с преподавателями и подразделениями
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CourseDetails"
+        "401":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+    put:
+      tags: [study]
+      operationId: updateCourse
+      summary: Изменить курс
+      description: Преподаватель курса меняет название, код и описание. Перенести курс в другое подразделение может только тот, кто управляет курсами.
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CourseInput"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Course"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/study/courses/{id}/archive:
+    post:
+      tags: [study]
+      operationId: archiveCourse
+      summary: Убрать курс в архив
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "204":
+          description: Готово
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/study/courses/{id}/restore:
+    post:
+      tags: [study]
+      operationId: restoreCourse
+      summary: Вернуть курс из архива
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "204":
+          description: Готово
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/study/courses/{id}/students:
+    get:
+      tags: [study]
+      operationId: listCourseStudents
+      summary: Все студенты курса, записанные сами и из подразделений
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Person"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/study/courses/{id}/teachers/{member}:
+    put:
+      tags: [study]
+      operationId: addCourseTeacher
+      summary: Добавить преподавателя в курс
+      description: Нужно право study.courses.manage.
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+        - name: member
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: Готово
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+    delete:
+      tags: [study]
+      operationId: removeCourseTeacher
+      summary: Убрать преподавателя из курса
+      description: Нужно право study.courses.manage.
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+        - name: member
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: Готово
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/study/courses/{id}/units/{member}:
+    put:
+      tags: [study]
+      operationId: addCourseUnit
+      summary: Добавить подразделение в курс
+      description: Нужно право study.courses.manage.
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+        - name: member
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: Готово
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+    delete:
+      tags: [study]
+      operationId: removeCourseUnit
+      summary: Убрать подразделение из курса
+      description: Нужно право study.courses.manage.
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+        - name: member
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: Готово
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/study/courses/{id}/students/{member}:
+    put:
+      tags: [study]
+      operationId: addCourseStudent
+      summary: Добавить студента в курс
+      description: Студентов записывает и преподаватель курса.
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+        - name: member
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: Готово
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+    delete:
+      tags: [study]
+      operationId: removeCourseStudent
+      summary: Убрать студента из курса
+      description: Студентов записывает и преподаватель курса.
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+        - name: member
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: Готово
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
 components:
   securitySchemes:
     bearer:
@@ -2808,6 +3192,86 @@ components:
         dueAt:
           type: string
           format: date-time
+    Course:
+      type: object
+      required: [id, unitId, title, code, description, archivedAt, createdAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        unitId:
+          type: [string, "null"]
+          format: uuid
+          description: Подразделение, которому принадлежит курс. Пусто для курса всего вуза
+        title:
+          type: string
+        code:
+          type: [string, "null"]
+        description:
+          type: string
+        archivedAt:
+          type: [string, "null"]
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+    CourseRole:
+      type: string
+      enum: [teacher, student, manager]
+    MyCourse:
+      allOf:
+        - $ref: "#/components/schemas/Course"
+        - type: object
+          required: [role]
+          properties:
+            role:
+              $ref: "#/components/schemas/CourseRole"
+    CourseDetails:
+      allOf:
+        - $ref: "#/components/schemas/Course"
+        - type: object
+          required: [role, canManage, teachers, units]
+          properties:
+            role:
+              $ref: "#/components/schemas/CourseRole"
+            canManage:
+              type: boolean
+            teachers:
+              type: array
+              items:
+                $ref: "#/components/schemas/Person"
+            units:
+              type: array
+              items:
+                $ref: "#/components/schemas/Unit"
+    CourseInput:
+      type: object
+      required: [title]
+      properties:
+        unitId:
+          type: [string, "null"]
+          format: uuid
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        code:
+          type: [string, "null"]
+          maxLength: 100
+        description:
+          type: string
+          maxLength: 20000
+    Person:
+      type: object
+      required: [userId, displayName, email]
+      properties:
+        userId:
+          type: string
+          format: uuid
+        displayName:
+          type: string
+        email:
+          type: string
     Error:
       type: object
       required: [code]

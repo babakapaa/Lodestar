@@ -33,3 +33,17 @@ func (EntryStore) Prune(ctx context.Context, tx pgx.Tx, keep time.Duration) erro
 	_, err := tx.Exec(ctx, `DELETE FROM core.audit_log WHERE at < now() - $1::interval`, keep)
 	return err
 }
+
+func (EntryStore) ByActor(ctx context.Context, tx pgx.Tx, actorID string) ([]Entry, error) {
+	rows, err := tx.Query(ctx, `
+		SELECT id, actor_id::text, action, target_kind, target_id, details, at FROM core.audit_log
+		WHERE actor_id::text = $1 ORDER BY id`, actorID)
+	if err != nil {
+		return nil, fmt.Errorf("export audit log: %w", err)
+	}
+	return pgx.CollectRows(rows, func(row pgx.CollectableRow) (Entry, error) {
+		var e Entry
+		err := row.Scan(&e.ID, &e.ActorID, &e.Action, &e.TargetKind, &e.TargetID, &e.Details, &e.At)
+		return e, err
+	})
+}

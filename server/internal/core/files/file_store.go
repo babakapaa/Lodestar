@@ -86,3 +86,19 @@ func scanFile(row pgx.Row) (File, error) {
 	err := row.Scan(&f.ID, &f.OwnerID, &f.Name, &f.ContentType, &f.Size, &f.Status, &f.CreatedAt, &f.UploadedAt)
 	return f, err
 }
+
+func (FileStore) Owned(ctx context.Context, tx pgx.Tx, ownerID string) ([]File, error) {
+	rows, err := tx.Query(ctx, `
+		SELECT `+fileColumns+` FROM core.files WHERE owner_id::text = $1 ORDER BY created_at, id`, ownerID)
+	if err != nil {
+		return nil, fmt.Errorf("list owned files: %w", err)
+	}
+	return pgx.CollectRows(rows, func(row pgx.CollectableRow) (File, error) {
+		return scanFile(row)
+	})
+}
+
+func (FileStore) DeleteOwned(ctx context.Context, tx pgx.Tx, ownerID string) error {
+	_, err := tx.Exec(ctx, `DELETE FROM core.files WHERE owner_id::text = $1`, ownerID)
+	return err
+}

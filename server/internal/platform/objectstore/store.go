@@ -3,6 +3,7 @@ package objectstore
 import (
 	"context"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -84,6 +85,14 @@ func (s *Store) Size(ctx context.Context, key string) (int64, error) {
 		return 0, fmt.Errorf("stat object: %w", err)
 	}
 	return info.Size, nil
+}
+
+func (s *Store) Open(ctx context.Context, key string) (io.ReadCloser, error) {
+	obj, err := s.internal.GetObject(ctx, s.bucket, key, minio.GetObjectOptions{})
+	if err != nil {
+		return nil, fmt.Errorf("open object: %w", err)
+	}
+	return obj, nil
 }
 
 func (s *Store) Delete(ctx context.Context, key string) error {

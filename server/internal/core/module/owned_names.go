@@ -18,3 +18,17 @@ func checkSearchKinds(m Module) error {
 	}
 	return nil
 }
+
+func checkPrivacySections(m Module) error {
+	s, ok := m.(Private)
+	if !ok {
+		return nil
+	}
+	name := m.Manifest().Name
+	for _, section := range s.PrivacySections() {
+		if !strings.HasPrefix(section.Name(), name+".") {
+			return fmt.Errorf("%w: %s in module %s", ErrForeignSection, section.Name(), name)
+		}
+	}
+	return nil
+}

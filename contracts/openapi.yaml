@@ -29,6 +29,8 @@ tags:
     description: Общий поиск по людям, подразделениям и модулям
   - name: audit
     description: Журнал изменений ролей, прав и настроек вуза
+  - name: privacy
+    description: Мои данные, их выгрузка и удаление аккаунта
 paths:
   /healthz:
     get:
@@ -1979,6 +1981,83 @@ paths:
           $ref: "#/components/responses/Error"
         default:
           $ref: "#/components/responses/Error"
+  /v1/me/export:
+    get:
+      tags: [privacy]
+      operationId: exportMyData
+      summary: Скачать все свои данные одним ZIP-архивом
+      description: В архиве export.json с оглавлением, по файлу JSON на каждый раздел (ядро и модули) и мои загруженные файлы в папке files.
+      security:
+        - bearer: []
+      responses:
+        "200":
+          description: Архив
+          content:
+            application/zip:
+              schema:
+                type: string
+                format: binary
+        "401":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/me/deletion:
+    get:
+      tags: [privacy]
+      operationId: getDeletion
+      summary: Запрошено ли удаление аккаунта и когда оно произойдёт
+      security:
+        - bearer: []
+      responses:
+        "200":
+          description: Удаление запрошено
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Deletion"
+        "404":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+    post:
+      tags: [privacy]
+      operationId: requestDeletion
+      summary: Запросить удаление аккаунта
+      description: |
+        Аккаунт и все данные удаляются через core.deletion_grace_days дней (задаёт вуз). До этого удаление можно отменить. Повторный запрос не сдвигает срок.
+        Если вуз выключил самостоятельное удаление (core.self_deletion), ответ 403 deletion_by_university.
+      security:
+        - bearer: []
+      responses:
+        "200":
+          description: Удаление запланировано
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Deletion"
+        "403":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+    delete:
+      tags: [privacy]
+      operationId: cancelDeletion
+      summary: Отменить удаление аккаунта
+      security:
+        - bearer: []
+      responses:
+        "204":
+          description: Готово
+        "404":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
 components:
   securitySchemes:
     bearer:
@@ -2669,6 +2748,16 @@ components:
         details:
           type: object
         at:
+          type: string
+          format: date-time
+    Deletion:
+      type: object
+      required: [requestedAt, dueAt]
+      properties:
+        requestedAt:
+          type: string
+          format: date-time
+        dueAt:
           type: string
           format: date-time
     Error:

@@ -20,6 +20,9 @@ const (
 	CodeUserNotFound    = "user_not_found"
 	CodeNotOwner        = "not_note_owner"
 	CodeVersionNotFound = "note_version_not_found"
+	CodeInvalidSource   = "invalid_source"
+	CodeSourceNotFound  = "source_not_found"
+	CodeLookupFailed    = "source_lookup_failed"
 )
 
 var errorCodes = []struct {
@@ -38,6 +41,9 @@ var errorCodes = []struct {
 	{ErrUserNotFound, http.StatusNotFound, CodeUserNotFound},
 	{ErrNotOwner, http.StatusForbidden, CodeNotOwner},
 	{ErrVersionNotFound, http.StatusNotFound, CodeVersionNotFound},
+	{ErrInvalidSource, http.StatusBadRequest, CodeInvalidSource},
+	{ErrSourceNotFound, http.StatusNotFound, CodeSourceNotFound},
+	{ErrLookupFailed, http.StatusUnprocessableEntity, CodeLookupFailed},
 }
 
 func writeError(w http.ResponseWriter, err error) {

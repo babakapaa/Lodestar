@@ -27,6 +27,8 @@ const (
 	CodeInvalidSeries      = "invalid_series"
 	CodeInvalidChange      = "invalid_change"
 	CodeInvalidRange       = "invalid_range"
+	CodeInvalidSearchMap   = "invalid_search_map"
+	CodeMapIncomplete      = "search_map_incomplete"
 )
 
 var errorCodes = []struct {
@@ -52,6 +54,8 @@ var errorCodes = []struct {
 	{ErrInvalidSeries, http.StatusBadRequest, CodeInvalidSeries},
 	{ErrInvalidChange, http.StatusBadRequest, CodeInvalidChange},
 	{ErrInvalidRange, http.StatusBadRequest, CodeInvalidRange},
+	{ErrInvalidSearchMap, http.StatusBadRequest, CodeInvalidSearchMap},
+	{ErrSearchMapIncomplete, http.StatusUnprocessableEntity, CodeMapIncomplete},
 }
 
 func writeError(w http.ResponseWriter, err error) {

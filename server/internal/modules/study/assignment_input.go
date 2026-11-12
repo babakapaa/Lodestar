@@ -13,6 +13,7 @@ type AssignmentInput struct {
 	DueAt       *time.Time `json:"dueAt"`
 	Grading     Grading    `json:"grading"`
 	MaxPoints   *float64   `json:"maxPoints"`
+	SearchMap   *MapRules  `json:"searchMap"`
 	Files       []string   `json:"files"`
 	Published   bool       `json:"published"`
 }
@@ -23,7 +24,7 @@ func (in AssignmentInput) normalized() (AssignmentInput, error) {
 	if in.Grading == "" {
 		in.Grading = GradingNone
 	}
-	if !in.Grading.valid() || len(in.Files) > maxAttachments {
+	if !in.Grading.valid() || len(in.Files) > maxAttachments || (in.SearchMap != nil && !in.SearchMap.valid()) {
 		return in, ErrInvalidAssignment
 	}
 	if (in.Grading == GradingPoints) != (in.MaxPoints != nil) {

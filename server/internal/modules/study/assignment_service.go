@@ -21,6 +21,7 @@ type AssignmentService struct {
 	notifier    module.Notifier
 	assignments AssignmentStore
 	submissions SubmissionStore
+	maps        SearchMapStore
 	grades      GradeStore
 	attachments Attachments
 	people      identity.People
@@ -272,6 +273,9 @@ func (s AssignmentService) Submit(ctx context.Context, p auth.Principal, id stri
 		}
 		if c.ArchivedAt != nil {
 			return ErrArchived
+		}
+		if a.SearchMap != nil && (in.SearchMap == nil || len(in.SearchMap.Missing(*a.SearchMap)) > 0) {
+			return ErrSearchMapIncomplete
 		}
 		if err := s.attachments.Check(ctx, tx, p.UserID, in.Files); err != nil {
 			return err

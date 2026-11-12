@@ -10,7 +10,7 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 )
 
-const submissionColumns = `s.id::text, s.assignment_id::text, s.student_id::text, s.client_id::text, s.body, s.composed_at, s.submitted_at`
+const submissionColumns = `s.id::text, s.assignment_id::text, s.student_id::text, s.client_id::text, s.body, s.composed_at, s.search_map, s.submitted_at`
 
 type SubmissionStore struct{}
 
@@ -30,8 +30,8 @@ func (SubmissionStore) ByClient(ctx context.Context, tx pgx.Tx, assignmentID, st
 
 func (SubmissionStore) Insert(ctx context.Context, tx pgx.Tx, assignmentID, studentID string, in SubmissionInput) (Submission, error) {
 	rows, err := tx.Query(ctx, `
-		INSERT INTO study.submissions AS s (assignment_id, student_id, client_id, body, composed_at)
-		VALUES ($1, $2, $3, $4, $5) RETURNING `+submissionColumns, assignmentID, studentID, in.ClientID, in.Body, in.ComposedAt)
+		INSERT INTO study.submissions AS s (assignment_id, student_id, client_id, body, composed_at, search_map)
+		VALUES ($1, $2, $3, $4, $5, $6) RETURNING `+submissionColumns, assignmentID, studentID, in.ClientID, in.Body, in.ComposedAt, in.SearchMap)
 	if err != nil {
 		return Submission{}, submissionError(err)
 	}
@@ -78,7 +78,7 @@ func (SubmissionStore) Latest(ctx context.Context, tx pgx.Tx, assignmentID strin
 	for rows.Next() {
 		var sub Submission
 		var count int
-		if err := rows.Scan(&sub.ID, &sub.AssignmentID, &sub.StudentID, &sub.ClientID, &sub.Body, &sub.ComposedAt, &sub.SubmittedAt, &count); err != nil {
+		if err := rows.Scan(&sub.ID, &sub.AssignmentID, &sub.StudentID, &sub.ClientID, &sub.Body, &sub.ComposedAt, &sub.SearchMap, &sub.SubmittedAt, &count); err != nil {
 			return nil, nil, fmt.Errorf("scan submission: %w", err)
 		}
 		if _, seen := latest[sub.StudentID]; !seen {
@@ -126,7 +126,7 @@ func (SubmissionStore) Submitters(ctx context.Context, tx pgx.Tx, assignmentIDs 
 
 func scanSubmission(row pgx.CollectableRow) (Submission, error) {
 	var s Submission
-	err := row.Scan(&s.ID, &s.AssignmentID, &s.StudentID, &s.ClientID, &s.Body, &s.ComposedAt, &s.SubmittedAt)
+	err := row.Scan(&s.ID, &s.AssignmentID, &s.StudentID, &s.ClientID, &s.Body, &s.ComposedAt, &s.SearchMap, &s.SubmittedAt)
 	return s, err
 }
 

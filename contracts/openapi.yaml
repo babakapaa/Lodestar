@@ -2479,6 +2479,64 @@ paths:
           $ref: "#/components/responses/Error"
         "409":
           $ref: "#/components/responses/Error"
+        "422":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/study/assignments/{id}/search-map:
+    get:
+      tags: [study]
+      operationId: getSearchMap
+      summary: Черновик карты поиска студента
+      description: Черновик видит только сам студент. Преподаватель видит карту в сданной работе.
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SearchMapDraft"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+    put:
+      tags: [study]
+      operationId: saveSearchMap
+      summary: Сохранить черновик карты поиска
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SearchMap"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SearchMapDraft"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
         default:
           $ref: "#/components/responses/Error"
   /v1/study/assignments/{id}/work:
@@ -4324,7 +4382,7 @@ components:
       description: points баллы до maxPoints, pass зачёт или незачёт, none только отзыв
     Assignment:
       type: object
-      required: [id, courseId, title, description, dueAt, grading, maxPoints, publishedAt, createdAt]
+      required: [id, courseId, title, description, dueAt, grading, maxPoints, searchMap, publishedAt, createdAt]
       properties:
         id:
           type: string
@@ -4343,6 +4401,11 @@ components:
           $ref: "#/components/schemas/Grading"
         maxPoints:
           type: [number, "null"]
+        searchMap:
+          oneOf:
+            - $ref: "#/components/schemas/MapRules"
+            - type: "null"
+          description: Требования к карте поиска. Пусто, если карта не нужна
         publishedAt:
           type: [string, "null"]
           format: date-time
@@ -4369,6 +4432,10 @@ components:
         maxPoints:
           type: [number, "null"]
           exclusiveMinimum: 0
+        searchMap:
+          oneOf:
+            - $ref: "#/components/schemas/MapRules"
+            - type: "null"
         files:
           type: array
           maxItems: 20
@@ -4436,7 +4503,7 @@ components:
                 - type: "null"
     Submission:
       type: object
-      required: [id, assignmentId, studentId, clientId, body, composedAt, submittedAt, files]
+      required: [id, assignmentId, studentId, clientId, body, composedAt, searchMap, submittedAt, files]
       properties:
         id:
           type: string
@@ -4455,6 +4522,10 @@ components:
         composedAt:
           type: [string, "null"]
           format: date-time
+        searchMap:
+          oneOf:
+            - $ref: "#/components/schemas/SearchMap"
+            - type: "null"
         submittedAt:
           type: string
           format: date-time
@@ -4479,6 +4550,89 @@ components:
             type: string
             format: uuid
         composedAt:
+          type: [string, "null"]
+          format: date-time
+        searchMap:
+          oneOf:
+            - $ref: "#/components/schemas/SearchMap"
+            - type: "null"
+          description: Обязательна, если в задании есть требования к карте
+    MapRules:
+      type: object
+      required: [minSources, minScholarly]
+      properties:
+        minSources:
+          type: integer
+          minimum: 0
+          maximum: 200
+        minScholarly:
+          type: integer
+          minimum: 0
+          maximum: 100
+          description: Доля научных источников среди использованных, в процентах
+    MapSource:
+      type: object
+      required: [sourceId, reference, kind, doi, url, found, why, taken]
+      properties:
+        sourceId:
+          type: string
+        reference:
+          type: string
+          minLength: 1
+          maxLength: 2000
+          description: Запись по ГОСТ
+        kind:
+          type: string
+        doi:
+          type: string
+        url:
+          type: string
+        found:
+          type: string
+          description: Где найден
+        why:
+          type: string
+          description: Почему выбран или отброшен, пишет студент
+        taken:
+          type: string
+          description: Что взято в работу
+    SearchMap:
+      type: object
+      required: [used, rejected, path, queries]
+      properties:
+        used:
+          type: array
+          items:
+            $ref: "#/components/schemas/MapSource"
+        rejected:
+          type: array
+          items:
+            $ref: "#/components/schemas/MapSource"
+        path:
+          type: string
+          maxLength: 20000
+          description: Путь поиска, пишет студент
+        queries:
+          type: array
+          maxItems: 100
+          items:
+            type: string
+    SearchMapDraft:
+      type: object
+      required: [map, rules, missing, changedAt]
+      properties:
+        map:
+          $ref: "#/components/schemas/SearchMap"
+        rules:
+          oneOf:
+            - $ref: "#/components/schemas/MapRules"
+            - type: "null"
+        missing:
+          type: array
+          items:
+            type: string
+            enum: [sources, scholarly, why, path]
+        changedAt:
           type: [string, "null"]
           format: date-time
     Grade:

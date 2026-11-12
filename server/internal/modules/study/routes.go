@@ -26,6 +26,8 @@ func (r Routes) Mount(mux *http.ServeMux) {
 	mux.Handle("DELETE /v1/study/assignments/{id}", DeleteAssignmentHandler{service: a})
 	mux.Handle("POST /v1/study/assignments/{id}/submissions", SubmitHandler{service: a})
 	mux.Handle("GET /v1/study/assignments/{id}/work", WorkHandler{service: a})
+	mux.Handle("GET /v1/study/assignments/{id}/search-map", SearchMapHandler{service: a})
+	mux.Handle("PUT /v1/study/assignments/{id}/search-map", SaveSearchMapHandler{service: a})
 	mux.Handle("GET /v1/study/assignments/{id}/students/{student}/submissions", AttemptsHandler{service: a})
 	mux.Handle("PUT /v1/study/assignments/{id}/grades/{student}", GradeHandler{service: a})
 	sc := r.Schedule

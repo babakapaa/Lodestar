@@ -10,6 +10,7 @@ type Assignment struct {
 	DueAt       *time.Time `json:"dueAt"`
 	Grading     Grading    `json:"grading"`
 	MaxPoints   *float64   `json:"maxPoints"`
+	SearchMap   *MapRules  `json:"searchMap"`
 	PublishedAt *time.Time `json:"publishedAt"`
 	CreatedAt   time.Time  `json:"createdAt"`
 }

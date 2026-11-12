@@ -42,5 +42,5 @@ func (Module) SearchSources() []search.Source {
 }
 
 func (Module) PrivacySections(module.Kernel) []privacy.Section {
-	return []privacy.Section{PrivacySection{}, WorkPrivacySection{}}
+	return []privacy.Section{PrivacySection{}, WorkPrivacySection{}, SearchMapPrivacySection{}}
 }

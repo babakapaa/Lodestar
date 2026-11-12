@@ -127,11 +127,11 @@ func (r *Registry) SearchSources() []search.Source {
 	return sources
 }
 
-func (r *Registry) PrivacySections() []privacy.Section {
+func (r *Registry) PrivacySections(k Kernel) []privacy.Section {
 	var sections []privacy.Section
 	for _, m := range r.modules {
 		if p, ok := m.(Private); ok {
-			sections = append(sections, p.PrivacySections()...)
+			sections = append(sections, p.PrivacySections(k)...)
 		}
 	}
 	return sections

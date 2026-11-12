@@ -25,7 +25,7 @@ func checkPrivacySections(m Module) error {
 		return nil
 	}
 	name := m.Manifest().Name
-	for _, section := range s.PrivacySections() {
+	for _, section := range s.PrivacySections(Kernel{}) {
 		if !strings.HasPrefix(section.Name(), name+".") {
 			return fmt.Errorf("%w: %s in module %s", ErrForeignSection, section.Name(), name)
 		}

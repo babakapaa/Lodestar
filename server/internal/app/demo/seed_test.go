@@ -80,7 +80,7 @@ func TestSeedIsRepeatableAndGivesEachPersonTheirRole(t *testing.T) {
 		t.Errorf("student permissions = %v", student)
 	}
 
-	core, err := app.NewCore(pool, registry)
+	core, err := app.NewCore(pool, registry, box)
 	if err != nil {
 		t.Fatalf("core: %v", err)
 	}

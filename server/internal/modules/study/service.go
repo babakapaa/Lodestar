@@ -16,6 +16,7 @@ import (
 type Service struct {
 	tenants   database.TenantTx
 	access    access.Service
+	gate      CourseGate
 	courses   CourseStore
 	roster    RosterStore
 	directory structure.Directory
@@ -25,7 +26,7 @@ type Service struct {
 }
 
 func NewService(tenants database.TenantTx, acc access.Service) Service {
-	return Service{tenants: tenants, access: acc}
+	return Service{tenants: tenants, access: acc, gate: CourseGate{access: acc}}
 }
 
 func (s Service) Mine(ctx context.Context, p auth.Principal, archived bool) ([]MyCourse, error) {
@@ -44,7 +45,7 @@ func (s Service) Mine(ctx context.Context, p auth.Principal, archived bool) ([]M
 func (s Service) Catalog(ctx context.Context, p auth.Principal, unitID *string, archived bool) ([]Course, error) {
 	var list []Course
 	err := s.tenants.Run(ctx, p.TenantID, func(tx pgx.Tx) error {
-		if err := s.access.Require(ctx, tx, p, s.scope(p, unitID), ManageCourses); err != nil {
+		if err := s.access.Require(ctx, tx, p, s.gate.Scope(p, unitID), ManageCourses); err != nil {
 			return err
 		}
 		var err error
@@ -73,7 +74,7 @@ func (s Service) Create(ctx context.Context, p auth.Principal, in CourseInput) (
 func (s Service) Get(ctx context.Context, p auth.Principal, id string) (CourseDetails, error) {
 	var d CourseDetails
 	err := s.tenants.Run(ctx, p.TenantID, func(tx pgx.Tx) error {
-		c, st, err := s.visible(ctx, tx, p, id)
+		c, st, err := s.gate.Visible(ctx, tx, p, id)
 		if err != nil {
 			return err
 		}
@@ -107,7 +108,7 @@ func (s Service) Update(ctx context.Context, p auth.Principal, id string, in Cou
 	in = in.normalized()
 	var c Course
 	err := s.tenants.Run(ctx, p.TenantID, func(tx pgx.Tx) error {
-		before, st, err := s.visible(ctx, tx, p, id)
+		before, st, err := s.gate.Visible(ctx, tx, p, id)
 		if err != nil {
 			return err
 		}
@@ -132,7 +133,7 @@ func (s Service) Update(ctx context.Context, p auth.Principal, id string, in Cou
 
 func (s Service) SetArchived(ctx context.Context, p auth.Principal, id string, archived bool) error {
 	return s.tenants.Run(ctx, p.TenantID, func(tx pgx.Tx) error {
-		c, err := s.managed(ctx, tx, p, id)
+		c, err := s.gate.Managed(ctx, tx, p, id)
 		if err != nil {
 			return err
 		}
@@ -152,7 +153,7 @@ func (s Service) SetArchived(ctx context.Context, p auth.Principal, id string, a
 
 func (s Service) Change(ctx context.Context, p auth.Principal, list List, courseID, memberID string, add bool) error {
 	return s.tenants.Run(ctx, p.TenantID, func(tx pgx.Tx) error {
-		c, st, err := s.visible(ctx, tx, p, courseID)
+		c, st, err := s.gate.Visible(ctx, tx, p, courseID)
 		if err != nil {
 			return err
 		}
@@ -184,14 +185,14 @@ func (s Service) Change(ctx context.Context, p auth.Principal, list List, course
 func (s Service) Students(ctx context.Context, p auth.Principal, courseID string) ([]identity.Person, error) {
 	var list []identity.Person
 	err := s.tenants.Run(ctx, p.TenantID, func(tx pgx.Tx) error {
-		_, st, err := s.visible(ctx, tx, p, courseID)
+		_, st, err := s.gate.Visible(ctx, tx, p, courseID)
 		if err != nil {
 			return err
 		}
 		if !st.Teaches() {
 			return access.ErrForbidden
 		}
-		ids, err := s.studentIDs(ctx, tx, courseID)
+		ids, err := s.gate.StudentIDs(ctx, tx, courseID)
 		if err != nil {
 			return err
 		}
@@ -201,108 +202,13 @@ func (s Service) Students(ctx context.Context, p auth.Principal, courseID string
 	return list, err
 }
 
-func (s Service) studentIDs(ctx context.Context, tx pgx.Tx, courseID string) ([]string, error) {
-	units, err := s.roster.Units(ctx, tx, courseID)
-	if err != nil {
-		return nil, err
-	}
-	fromUnits, err := s.directory.UsersUnder(ctx, tx, units)
-	if err != nil {
-		return nil, err
-	}
-	direct, err := s.roster.Students(ctx, tx, courseID)
-	if err != nil {
-		return nil, err
-	}
-	teachers, err := s.roster.Teachers(ctx, tx, courseID)
-	if err != nil {
-		return nil, err
-	}
-	skip := make(map[string]bool, len(teachers))
-	for _, id := range teachers {
-		skip[id] = true
-	}
-	var all []string
-	for _, id := range append(direct, fromUnits...) {
-		if !skip[id] {
-			skip[id] = true
-			all = append(all, id)
-		}
-	}
-	return all, nil
-}
-
-func (s Service) visible(ctx context.Context, tx pgx.Tx, p auth.Principal, id string) (Course, Standing, error) {
-	c, err := s.courses.ByID(ctx, tx, id)
-	if err != nil {
-		return Course{}, Standing{}, err
-	}
-	st, err := s.standing(ctx, tx, p, c)
-	if err != nil {
-		return Course{}, Standing{}, err
-	}
-	if !st.Visible() {
-		return Course{}, Standing{}, ErrCourseNotFound
-	}
-	return c, st, nil
-}
-
-func (s Service) managed(ctx context.Context, tx pgx.Tx, p auth.Principal, id string) (Course, error) {
-	c, st, err := s.visible(ctx, tx, p, id)
-	if err != nil {
-		return Course{}, err
-	}
-	if !st.Manage {
-		return Course{}, access.ErrForbidden
-	}
-	return c, nil
-}
-
-func (s Service) standing(ctx context.Context, tx pgx.Tx, p auth.Principal, c Course) (Standing, error) {
-	var st Standing
-	err := s.access.Require(ctx, tx, p, s.scope(p, c.UnitID), ManageCourses)
-	switch {
-	case err == nil:
-		st.Manage = true
-	case !isForbidden(err):
-		return Standing{}, err
-	}
-	teaches, err := s.roster.Teaches(ctx, tx, c.ID, p.UserID)
-	if err != nil {
-		return Standing{}, err
-	}
-	if teaches {
-		st.Role = RoleTeacher
-		return st, nil
-	}
-	units, err := s.directory.UnitsAbove(ctx, tx, p.UserID)
-	if err != nil {
-		return Standing{}, err
-	}
-	learns, err := s.roster.Learns(ctx, tx, c.ID, p.UserID, units)
-	if err != nil {
-		return Standing{}, err
-	}
-	if learns {
-		st.Role = RoleStudent
-	}
-	return st, nil
-}
-
 func (s Service) requireUnit(ctx context.Context, tx pgx.Tx, p auth.Principal, unitID *string) error {
 	if unitID != nil {
 		if _, err := s.units.ByID(ctx, tx, *unitID); err != nil {
 			return ErrUnitNotFound
 		}
 	}
-	return s.access.Require(ctx, tx, p, s.scope(p, unitID), ManageCourses)
-}
-
-func (s Service) scope(p auth.Principal, unitID *string) access.Scope {
-	if unitID == nil {
-		return access.TenantScope(p.TenantID)
-	}
-	return structure.UnitScope(*unitID)
+	return s.access.Require(ctx, tx, p, s.gate.Scope(p, unitID), ManageCourses)
 }
 
 func (s Service) record(ctx context.Context, tx pgx.Tx, p auth.Principal, action, courseID string, details any) error {

@@ -13,3 +13,5 @@ var ErrNotUploaded = errors.New("file content has not been uploaded")
 var ErrSizeMismatch = errors.New("uploaded content does not match the declared size")
 
 var ErrUnavailable = errors.New("file storage is not configured")
+
+var ErrInUse = errors.New("file is attached and cannot be deleted")

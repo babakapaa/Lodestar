@@ -25,10 +25,11 @@ type Service struct {
 	storage  Storage
 	settings Settings
 	store    FileStore
+	links    []Link
 }
 
-func NewService(tenants database.TenantTx, storage Storage, settings Settings) Service {
-	return Service{tenants: tenants, storage: storage, settings: settings}
+func NewService(tenants database.TenantTx, storage Storage, settings Settings, links ...Link) Service {
+	return Service{tenants: tenants, storage: storage, settings: settings, links: links}
 }
 
 func (s Service) Create(ctx context.Context, p auth.Principal, in FileInput) (Created, error) {
@@ -92,7 +93,7 @@ func (s Service) Get(ctx context.Context, p auth.Principal, id string) (File, er
 	var f File
 	err := s.tenants.Run(ctx, p.TenantID, func(tx pgx.Tx) error {
 		var err error
-		f, err = s.owned(ctx, tx, p, id, false)
+		f, err = s.readable(ctx, tx, p, id)
 		return err
 	})
 	return f, err
@@ -135,6 +136,15 @@ func (s Service) Delete(ctx context.Context, p auth.Principal, id string) error 
 		if err != nil {
 			return err
 		}
+		for _, link := range s.links {
+			used, err := link.InUse(ctx, tx, f.ID)
+			if err != nil {
+				return err
+			}
+			if used {
+				return ErrInUse
+			}
+		}
 		if err := s.store.Delete(ctx, tx, f.ID); err != nil {
 			return err
 		}
@@ -151,6 +161,26 @@ func (s Service) owned(ctx context.Context, tx pgx.Tx, p auth.Principal, id stri
 		return File{}, ErrNotFound
 	}
 	return f, nil
+}
+
+func (s Service) readable(ctx context.Context, tx pgx.Tx, p auth.Principal, id string) (File, error) {
+	f, err := s.store.ByID(ctx, tx, id, false)
+	if err != nil {
+		return File{}, err
+	}
+	if f.OwnerID == p.UserID {
+		return f, nil
+	}
+	for _, link := range s.links {
+		ok, err := link.Readable(ctx, tx, p, f.ID)
+		if err != nil {
+			return File{}, err
+		}
+		if ok {
+			return f, nil
+		}
+	}
+	return File{}, ErrNotFound
 }
 
 func (s Service) maxSize(ctx context.Context, tx pgx.Tx) (int64, error) {

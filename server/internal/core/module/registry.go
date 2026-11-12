@@ -7,6 +7,7 @@ import (
 	"regexp"
 	"slices"
 
+	"github.com/babakapaa/lodestar/server/internal/core/files"
 	"github.com/babakapaa/lodestar/server/internal/core/privacy"
 	"github.com/babakapaa/lodestar/server/internal/core/schema"
 	"github.com/babakapaa/lodestar/server/internal/core/search"
@@ -134,6 +135,16 @@ func (r *Registry) PrivacySections() []privacy.Section {
 		}
 	}
 	return sections
+}
+
+func (r *Registry) FileLinks(k Kernel) []files.Link {
+	var links []files.Link
+	for _, m := range r.modules {
+		if l, ok := m.(Linking); ok {
+			links = append(links, l.FileLinks(k)...)
+		}
+	}
+	return links
 }
 
 func (r *Registry) Find(name string) (Manifest, bool) {

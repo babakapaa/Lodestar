@@ -1,0 +1,112 @@
+package study
+
+import (
+	"context"
+	"errors"
+	"fmt"
+
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
+)
+
+const assignmentColumns = `a.id::text, a.course_id::text, a.title, a.description, a.due_at, a.grading,
+	a.max_points::float8, a.published_at, a.created_at`
+
+type AssignmentStore struct{}
+
+func (AssignmentStore) ByID(ctx context.Context, tx pgx.Tx, id string, lock bool) (Assignment, error) {
+	query := `SELECT ` + assignmentColumns + ` FROM study.assignments a WHERE a.id::text = $1`
+	if lock {
+		query += ` FOR UPDATE`
+	}
+	rows, err := tx.Query(ctx, query, id)
+	if err != nil {
+		return Assignment{}, fmt.Errorf("find assignment: %w", err)
+	}
+	a, err := pgx.CollectExactlyOneRow(rows, scanAssignment)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return Assignment{}, ErrAssignmentNotFound
+	}
+	return a, err
+}
+
+func (AssignmentStore) ByCourse(ctx context.Context, tx pgx.Tx, courseID string, drafts bool) ([]Assignment, error) {
+	rows, err := tx.Query(ctx, `
+		SELECT `+assignmentColumns+` FROM study.assignments a
+		WHERE a.course_id::text = $1 AND ($2 OR a.published_at IS NOT NULL)
+		ORDER BY a.due_at NULLS LAST, a.created_at, a.id`, courseID, drafts)
+	if err != nil {
+		return nil, fmt.Errorf("list assignments: %w", err)
+	}
+	return pgx.CollectRows(rows, scanAssignment)
+}
+
+func (AssignmentStore) Insert(ctx context.Context, tx pgx.Tx, courseID, authorID string, in AssignmentInput) (Assignment, error) {
+	rows, err := tx.Query(ctx, `
+		INSERT INTO study.assignments AS a (course_id, title, description, due_at, grading, max_points, published_at, created_by)
+		VALUES ($1, $2, $3, $4, $5, $6, CASE WHEN $7 THEN now() END, $8)
+		RETURNING `+assignmentColumns, courseID, in.Title, in.Description, in.DueAt, in.Grading, in.MaxPoints, in.Published, authorID)
+	if err != nil {
+		return Assignment{}, assignmentError(err)
+	}
+	a, err := pgx.CollectExactlyOneRow(rows, scanAssignment)
+	return a, assignmentError(err)
+}
+
+func (AssignmentStore) Update(ctx context.Context, tx pgx.Tx, id string, in AssignmentInput) (Assignment, error) {
+	rows, err := tx.Query(ctx, `
+		UPDATE study.assignments a SET title = $2, description = $3, due_at = $4, grading = $5, max_points = $6,
+		       published_at = CASE WHEN $7 THEN coalesce(a.published_at, now()) END, updated_at = now()
+		WHERE a.id::text = $1 RETURNING `+assignmentColumns,
+		id, in.Title, in.Description, in.DueAt, in.Grading, in.MaxPoints, in.Published)
+	if err != nil {
+		return Assignment{}, assignmentError(err)
+	}
+	a, err := pgx.CollectExactlyOneRow(rows, scanAssignment)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return Assignment{}, ErrAssignmentNotFound
+	}
+	return a, assignmentError(err)
+}
+
+func (AssignmentStore) Delete(ctx context.Context, tx pgx.Tx, id string) error {
+	_, err := tx.Exec(ctx, `DELETE FROM study.assignments WHERE id::text = $1`, id)
+	if err != nil {
+		return fmt.Errorf("delete assignment: %w", err)
+	}
+	return nil
+}
+
+func (AssignmentStore) Files(ctx context.Context, tx pgx.Tx, id string) ([]string, error) {
+	return ids(ctx, tx, `SELECT file_id::text FROM study.assignment_files WHERE assignment_id::text = $1 ORDER BY position`, id)
+}
+
+func (AssignmentStore) SetFiles(ctx context.Context, tx pgx.Tx, id string, fileIDs []string) error {
+	if _, err := tx.Exec(ctx, `DELETE FROM study.assignment_files WHERE assignment_id::text = $1`, id); err != nil {
+		return fmt.Errorf("clear assignment files: %w", err)
+	}
+	_, err := tx.Exec(ctx, `
+		INSERT INTO study.assignment_files (assignment_id, file_id, position)
+		SELECT $1, f.id, f.position FROM unnest($2::uuid[]) WITH ORDINALITY AS f(id, position)`, id, fileIDs)
+	if err != nil {
+		return fmt.Errorf("attach assignment files: %w", err)
+	}
+	return nil
+}
+
+func scanAssignment(row pgx.CollectableRow) (Assignment, error) {
+	var a Assignment
+	err := row.Scan(&a.ID, &a.CourseID, &a.Title, &a.Description, &a.DueAt, &a.Grading, &a.MaxPoints, &a.PublishedAt, &a.CreatedAt)
+	return a, err
+}
+
+func assignmentError(err error) error {
+	var pgErr *pgconn.PgError
+	if errors.As(err, &pgErr) && pgErr.Code == checkViolation {
+		return ErrInvalidAssignment
+	}
+	if err != nil {
+		return fmt.Errorf("save assignment: %w", err)
+	}
+	return nil
+}

@@ -504,7 +504,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Assignment"
+                  $ref: "#/components/schemas/RoleAssignment"
         "400":
           $ref: "#/components/responses/Error"
         "401":
@@ -534,7 +534,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Assignment"
+                $ref: "#/components/schemas/RoleAssignment"
         "400":
           $ref: "#/components/responses/Error"
         "401":
@@ -1723,6 +1723,7 @@ paths:
       tags: [files]
       operationId: getFile
       summary: Сведения о файле
+      description: Файл видит владелец и те, кому его показывает модуль, например студенты курса видят файлы задания.
       security:
         - bearer: []
       parameters:
@@ -1746,6 +1747,7 @@ paths:
       tags: [files]
       operationId: deleteFile
       summary: Удалить файл вместе с содержимым
+      description: Файл, прикреплённый к заданию или сданной работе, удалить нельзя, ответ 409 file_in_use.
       security:
         - bearer: []
       parameters:
@@ -1753,6 +1755,8 @@ paths:
       responses:
         "204":
           description: Готово
+        "409":
+          $ref: "#/components/responses/Error"
         "503":
           $ref: "#/components/responses/Error"
         "400":
@@ -2298,6 +2302,282 @@ paths:
           $ref: "#/components/responses/Error"
         default:
           $ref: "#/components/responses/Error"
+  /v1/study/courses/{id}/assignments:
+    get:
+      tags: [study]
+      operationId: listAssignments
+      summary: Задания курса
+      description: Студент видит только выданные задания и свой прогресс в mine. Преподаватель видит и черновики, а в counts число студентов, сдавших и проверенных.
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AssignmentItem"
+        "401":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+    post:
+      tags: [study]
+      operationId: createAssignment
+      summary: Создать задание
+      description: Только преподаватель курса. Если published, студенты получают уведомление study.assignment_published.
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AssignmentInput"
+      responses:
+        "201":
+          description: Создано
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Assignment"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/study/assignments/{id}:
+    get:
+      tags: [study]
+      operationId: getAssignment
+      summary: Задание с файлами и моей работой
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AssignmentDetails"
+        "401":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+    put:
+      tags: [study]
+      operationId: updateAssignment
+      summary: Изменить задание
+      description: Выданное задание нельзя вернуть в черновик. Способ оценки нельзя сменить, если уже есть оценки.
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AssignmentInput"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Assignment"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+    delete:
+      tags: [study]
+      operationId: deleteAssignment
+      summary: Удалить задание без сданных работ
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "204":
+          description: Удалено
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/study/assignments/{id}/submissions:
+    post:
+      tags: [study]
+      operationId: submitWork
+      summary: Сдать работу
+      description: Приложение придумывает clientId при сдаче без сети и повторяет запрос, пока не получит ответ. Повтор с тем же clientId не создаёт новую попытку. Время сдачи ставит сервер, composedAt только для сведения преподавателя.
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SubmissionInput"
+      responses:
+        "201":
+          description: Сдано
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Submission"
+        "200":
+          description: Эта попытка уже была сдана раньше
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Submission"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/study/assignments/{id}/work:
+    get:
+      tags: [study]
+      operationId: listAssignmentWork
+      summary: Работы всех студентов по заданию
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/StudentWork"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/study/assignments/{id}/students/{student}/submissions:
+    get:
+      tags: [study]
+      operationId: listAttempts
+      summary: Все попытки студента, новые сверху
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+        - name: student
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Submission"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/study/assignments/{id}/grades/{student}:
+    put:
+      tags: [study]
+      operationId: gradeWork
+      summary: Оценить работу
+      description: Баллы для points, зачёт для pass, только отзыв для none. Студент получает уведомление study.graded.
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+        - name: student
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GradeInput"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Grade"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
   /v1/study/courses/{id}/teachers/{member}:
     put:
       tags: [study]
@@ -2664,7 +2944,7 @@ components:
       properties:
         position:
           type: integer
-    Assignment:
+    RoleAssignment:
       type: object
       required: [id, roleId, userId, scope, expiresAt, grantedBy, grantedAt]
       properties:
@@ -3261,6 +3541,218 @@ components:
         description:
           type: string
           maxLength: 20000
+    Grading:
+      type: string
+      enum: [points, pass, none]
+      description: points баллы до maxPoints, pass зачёт или незачёт, none только отзыв
+    Assignment:
+      type: object
+      required: [id, courseId, title, description, dueAt, grading, maxPoints, publishedAt, createdAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        courseId:
+          type: string
+          format: uuid
+        title:
+          type: string
+        description:
+          type: string
+        dueAt:
+          type: [string, "null"]
+          format: date-time
+        grading:
+          $ref: "#/components/schemas/Grading"
+        maxPoints:
+          type: [number, "null"]
+        publishedAt:
+          type: [string, "null"]
+          format: date-time
+          description: Пусто у черновика
+        createdAt:
+          type: string
+          format: date-time
+    AssignmentInput:
+      type: object
+      required: [title]
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        description:
+          type: string
+          maxLength: 50000
+        dueAt:
+          type: [string, "null"]
+          format: date-time
+        grading:
+          $ref: "#/components/schemas/Grading"
+        maxPoints:
+          type: [number, "null"]
+          exclusiveMinimum: 0
+        files:
+          type: array
+          maxItems: 20
+          items:
+            type: string
+            format: uuid
+        published:
+          type: boolean
+    Progress:
+      type: object
+      required: [submittedAt, grade]
+      properties:
+        submittedAt:
+          type: [string, "null"]
+          format: date-time
+        grade:
+          oneOf:
+            - $ref: "#/components/schemas/Grade"
+            - type: "null"
+    Counts:
+      type: object
+      required: [students, submitted, graded]
+      properties:
+        students:
+          type: integer
+        submitted:
+          type: integer
+        graded:
+          type: integer
+    AssignmentItem:
+      allOf:
+        - $ref: "#/components/schemas/Assignment"
+        - type: object
+          required: [mine, counts]
+          properties:
+            mine:
+              oneOf:
+                - $ref: "#/components/schemas/Progress"
+                - type: "null"
+            counts:
+              oneOf:
+                - $ref: "#/components/schemas/Counts"
+                - type: "null"
+    AssignmentDetails:
+      allOf:
+        - $ref: "#/components/schemas/Assignment"
+        - type: object
+          required: [courseTitle, role, files, mine, counts]
+          properties:
+            courseTitle:
+              type: string
+            role:
+              $ref: "#/components/schemas/CourseRole"
+            files:
+              type: array
+              items:
+                $ref: "#/components/schemas/File"
+            mine:
+              oneOf:
+                - $ref: "#/components/schemas/StudentWork"
+                - type: "null"
+            counts:
+              oneOf:
+                - $ref: "#/components/schemas/Counts"
+                - type: "null"
+    Submission:
+      type: object
+      required: [id, assignmentId, studentId, clientId, body, composedAt, submittedAt, files]
+      properties:
+        id:
+          type: string
+          format: uuid
+        assignmentId:
+          type: string
+          format: uuid
+        studentId:
+          type: string
+          format: uuid
+        clientId:
+          type: string
+          format: uuid
+        body:
+          type: string
+        composedAt:
+          type: [string, "null"]
+          format: date-time
+        submittedAt:
+          type: string
+          format: date-time
+        files:
+          type: array
+          items:
+            $ref: "#/components/schemas/File"
+    SubmissionInput:
+      type: object
+      required: [clientId]
+      properties:
+        clientId:
+          type: string
+          format: uuid
+        body:
+          type: string
+          maxLength: 100000
+        files:
+          type: array
+          maxItems: 20
+          items:
+            type: string
+            format: uuid
+        composedAt:
+          type: [string, "null"]
+          format: date-time
+    Grade:
+      type: object
+      required: [assignmentId, studentId, points, passed, comment, gradedBy, gradedAt]
+      properties:
+        assignmentId:
+          type: string
+          format: uuid
+        studentId:
+          type: string
+          format: uuid
+        points:
+          type: [number, "null"]
+        passed:
+          type: [boolean, "null"]
+        comment:
+          type: string
+        gradedBy:
+          type: [string, "null"]
+          format: uuid
+        gradedAt:
+          type: string
+          format: date-time
+    GradeInput:
+      type: object
+      properties:
+        points:
+          type: [number, "null"]
+          minimum: 0
+        passed:
+          type: [boolean, "null"]
+        comment:
+          type: string
+          maxLength: 20000
+    StudentWork:
+      type: object
+      required: [student, latest, attempts, grade]
+      properties:
+        student:
+          $ref: "#/components/schemas/Person"
+        latest:
+          oneOf:
+            - $ref: "#/components/schemas/Submission"
+            - type: "null"
+        attempts:
+          type: integer
+        grade:
+          oneOf:
+            - $ref: "#/components/schemas/Grade"
+            - type: "null"
     Person:
       type: object
       required: [userId, displayName, email]

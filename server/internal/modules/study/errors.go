@@ -13,3 +13,19 @@ var ErrArchived = errors.New("course is archived")
 var ErrUnitNotFound = errors.New("unit not found")
 
 var ErrUserNotFound = errors.New("user not found")
+
+var ErrAssignmentNotFound = errors.New("assignment not found")
+
+var ErrInvalidAssignment = errors.New("assignment title, grading or files are invalid")
+
+var ErrHasWork = errors.New("assignment already has submitted work")
+
+var ErrNotPublished = errors.New("assignment is not published")
+
+var ErrInvalidSubmission = errors.New("submission is empty or malformed")
+
+var ErrInvalidGrade = errors.New("grade does not match the assignment grading")
+
+var ErrNotStudent = errors.New("user is not a student of the course")
+
+var ErrBadFile = errors.New("file is not ready or belongs to someone else")

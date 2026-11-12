@@ -3,6 +3,7 @@ package study
 import (
 	"net/http"
 
+	"github.com/babakapaa/lodestar/server/internal/core/files"
 	"github.com/babakapaa/lodestar/server/internal/core/module"
 	"github.com/babakapaa/lodestar/server/internal/core/privacy"
 	"github.com/babakapaa/lodestar/server/internal/core/search"
@@ -17,7 +18,14 @@ func (Module) Manifest() module.Manifest {
 }
 
 func (Module) Mount(mux *http.ServeMux, k module.Kernel) {
-	Routes{Service: NewService(k.Tenants, k.Access)}.Mount(mux)
+	Routes{
+		Service:     NewService(k.Tenants, k.Access),
+		Assignments: NewAssignmentService(k.Tenants, k.Access, k.Notifier),
+	}.Mount(mux)
+}
+
+func (Module) FileLinks(k module.Kernel) []files.Link {
+	return []files.Link{FileLink{gate: CourseGate{access: k.Access}}}
 }
 
 func (Module) Permissions() []string {
@@ -29,5 +37,5 @@ func (Module) SearchSources() []search.Source {
 }
 
 func (Module) PrivacySections() []privacy.Section {
-	return []privacy.Section{PrivacySection{}}
+	return []privacy.Section{PrivacySection{}, WorkPrivacySection{}}
 }

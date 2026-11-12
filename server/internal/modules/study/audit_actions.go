@@ -12,3 +12,11 @@ const (
 	ActionStudentAdded   = "study.course.student_added"
 	ActionStudentRemoved = "study.course.student_removed"
 )
+
+const (
+	ActionAssignmentCreated   = "study.assignment.created"
+	ActionAssignmentUpdated   = "study.assignment.updated"
+	ActionAssignmentPublished = "study.assignment.published"
+	ActionAssignmentDeleted   = "study.assignment.deleted"
+	ActionGraded              = "study.assignment.graded"
+)

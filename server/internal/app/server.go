@@ -93,7 +93,7 @@ func NewServer(version string, cfg config.Config, box secretbox.Box, pool *pgxpo
 		settings.Routes{Service: settingsService, Authenticator: authn},
 		live.Routes{Hub: hub, Tenants: tx, Authenticator: authn, Origins: cfg.WebOrigins},
 		notify.Routes{Service: notify.NewService(tx, notifications), Authenticator: authn},
-		files.Routes{Service: files.NewService(tx, ext.Storage, settingsService), Authenticator: authn},
+		files.Routes{Service: files.NewService(tx, ext.Storage, settingsService, registry.FileLinks(kernel)...), Authenticator: authn},
 		delivery.Routes{Service: delivery.NewService(tx), Authenticator: authn},
 		search.Routes{Service: searchService, Authenticator: authn},
 		audit.Routes{Service: audit.NewService(tx, accessService), Authenticator: authn},

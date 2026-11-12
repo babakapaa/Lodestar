@@ -48,3 +48,5 @@ app.*.map.json
 .widget_preview/
 
 /web/crdt/
+/web/drift_worker.js
+/web/sqlite3.wasm

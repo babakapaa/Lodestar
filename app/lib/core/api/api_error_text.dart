@@ -38,6 +38,12 @@ abstract final class ApiErrorText {
       'assignment_not_published' => l10n.errorNotPublished,
       'not_course_student' => l10n.errorNotStudent,
       'invalid_grade' => l10n.errorInvalidGrade,
+      'note_not_found' => l10n.errorNoteNotFound,
+      'invalid_note' => l10n.errorInvalidNote,
+      'note_read_only' => l10n.errorNoteReadOnly,
+      'note_deleted' => l10n.errorNoteDeleted,
+      'notes_quota_exceeded' => l10n.errorNotesQuota,
+      'not_note_owner' => l10n.errorNotNoteOwner,
       _ => l10n.errorGeneric,
     };
   }

@@ -232,6 +232,18 @@ class NotesStore {
     await _db.clear();
   });
 
+  Future<void> dispose() async {
+    for (final timer in _timers.values) {
+      timer.cancel();
+    }
+    _timers.clear();
+    await _local.close();
+    for (final doc in _docs.values) {
+      (await doc).dispose();
+    }
+    _docs.clear();
+  }
+
   Future<void> _flush(String id) async {
     _timers.remove(id)?.cancel();
     final opened = _docs[id];

@@ -21,7 +21,12 @@ func (Module) Mount(mux *http.ServeMux, k module.Kernel) {
 	Routes{
 		Service:     NewService(k.Tenants, k.Access),
 		Assignments: NewAssignmentService(k.Tenants, k.Access, k.Notifier),
+		Schedule:    NewScheduleService(k),
 	}.Mount(mux)
+}
+
+func (Module) Workers(k module.Kernel) []module.Worker {
+	return []module.Worker{NewDeadlineReminder(k)}
 }
 
 func (Module) FileLinks(k module.Kernel) []files.Link {
@@ -29,7 +34,7 @@ func (Module) FileLinks(k module.Kernel) []files.Link {
 }
 
 func (Module) Permissions() []string {
-	return []string{string(ManageCourses)}
+	return []string{string(ManageCourses), string(ManageSchedule)}
 }
 
 func (Module) SearchSources() []search.Source {

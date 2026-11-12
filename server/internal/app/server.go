@@ -84,7 +84,13 @@ func NewServer(version string, cfg config.Config, box secretbox.Box, pool *pgxpo
 	if err != nil {
 		return Server{}, err
 	}
-	kernel := module.Kernel{Tenants: tx, Access: accessService, Notifier: moduleNotifier{notifier: notify.NewNotifier(notifications)}}
+	kernel := module.Kernel{
+		Pool:     pool,
+		Tenants:  tx,
+		Access:   accessService,
+		Notifier: moduleNotifier{notifier: notify.NewNotifier(notifications)},
+		Settings: settingsService,
+	}
 	handler := NewRouter(version, registry, pool, settings.NewGate(settingsService, authn), kernel,
 		authRoutes,
 		access.Routes{Service: accessService, Authenticator: authn},
@@ -119,6 +125,9 @@ func NewServer(version string, cfg config.Config, box secretbox.Box, pool *pgxpo
 		dispatcher,
 		audit.NewPruner(pool, settingsService, auditPruneEvery),
 		privacy.NewAccountEraser(pool, sections, eraseEvery),
+	}
+	for _, w := range registry.Workers(kernel) {
+		workers = append(workers, w)
 	}
 	if ext.Storage != nil {
 		workers = append(workers, files.NewSweeper(pool, ext.Storage, uploadDeadline, sweepEvery))

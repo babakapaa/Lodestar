@@ -2578,6 +2578,287 @@ paths:
           $ref: "#/components/responses/Error"
         default:
           $ref: "#/components/responses/Error"
+  /v1/study/courses/{id}/series:
+    get:
+      tags: [study]
+      operationId: listSeries
+      summary: Повторяющиеся занятия курса
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Series"
+        "401":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+    post:
+      tags: [study]
+      operationId: createSeries
+      summary: Добавить занятие в расписание
+      description: Разовое занятие задаётся одинаковыми startsOn и endsOn. Нужно право study.schedule.manage в подразделении курса. Преподаватель курса может менять расписание, если вуз это разрешил настройкой study.teachers_edit_schedule.
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SeriesInput"
+      responses:
+        "201":
+          description: Создано
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Series"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/study/series/{id}:
+    put:
+      tags: [study]
+      operationId: updateSeries
+      summary: Изменить повторяющееся занятие
+      description: Нужно право study.schedule.manage в подразделении курса. Преподаватель курса может менять расписание, если вуз это разрешил настройкой study.teachers_edit_schedule.
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SeriesInput"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Series"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+    delete:
+      tags: [study]
+      operationId: deleteSeries
+      summary: Убрать занятие из расписания
+      description: Нужно право study.schedule.manage в подразделении курса. Преподаватель курса может менять расписание, если вуз это разрешил настройкой study.teachers_edit_schedule.
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "204":
+          description: Удалено
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/study/series/{id}/changes/{date}:
+    put:
+      tags: [study]
+      operationId: changeLesson
+      summary: Отменить, перенести или заменить одно занятие
+      description: Студенты и преподаватели занятия получают уведомление study.schedule_changed. Нужно право study.schedule.manage в подразделении курса. Преподаватель курса может менять расписание, если вуз это разрешил настройкой study.teachers_edit_schedule.
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+        - name: date
+          in: path
+          required: true
+          description: День занятия по расписанию, YYYY-MM-DD
+          schema:
+            type: string
+            format: date
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LessonChangeInput"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LessonChange"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+    delete:
+      tags: [study]
+      operationId: revertLesson
+      summary: Вернуть занятие как в расписании
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+        - name: date
+          in: path
+          required: true
+          description: День занятия по расписанию, YYYY-MM-DD
+          schema:
+            type: string
+            format: date
+      responses:
+        "204":
+          description: Готово
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/study/schedule:
+    get:
+      tags: [study]
+      operationId: mySchedule
+      summary: Мои занятия за период
+      description: Студент видит занятия своих курсов для всего курса и для своих подразделений. Время в часовом поясе вуза core.time_zone.
+      security:
+        - bearer: []
+      parameters:
+        - name: from
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: to
+          in: query
+          required: true
+          description: Включительно, не дальше 62 дней от from
+          schema:
+            type: string
+            format: date
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Lesson"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/study/courses/{id}/schedule:
+    get:
+      tags: [study]
+      operationId: courseSchedule
+      summary: Занятия курса за период
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+        - name: from
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: to
+          in: query
+          required: true
+          description: Включительно, не дальше 62 дней от from
+          schema:
+            type: string
+            format: date
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Lesson"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/study/agenda:
+    get:
+      tags: [study]
+      operationId: myAgenda
+      summary: План дня, занятия и ближайшие сроки
+      description: Сроки берутся из курсов, где я студент, на неделю вперёд и просроченные несданные за две недели.
+      security:
+        - bearer: []
+      parameters:
+        - name: date
+          in: query
+          description: День, по умолчанию сегодня в часовом поясе вуза
+          schema:
+            type: string
+            format: date
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Agenda"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
   /v1/study/courses/{id}/teachers/{member}:
     put:
       tags: [study]
@@ -3753,6 +4034,209 @@ components:
           oneOf:
             - $ref: "#/components/schemas/Grade"
             - type: "null"
+    Series:
+      type: object
+      required: [id, courseId, unitId, teacherId, kind, room, startsOn, endsOn, weekday, startTime, minutes, everyWeeks]
+      properties:
+        id:
+          type: string
+          format: uuid
+        courseId:
+          type: string
+          format: uuid
+        unitId:
+          type: [string, "null"]
+          format: uuid
+          description: Для какого подразделения занятие. Пусто для всего курса
+        teacherId:
+          type: [string, "null"]
+          format: uuid
+        kind:
+          type: string
+          description: Вид занятия, вуз называет сам, например lecture, practice, lab
+        room:
+          type: string
+        startsOn:
+          type: string
+          format: date
+        endsOn:
+          type: string
+          format: date
+        weekday:
+          type: integer
+          minimum: 1
+          maximum: 7
+          description: 1 понедельник, 7 воскресенье
+        startTime:
+          type: string
+          pattern: "^[0-2][0-9]:[0-5][0-9]$"
+        minutes:
+          type: integer
+        everyWeeks:
+          type: integer
+          minimum: 1
+          maximum: 4
+          description: 1 каждую неделю, 2 через неделю
+    SeriesInput:
+      type: object
+      required: [kind, startsOn, endsOn, startTime, minutes]
+      properties:
+        unitId:
+          type: [string, "null"]
+          format: uuid
+        teacherId:
+          type: [string, "null"]
+          format: uuid
+        kind:
+          type: string
+          pattern: "^[a-z][a-z0-9_]{0,39}$"
+        room:
+          type: string
+          maxLength: 200
+        startsOn:
+          type: string
+          format: date
+        endsOn:
+          type: string
+          format: date
+        weekday:
+          type: integer
+          minimum: 1
+          maximum: 7
+          description: По умолчанию день недели startsOn
+        startTime:
+          type: string
+          pattern: "^[0-2][0-9]:[0-5][0-9]$"
+        minutes:
+          type: integer
+          minimum: 1
+          maximum: 1440
+        everyWeeks:
+          type: integer
+          minimum: 1
+          maximum: 4
+    LessonChange:
+      type: object
+      required: [seriesId, date, status, startsAt, minutes, room, teacherId, note]
+      properties:
+        seriesId:
+          type: string
+          format: uuid
+        date:
+          type: string
+          format: date
+        status:
+          type: string
+          enum: [cancelled, changed]
+        startsAt:
+          type: [string, "null"]
+          format: date-time
+        minutes:
+          type: [integer, "null"]
+        room:
+          type: [string, "null"]
+        teacherId:
+          type: [string, "null"]
+          format: uuid
+        note:
+          type: string
+    LessonChangeInput:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [cancelled, changed]
+        startsAt:
+          type: [string, "null"]
+          format: date-time
+        minutes:
+          type: [integer, "null"]
+          minimum: 1
+          maximum: 1440
+        room:
+          type: [string, "null"]
+          maxLength: 200
+        teacherId:
+          type: [string, "null"]
+          format: uuid
+        note:
+          type: string
+          maxLength: 1000
+    Lesson:
+      type: object
+      required: [seriesId, courseId, courseTitle, unitId, kind, date, startsAt, endsAt, room, teacherId, status, note]
+      properties:
+        seriesId:
+          type: string
+          format: uuid
+        courseId:
+          type: string
+          format: uuid
+        courseTitle:
+          type: string
+        unitId:
+          type: [string, "null"]
+          format: uuid
+        kind:
+          type: string
+        date:
+          type: string
+          format: date
+          description: День по расписанию, даже если занятие перенесли
+        startsAt:
+          type: string
+          format: date-time
+        endsAt:
+          type: string
+          format: date-time
+        room:
+          type: string
+        teacherId:
+          type: [string, "null"]
+          format: uuid
+        status:
+          type: string
+          enum: [planned, changed, cancelled]
+        note:
+          type: string
+    Deadline:
+      type: object
+      required: [assignmentId, courseId, courseTitle, title, dueAt, submittedAt]
+      properties:
+        assignmentId:
+          type: string
+          format: uuid
+        courseId:
+          type: string
+          format: uuid
+        courseTitle:
+          type: string
+        title:
+          type: string
+        dueAt:
+          type: string
+          format: date-time
+        submittedAt:
+          type: [string, "null"]
+          format: date-time
+    Agenda:
+      type: object
+      required: [date, timeZone, lessons, deadlines]
+      properties:
+        date:
+          type: string
+          format: date
+        timeZone:
+          type: string
+        lessons:
+          type: array
+          items:
+            $ref: "#/components/schemas/Lesson"
+        deadlines:
+          type: array
+          items:
+            $ref: "#/components/schemas/Deadline"
     Person:
       type: object
       required: [userId, displayName, email]

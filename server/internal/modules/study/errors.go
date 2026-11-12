@@ -29,3 +29,11 @@ var ErrInvalidGrade = errors.New("grade does not match the assignment grading")
 var ErrNotStudent = errors.New("user is not a student of the course")
 
 var ErrBadFile = errors.New("file is not ready or belongs to someone else")
+
+var ErrSeriesNotFound = errors.New("schedule series not found")
+
+var ErrInvalidSeries = errors.New("schedule series is invalid")
+
+var ErrInvalidChange = errors.New("lesson change is invalid")
+
+var ErrInvalidRange = errors.New("date range is invalid")

@@ -147,6 +147,16 @@ func (r *Registry) FileLinks(k Kernel) []files.Link {
 	return links
 }
 
+func (r *Registry) Workers(k Kernel) []Worker {
+	var workers []Worker
+	for _, m := range r.modules {
+		if w, ok := m.(Working); ok {
+			workers = append(workers, w.Workers(k)...)
+		}
+	}
+	return workers
+}
+
 func (r *Registry) Find(name string) (Manifest, bool) {
 	for _, m := range r.modules {
 		if m.Manifest().Name == name {

@@ -1,6 +1,7 @@
 package module
 
 type Manifest struct {
-	Name    string `json:"name"`
-	Version string `json:"version"`
+	Name     string `json:"name"`
+	Version  string `json:"version"`
+	Optional bool   `json:"optional"`
 }

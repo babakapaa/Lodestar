@@ -8,6 +8,7 @@ import (
 	"github.com/jackc/pgx/v5"
 
 	"github.com/babakapaa/lodestar/server/internal/core/auth"
+	"github.com/babakapaa/lodestar/server/internal/core/delivery"
 	"github.com/babakapaa/lodestar/server/internal/core/identity"
 	"github.com/babakapaa/lodestar/server/internal/core/live"
 	"github.com/babakapaa/lodestar/server/internal/core/module"
@@ -16,6 +17,8 @@ import (
 	"github.com/babakapaa/lodestar/server/internal/platform/database"
 	"github.com/babakapaa/lodestar/server/internal/platform/database/dbtest"
 )
+
+var texts = map[string]module.NotificationText{"en": {Title: "Hi", Body: "There"}}
 
 type fixture struct {
 	tx       database.TenantTx
@@ -29,7 +32,7 @@ func setup(t *testing.T) fixture {
 	t.Helper()
 	ctx := context.Background()
 	pool := dbtest.New(t)
-	sets := []database.Migrations{tenant.Migrations(), identity.Migrations(), live.Migrations(), notify.Migrations()}
+	sets := []database.Migrations{tenant.Migrations(), identity.Migrations(), live.Migrations(), notify.Migrations(), delivery.Migrations()}
 	if err := database.NewMigrator(pool).Apply(ctx, sets...); err != nil {
 		t.Fatalf("migrate: %v", err)
 	}
@@ -47,8 +50,8 @@ func setup(t *testing.T) fixture {
 		return auth.Principal{TenantID: created.ID, UserID: u.ID}
 	}
 	catalog, err := notify.NewCatalog(
-		module.NotificationType{Key: "study.deadline", InApp: true, Push: true},
-		module.NotificationType{Key: "core.security", Required: true},
+		module.NotificationType{Key: "study.deadline", InApp: true, Push: true, Texts: texts},
+		module.NotificationType{Key: "core.security", Required: true, Texts: texts},
 	)
 	if err != nil {
 		t.Fatalf("catalog: %v", err)

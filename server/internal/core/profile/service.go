@@ -63,6 +63,21 @@ func (s Service) Update(ctx context.Context, p auth.Principal, in ProfileInput) 
 	return out, err
 }
 
+func (s Service) Value(ctx context.Context, tx pgx.Tx, userID, key string) (json.RawMessage, error) {
+	d, err := s.catalog.Lookup(key)
+	if err != nil {
+		return nil, err
+	}
+	stored, found, err := s.preferences.Get(ctx, tx, userID, key)
+	if err != nil {
+		return nil, err
+	}
+	if found && d.Validate(stored) == nil {
+		return stored, nil
+	}
+	return d.DefaultValue(), nil
+}
+
 func (s Service) Catalog() []schema.Definition {
 	return s.catalog.All()
 }

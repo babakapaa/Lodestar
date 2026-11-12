@@ -1791,6 +1791,78 @@ paths:
           $ref: "#/components/responses/Error"
         default:
           $ref: "#/components/responses/Error"
+  /v1/me/devices:
+    get:
+      tags: [live]
+      operationId: listDevices
+      summary: Мои устройства для push
+      security:
+        - bearer: []
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Device"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+    post:
+      tags: [live]
+      operationId: registerDevice
+      summary: Подключить устройство к push или обновить его
+      description: Тот же токен на другом аккаунте переносит устройство к новому владельцу. Перед выходом из аккаунта приложение удаляет устройство.
+      security:
+        - bearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DeviceInput"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Device"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/me/devices/{id}:
+    delete:
+      tags: [live]
+      operationId: removeDevice
+      summary: Отключить устройство от push
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "204":
+          description: Готово
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
 components:
   securitySchemes:
     bearer:
@@ -2210,7 +2282,7 @@ components:
           type: string
         type:
           type: string
-          enum: [bool, integer, text, choice]
+          enum: [bool, integer, text, choice, time_zone]
         options:
           type: array
           items:
@@ -2402,6 +2474,44 @@ components:
       properties:
         url:
           type: string
+    Device:
+      type: object
+      required: [id, platform, name, language, createdAt, lastSeenAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        platform:
+          type: string
+          enum: [android, ios, web]
+        name:
+          type: string
+        language:
+          type: string
+          description: Язык устройства, для текста push, если человек не выбрал язык сам
+        createdAt:
+          type: string
+          format: date-time
+        lastSeenAt:
+          type: string
+          format: date-time
+    DeviceInput:
+      type: object
+      required: [platform, token]
+      properties:
+        platform:
+          type: string
+          enum: [android, ios, web]
+        token:
+          type: string
+          description: Токен Firebase Cloud Messaging
+          maxLength: 4096
+        name:
+          type: string
+          maxLength: 100
+        language:
+          type: string
+          examples: [kk-KZ]
     Error:
       type: object
       required: [code]

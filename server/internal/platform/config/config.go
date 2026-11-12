@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/babakapaa/lodestar/server/internal/platform/mail"
 	"github.com/babakapaa/lodestar/server/internal/platform/objectstore"
 )
 
@@ -17,7 +18,10 @@ type Config struct {
 	SecretKey       string
 	AppRedirects    []string
 	WebOrigins      []string
+	AppURL          string
 	Storage         objectstore.Config
+	Mail            mail.Config
+	FCMCredentials  string
 	AccessTTL       time.Duration
 	RefreshTTL      time.Duration
 	ShutdownTimeout time.Duration
@@ -39,7 +43,15 @@ func Load() (Config, error) {
 			AccessKey:      stringEnv("LODESTAR_S3_ACCESS_KEY", ""),
 			SecretKey:      stringEnv("LODESTAR_S3_SECRET_KEY", ""),
 		},
+		Mail: mail.Config{
+			Addr:     stringEnv("LODESTAR_SMTP_ADDR", ""),
+			Username: stringEnv("LODESTAR_SMTP_USERNAME", ""),
+			Password: stringEnv("LODESTAR_SMTP_PASSWORD", ""),
+			From:     stringEnv("LODESTAR_MAIL_FROM", ""),
+		},
+		FCMCredentials: stringEnv("LODESTAR_FCM_CREDENTIALS_FILE", ""),
 	}
+	cfg.AppURL = strings.TrimRight(stringEnv("LODESTAR_APP_URL", cfg.PublicURL), "/")
 	if cfg.DatabaseURL == "" {
 		return Config{}, errors.New("LODESTAR_DATABASE_URL is required")
 	}

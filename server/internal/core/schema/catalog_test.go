@@ -13,6 +13,7 @@ func TestValidate(t *testing.T) {
 		Definition{Key: "core.scale", Type: Integer, Min: lo, Max: hi, Default: 100},
 		Definition{Key: "core.motion", Type: Bool, Default: false},
 		Definition{Key: "core.about", Type: Text, MaxLength: 3, Default: ""},
+		Definition{Key: "core.zone", Type: TimeZone, Default: ""},
 	)
 	if err != nil {
 		t.Fatalf("NewCatalog: %v", err)
@@ -28,6 +29,10 @@ func TestValidate(t *testing.T) {
 		{"core.scale", `"150"`, false},
 		{"core.motion", `true`, true},
 		{"core.about", `"абв"`, true},
+		{"core.zone", `"Asia/Almaty"`, true},
+		{"core.zone", `""`, true},
+		{"core.zone", `"Mars/Olympus"`, false},
+		{"core.zone", `"Local"`, false},
 		{"core.about", `"абвг"`, false},
 	}
 	for _, tc := range cases {

@@ -1,0 +1,4 @@
+rust/target/
+.dart_tool/
+test/crdt/
+pubspec.lock

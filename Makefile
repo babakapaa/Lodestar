@@ -9,6 +9,8 @@ down:
 server-test:
 	cd server && go test -race ./...
 
+# Тесты базы: LODESTAR_TEST_DATABASE_URL=postgres://user@host:port/postgres make server-test
+
 server-lint:
 	cd server && go vet ./... && golangci-lint run
 

@@ -1,7 +1,9 @@
 package app
 
 import (
+	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -18,18 +20,26 @@ func newTestRouter(t *testing.T) http.Handler {
 	if err != nil {
 		t.Fatalf("NewRegistry: %v", err)
 	}
-	return NewRouter("test", registry)
+	return NewRouter("test", registry, stubPinger{})
 }
 
-func serve(t *testing.T, router http.Handler, method, path string) *httptest.ResponseRecorder {
+type stubPinger struct {
+	err error
+}
+
+func (p stubPinger) Ping(context.Context) error {
+	return p.err
+}
+
+func serve(t *testing.T, router http.Handler, path string) *httptest.ResponseRecorder {
 	t.Helper()
 	rec := httptest.NewRecorder()
-	router.ServeHTTP(rec, httptest.NewRequest(method, path, nil))
+	router.ServeHTTP(rec, httptest.NewRequest(http.MethodGet, path, nil))
 	return rec
 }
 
 func TestHealth(t *testing.T) {
-	rec := serve(t, newTestRouter(t), http.MethodGet, "/healthz")
+	rec := serve(t, newTestRouter(t), "/healthz")
 
 	if rec.Code != http.StatusOK {
 		t.Fatalf("status = %d, want 200", rec.Code)
@@ -44,7 +54,7 @@ func TestHealth(t *testing.T) {
 }
 
 func TestMeta(t *testing.T) {
-	rec := serve(t, newTestRouter(t), http.MethodGet, "/v1/meta")
+	rec := serve(t, newTestRouter(t), "/v1/meta")
 
 	if rec.Code != http.StatusOK {
 		t.Fatalf("status = %d, want 200", rec.Code)
@@ -62,7 +72,7 @@ func TestMeta(t *testing.T) {
 }
 
 func TestUnknownPathReturnsErrorCode(t *testing.T) {
-	rec := serve(t, newTestRouter(t), http.MethodGet, "/v1/missing")
+	rec := serve(t, newTestRouter(t), "/v1/missing")
 
 	if rec.Code != http.StatusNotFound {
 		t.Fatalf("status = %d, want 404", rec.Code)
@@ -73,5 +83,27 @@ func TestUnknownPathReturnsErrorCode(t *testing.T) {
 	}
 	if body.Code != apierror.CodeNotFound {
 		t.Fatalf("code = %q, want %q", body.Code, apierror.CodeNotFound)
+	}
+}
+
+func TestReadyReportsDatabaseDown(t *testing.T) {
+	registry, err := module.NewRegistry()
+	if err != nil {
+		t.Fatalf("NewRegistry: %v", err)
+	}
+	router := NewRouter("test", registry, stubPinger{err: errors.New("down")})
+
+	rec := serve(t, router, "/readyz")
+
+	if rec.Code != http.StatusServiceUnavailable {
+		t.Fatalf("status = %d, want 503", rec.Code)
+	}
+}
+
+func TestReadyWhenDatabaseUp(t *testing.T) {
+	rec := serve(t, newTestRouter(t), "/readyz")
+
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d, want 200", rec.Code)
 	}
 }

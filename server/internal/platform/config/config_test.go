@@ -6,6 +6,7 @@ import (
 )
 
 func TestLoadDefaults(t *testing.T) {
+	t.Setenv("LODESTAR_DATABASE_URL", "postgres://db")
 	t.Setenv("LODESTAR_HTTP_ADDR", "")
 	t.Setenv("LODESTAR_SHUTDOWN_TIMEOUT", "")
 
@@ -22,6 +23,7 @@ func TestLoadDefaults(t *testing.T) {
 }
 
 func TestLoadFromEnv(t *testing.T) {
+	t.Setenv("LODESTAR_DATABASE_URL", "postgres://db")
 	t.Setenv("LODESTAR_HTTP_ADDR", ":9000")
 	t.Setenv("LODESTAR_SHUTDOWN_TIMEOUT", "3s")
 
@@ -37,7 +39,16 @@ func TestLoadFromEnv(t *testing.T) {
 	}
 }
 
+func TestLoadRequiresDatabase(t *testing.T) {
+	t.Setenv("LODESTAR_DATABASE_URL", "")
+
+	if _, err := Load(); err == nil {
+		t.Fatal("Load accepted a missing database url")
+	}
+}
+
 func TestLoadRejectsBadDuration(t *testing.T) {
+	t.Setenv("LODESTAR_DATABASE_URL", "postgres://db")
 	t.Setenv("LODESTAR_SHUTDOWN_TIMEOUT", "soon")
 
 	if _, err := Load(); err == nil {

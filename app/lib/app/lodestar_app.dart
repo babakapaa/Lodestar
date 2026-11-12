@@ -29,7 +29,12 @@ class _LodestarAppState extends ConsumerState<LodestarApp> {
     super.initState();
     _auth = ValueNotifier(ref.read(authProvider));
     _router = AppRouter(_auth);
-    ref.listenManual(authProvider, (previous, next) => _auth.value = next);
+    ref.listenManual(authProvider, (previous, next) {
+      _auth.value = next;
+      if (next is SignedIn && previous is! SignedIn) {
+        ref.read(settingsProvider.notifier).pull();
+      }
+    }, fireImmediately: true);
   }
 
   @override

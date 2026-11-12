@@ -18,7 +18,10 @@ import (
 	"github.com/babakapaa/lodestar/server/internal/platform/database/dbtest"
 )
 
-var texts = map[string]module.NotificationText{"en": {Title: "Hi", Body: "There"}}
+var (
+	names = map[string]string{"en": "Deadlines"}
+	texts = map[string]module.NotificationText{"en": {Title: "Hi", Body: "There"}}
+)
 
 type fixture struct {
 	tx       database.TenantTx
@@ -50,8 +53,8 @@ func setup(t *testing.T) fixture {
 		return auth.Principal{TenantID: created.ID, UserID: u.ID}
 	}
 	catalog, err := notify.NewCatalog(
-		module.NotificationType{Key: "study.deadline", InApp: true, Push: true, Texts: texts},
-		module.NotificationType{Key: "core.security", Required: true, Texts: texts},
+		module.NotificationType{Key: "study.deadline", InApp: true, Push: true, Names: names, Texts: texts},
+		module.NotificationType{Key: "core.security", Required: true, Names: names, Texts: texts},
 	)
 	if err != nil {
 		t.Fatalf("catalog: %v", err)
@@ -169,5 +172,25 @@ func TestUnknownTypeIsRejected(t *testing.T) {
 	})
 	if !errors.Is(err, notify.ErrUnknownType) {
 		t.Fatalf("err = %v, want ErrUnknownType", err)
+	}
+}
+
+func TestTypesListNamesAndTexts(t *testing.T) {
+	f := setup(t)
+
+	types := f.service.Types()
+
+	if len(types) != 2 || types[0].Key != "study.deadline" || types[0].Names["en"] != "Deadlines" || types[0].Texts["en"].Title != "Hi" {
+		t.Fatalf("types = %+v", types)
+	}
+	if !types[1].Required {
+		t.Errorf("core.security should be required")
+	}
+}
+
+func TestCatalogNeedsNames(t *testing.T) {
+	_, err := notify.NewCatalog(module.NotificationType{Key: "study.deadline", Texts: texts})
+	if !errors.Is(err, notify.ErrBadType) {
+		t.Fatalf("err = %v, want ErrBadType", err)
 	}
 }

@@ -9,7 +9,7 @@ void main() {
     tester,
   ) async {
     final authenticator = FakeAuthenticator();
-    final server = await pumpApp(
+    final app = await pumpApp(
       tester,
       size: const Size(390, 844),
       stored: const {'settings.language': 'ru'},
@@ -31,7 +31,10 @@ void main() {
     expect(login.host, 'campus.example.edu');
     expect(login.path, '/v1/auth/kaznu/microsoft/login');
     expect(login.queryParameters['code_challenge_method'], 'S256');
-    expect(server.requests.last.url.path, '/v1/auth/token');
+    expect(
+      app.server.requests.map((request) => request.url.path),
+      contains('/v1/auth/token'),
+    );
     expect(find.byType(NavigationBar), findsOneWidget);
   });
 
@@ -71,7 +74,7 @@ void main() {
   testWidgets('profile shows the account, devices and signs out', (
     tester,
   ) async {
-    final server = await pumpApp(tester, size: const Size(390, 844));
+    final app = await pumpApp(tester, size: const Size(390, 844));
 
     await tester.tap(find.byTooltip('Профиль и настройки'));
     await tester.pumpAndSettle();
@@ -90,7 +93,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(
-      server.requests.map((request) => request.url.path),
+      app.server.requests.map((request) => request.url.path),
       contains('/v1/auth/logout'),
     );
     expect(find.text('Вход'), findsOneWidget);
@@ -99,7 +102,7 @@ void main() {
   testWidgets('editing the profile saves name, about and contacts', (
     tester,
   ) async {
-    final server = await pumpApp(tester, size: const Size(390, 1200));
+    final app = await pumpApp(tester, size: const Size(390, 1200));
 
     await tester.tap(find.byTooltip('Профиль и настройки'));
     await tester.pumpAndSettle();
@@ -121,8 +124,8 @@ void main() {
     await tester.tap(find.text('Сохранить'));
     await tester.pumpAndSettle();
 
-    expect(server.profile['displayName'], 'Айгерим');
-    expect(server.profile['contacts'], [
+    expect(app.server.profile['displayName'], 'Айгерим');
+    expect(app.server.profile['contacts'], [
       {'kind': 'telegram', 'value': '@aigerim', 'public': true},
     ]);
     expect(find.text('Изучаю биологию'), findsOneWidget);

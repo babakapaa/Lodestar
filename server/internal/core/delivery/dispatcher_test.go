@@ -26,6 +26,7 @@ var deadline = module.NotificationType{
 	Key:   "study.deadline",
 	Push:  true,
 	Email: true,
+	Names: map[string]string{"en": "Deadlines"},
 	Texts: map[string]module.NotificationText{
 		"ru": {Title: "Срок сдачи", Body: "Осталось {days} дн."},
 		"kk": {Title: "Тапсыру мерзімі", Body: "{days} күн қалды"},

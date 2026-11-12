@@ -27,6 +27,28 @@ class FakeServer {
       'current': false,
     },
   ];
+  final List<Map<String, Object?>> notifications = [
+    {
+      'id': 'n1',
+      'type': 'study.deadline',
+      'params': {'course': 'Биология'},
+      'link': '',
+      'createdAt': '2026-11-12T09:00:00Z',
+      'readAt': null,
+    },
+  ];
+  final Map<String, Map<String, Object?>> channels = {
+    'study.deadline': {
+      'type': 'study.deadline',
+      'required': false,
+      'inApp': true,
+      'push': true,
+      'email': false,
+    },
+  };
+  final Map<String, Object?> preferences = {};
+  Map<String, Object?>? deletion;
+  bool selfDeletion = true;
   String validAccess = 'access-1';
   int issued = 1;
   bool acceptRefresh = true;
@@ -55,6 +77,55 @@ class FakeServer {
       'PUT /v1/me/profile' => _putProfile(request),
       'GET /v1/sessions' => _json(200, sessions),
       'DELETE /v1/sessions/s2' => _revoke(),
+      'GET /v1/notifications' => _json(200, notifications),
+      'GET /v1/notifications/unread' => _json(200, {
+        'unread': notifications.where((n) => n['readAt'] == null).length,
+      }),
+      'POST /v1/notifications/read-all' => _readAll(),
+      'POST /v1/notifications/n1/read' => _readAll(),
+      'GET /v1/notification-types' => _json(200, [
+        {
+          'key': 'study.deadline',
+          'required': false,
+          'names': {'ru': 'Сроки сдачи', 'en': 'Deadlines'},
+          'texts': {
+            'ru': {'title': 'Скоро срок: {course}', 'body': 'Осталось 2 дня'},
+            'en': {'title': 'Deadline soon: {course}', 'body': '2 days left'},
+          },
+        },
+      ]),
+      'GET /v1/me/notification-channels' => _json(
+        200,
+        channels.values.toList(),
+      ),
+      'PUT /v1/me/notification-channels/study.deadline' => _setChannels(
+        request,
+      ),
+      'GET /v1/me/preferences' => _json(200, [
+        for (final key in [
+          'core.theme',
+          'core.appearance',
+          'core.language',
+          'core.quiet_hours',
+          'core.quiet_from',
+          'core.quiet_to',
+        ])
+          {
+            'key': key,
+            'value': preferences[key] ?? _defaults[key],
+            'set': preferences.containsKey(key),
+          },
+      ]),
+      'GET /v1/me/export' => http.Response.bytes([80, 75, 3, 4], 200),
+      'GET /v1/me/deletion' =>
+        deletion == null
+            ? _json(404, {'code': 'deletion_not_requested'})
+            : _json(200, deletion),
+      'POST /v1/me/deletion' => _requestDeletion(),
+      'DELETE /v1/me/deletion' => _cancelDeletion(),
+      _ when route.startsWith('PUT /v1/me/preferences/') => _setPreference(
+        request,
+      ),
       _ => _json(404, {'code': 'not_found'}),
     };
   }
@@ -93,6 +164,52 @@ class FakeServer {
   http.Response _putProfile(http.Request request) {
     profile.addAll(jsonDecode(request.body) as Map<String, Object?>);
     return _json(200, profile);
+  }
+
+  static const _defaults = <String, Object?>{
+    'core.theme': 'tenant',
+    'core.appearance': 'system',
+    'core.language': 'system',
+    'core.quiet_hours': false,
+    'core.quiet_from': 1320,
+    'core.quiet_to': 420,
+  };
+
+  http.Response _readAll() {
+    for (final n in notifications) {
+      n['readAt'] ??= '2026-11-12T10:00:00Z';
+    }
+    return http.Response('', 204);
+  }
+
+  http.Response _setChannels(http.Request request) {
+    channels['study.deadline']!.addAll(
+      jsonDecode(request.body) as Map<String, Object?>,
+    );
+    return http.Response('', 204);
+  }
+
+  http.Response _setPreference(http.Request request) {
+    final key = Uri.decodeComponent(request.url.pathSegments.last);
+    preferences[key] =
+        (jsonDecode(request.body) as Map<String, Object?>)['value'];
+    return http.Response('', 204);
+  }
+
+  http.Response _requestDeletion() {
+    if (!selfDeletion) {
+      return _json(403, {'code': 'deletion_by_university'});
+    }
+    deletion ??= {
+      'requestedAt': '2026-11-12T10:00:00Z',
+      'dueAt': '2026-11-26T10:00:00Z',
+    };
+    return _json(200, deletion);
+  }
+
+  http.Response _cancelDeletion() {
+    deletion = null;
+    return http.Response('', 204);
   }
 
   http.Response _revoke() {

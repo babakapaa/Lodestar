@@ -10,6 +10,9 @@ import '../../features/connect/connect_screen.dart';
 import '../../features/login/login_screen.dart';
 import '../../features/navigator/navigator_screen.dart';
 import '../../features/notes/notes_screen.dart';
+import '../../features/notifications/notification_settings_screen.dart';
+import '../../features/notifications/notifications_screen.dart';
+import '../../features/privacy/privacy_screen.dart';
 import '../../features/profile/profile_edit_screen.dart';
 import '../../features/profile/profile_screen.dart';
 import '../../features/settings/settings_screen.dart';
@@ -41,6 +44,12 @@ class AppRouter {
           _route(AppRoutes.login, const LoginScreen()),
           _route(AppRoutes.profile, const ProfileScreen()),
           _route(AppRoutes.profileEdit, const ProfileEditScreen()),
+          _route(AppRoutes.privacy, const PrivacyScreen()),
+          _route(AppRoutes.notifications, const NotificationsScreen()),
+          _route(
+            AppRoutes.notificationSettings,
+            const NotificationSettingsScreen(),
+          ),
           _route(AppRoutes.settings, const SettingsScreen()),
         ],
       );

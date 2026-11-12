@@ -15,6 +15,7 @@ func (r Routes) Mount(mux *http.ServeMux) {
 	require := r.Authenticator.Require
 	s := r.Service
 	mux.Handle("GET /v1/notifications", require(ListHandler{service: s}))
+	mux.Handle("GET /v1/notification-types", require(TypesHandler{service: s}))
 	mux.Handle("GET /v1/notifications/unread", require(UnreadHandler{service: s}))
 	mux.Handle("POST /v1/notifications/read-all", require(ReadAllHandler{service: s}))
 	mux.Handle("POST /v1/notifications/{id}/read", require(ReadHandler{service: s}))

@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 
 import 'layout_size.dart';
+import 'notifications_button.dart';
 import 'profile_button.dart';
 
 class TabPage extends StatelessWidget {
@@ -16,7 +17,10 @@ class TabPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(title),
-        actions: [if (compact) const ProfileButton(showLabel: false)],
+        actions: [
+          const NotificationsButton(),
+          if (compact) const ProfileButton(showLabel: false),
+        ],
       ),
       body: SafeArea(top: false, child: child),
     );

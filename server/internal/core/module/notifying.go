@@ -7,6 +7,7 @@ type NotificationType struct {
 	Push     bool   `json:"push"`
 	Email    bool   `json:"email"`
 
+	Names map[string]string           `json:"-"`
 	Texts map[string]NotificationText `json:"-"`
 }
 

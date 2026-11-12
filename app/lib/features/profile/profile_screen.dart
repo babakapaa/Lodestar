@@ -30,13 +30,22 @@ class ProfileScreen extends ConsumerWidget {
               children: [
                 const ProfileHeader(),
                 const SizedBox(height: Spacing.xl),
-                ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  leading: const Icon(Icons.tune),
-                  title: Text(l10n.settingsTitle),
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: () => context.push(AppRoutes.settings),
-                ),
+                for (final (icon, title, route) in [
+                  (Icons.tune, l10n.settingsTitle, AppRoutes.settings),
+                  (
+                    Icons.notifications_outlined,
+                    l10n.notificationSettingsTitle,
+                    AppRoutes.notificationSettings,
+                  ),
+                  (Icons.shield_outlined, l10n.privacyTitle, AppRoutes.privacy),
+                ])
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: Icon(icon),
+                    title: Text(title),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => context.push(route),
+                  ),
                 const SizedBox(height: Spacing.xl),
                 const SessionsSection(),
                 const SizedBox(height: Spacing.xl),

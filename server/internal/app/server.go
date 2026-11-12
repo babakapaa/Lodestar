@@ -16,6 +16,7 @@ import (
 	"github.com/babakapaa/lodestar/server/internal/core/notify"
 	"github.com/babakapaa/lodestar/server/internal/core/profile"
 	"github.com/babakapaa/lodestar/server/internal/core/schema"
+	"github.com/babakapaa/lodestar/server/internal/core/search"
 	"github.com/babakapaa/lodestar/server/internal/core/settings"
 	"github.com/babakapaa/lodestar/server/internal/core/structure"
 	"github.com/babakapaa/lodestar/server/internal/platform/config"
@@ -70,6 +71,11 @@ func NewServer(version string, cfg config.Config, box secretbox.Box, pool *pgxpo
 	accessService := access.NewService(tx, catalog, structure.Tree{})
 	settingsService := settings.NewService(tx, accessService, tenantSettings, registry)
 	profileService := profile.NewService(tx, preferences)
+	sources := append([]search.Source{profile.PeopleSource{}, structure.UnitsSource{}}, registry.SearchSources()...)
+	searchService, err := search.NewService(tx, settingsService, sources...)
+	if err != nil {
+		return Server{}, err
+	}
 	handler := NewRouter(version, registry, pool, settings.NewGate(settingsService, authn),
 		authRoutes,
 		access.Routes{Service: accessService, Authenticator: authn},
@@ -80,6 +86,7 @@ func NewServer(version string, cfg config.Config, box secretbox.Box, pool *pgxpo
 		notify.Routes{Service: notify.NewService(tx, notifications), Authenticator: authn},
 		files.Routes{Service: files.NewService(tx, ext.Storage, settingsService), Authenticator: authn},
 		delivery.Routes{Service: delivery.NewService(tx), Authenticator: authn},
+		search.Routes{Service: searchService, Authenticator: authn},
 	)
 	dispatcher := delivery.NewDispatcher(pool, delivery.DispatcherConfig{
 		Texts:       delivery.NewTexts(registry.NotificationTypes()...),

@@ -1,10 +1,16 @@
 package module
 
 import (
+	"context"
 	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/jackc/pgx/v5"
+
+	"github.com/babakapaa/lodestar/server/internal/core/auth"
+	"github.com/babakapaa/lodestar/server/internal/core/search"
 )
 
 type stubModule struct {
@@ -112,5 +118,34 @@ func TestRegistryRejectsReservedNames(t *testing.T) {
 		if _, err := NewRegistry(stubModule{name: name}); !errors.Is(err, ErrReservedName) {
 			t.Errorf("NewRegistry(%q) err = %v", name, err)
 		}
+	}
+}
+
+type searchableModule struct {
+	stubModule
+	kind string
+}
+
+func (m searchableModule) SearchSources() []search.Source {
+	return []search.Source{kindOnly(m.kind)}
+}
+
+type kindOnly string
+
+func (k kindOnly) Kind() string {
+	return string(k)
+}
+
+func (kindOnly) Search(context.Context, pgx.Tx, auth.Principal, search.Query, int) ([]search.Hit, error) {
+	return nil, nil
+}
+
+func TestRegistryRequiresOwnSearchKinds(t *testing.T) {
+	if _, err := NewRegistry(searchableModule{stubModule{name: "study"}, "notes.pages"}); !errors.Is(err, ErrForeignSearchKind) {
+		t.Fatalf("err = %v, want ErrForeignSearchKind", err)
+	}
+	registry, err := NewRegistry(searchableModule{stubModule{name: "study"}, "study.courses"})
+	if err != nil || len(registry.SearchSources()) != 1 {
+		t.Fatalf("registry = %v, %v", registry, err)
 	}
 }

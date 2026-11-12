@@ -7,6 +7,7 @@ import (
 	"github.com/babakapaa/lodestar/server/internal/core/access"
 	"github.com/babakapaa/lodestar/server/internal/core/auth"
 	"github.com/babakapaa/lodestar/server/internal/core/identity"
+	"github.com/babakapaa/lodestar/server/internal/core/search"
 	"github.com/babakapaa/lodestar/server/internal/core/structure"
 	"github.com/babakapaa/lodestar/server/internal/core/tenant"
 	"github.com/babakapaa/lodestar/server/internal/platform/database"
@@ -27,7 +28,7 @@ func newWorld(t *testing.T) *world {
 	t.Helper()
 	ctx := context.Background()
 	pool := dbtest.New(t)
-	sets := []database.Migrations{tenant.Migrations(), identity.Migrations(), access.Migrations(), structure.Migrations()}
+	sets := []database.Migrations{tenant.Migrations(), search.Migrations(), identity.Migrations(), access.Migrations(), structure.Migrations()}
 	if err := database.NewMigrator(pool).Apply(ctx, sets...); err != nil {
 		t.Fatalf("migrate: %v", err)
 	}

@@ -10,6 +10,7 @@ import (
 	"github.com/babakapaa/lodestar/server/internal/core/identity"
 	"github.com/babakapaa/lodestar/server/internal/core/profile"
 	"github.com/babakapaa/lodestar/server/internal/core/schema"
+	"github.com/babakapaa/lodestar/server/internal/core/search"
 	"github.com/babakapaa/lodestar/server/internal/core/tenant"
 	"github.com/babakapaa/lodestar/server/internal/platform/database"
 	"github.com/babakapaa/lodestar/server/internal/platform/database/dbtest"
@@ -19,7 +20,7 @@ func setup(t *testing.T) (profile.Service, auth.Principal, auth.Principal) {
 	t.Helper()
 	ctx := context.Background()
 	pool := dbtest.New(t)
-	if err := database.NewMigrator(pool).Apply(ctx, tenant.Migrations(), identity.Migrations(), profile.Migrations()); err != nil {
+	if err := database.NewMigrator(pool).Apply(ctx, tenant.Migrations(), search.Migrations(), identity.Migrations(), profile.Migrations()); err != nil {
 		t.Fatalf("migrate: %v", err)
 	}
 	created, err := tenant.NewStore(pool).Create(ctx, "kaznu", "КазНУ")

@@ -1,0 +1,178 @@
+import 'package:material_ui/material_ui.dart';
+
+import '../typography/font_families.dart';
+import 'family_spec.dart';
+import 'palette.dart';
+import 'warn_colors.dart';
+
+abstract final class FamilySpecs {
+  static const paper = FamilySpec(
+    light: Palette(
+      bg: Color(0xFFF5F3EE),
+      side: Color(0xFFEDEAE2),
+      surface: Color(0xFFFFFFFF),
+      surface2: Color(0xFFF2EFE8),
+      border: Color(0xFFE0DACE),
+      text: Color(0xFF1F1E1C),
+      muted: Color(0xFF6A6459),
+      accent: Color(0xFFA64C2B),
+      onAccent: Color(0xFFFFFFFF),
+      accentSoft: Color(0xFFF6E6DE),
+      warn: WarnColors.light,
+      warnSoft: WarnColors.lightSoft,
+      shadow: [
+        BoxShadow(
+          color: Color(0x0D3C2814),
+          offset: Offset(0, 1),
+          blurRadius: 2,
+        ),
+      ],
+    ),
+    dark: Palette(
+      bg: Color(0xFF1F1E1C),
+      side: Color(0xFF262522),
+      surface: Color(0xFF2B2A27),
+      surface2: Color(0xFF34322E),
+      border: Color(0xFF403D38),
+      text: Color(0xFFF2EFE8),
+      muted: Color(0xFFA9A398),
+      accent: Color(0xFFE5916E),
+      onAccent: Color(0xFF1F1E1C),
+      accentSoft: Color(0xFF40302A),
+      warn: WarnColors.dark,
+      warnSoft: WarnColors.darkSoft,
+      shadow: [],
+    ),
+    headingFont: FontFamilies.sourceSerif,
+    bodyFont: FontFamilies.inter,
+    numberFont: FontFamilies.inter,
+    radius: 14,
+    radiusSmall: 10,
+  );
+
+  static const graphite = FamilySpec(
+    light: Palette(
+      bg: Color(0xFFFFFFFF),
+      side: Color(0xFFF7F7F8),
+      surface: Color(0xFFFFFFFF),
+      surface2: Color(0xFFF4F4F5),
+      border: Color(0xFFE5E5E7),
+      text: Color(0xFF0D0D0D),
+      muted: Color(0xFF62626A),
+      accent: Color(0xFF0B786E),
+      onAccent: Color(0xFFFFFFFF),
+      accentSoft: Color(0xFFE2F3F1),
+      warn: WarnColors.light,
+      warnSoft: WarnColors.lightSoft,
+      shadow: [
+        BoxShadow(
+          color: Color(0x0A000000),
+          offset: Offset(0, 1),
+          blurRadius: 3,
+        ),
+      ],
+    ),
+    dark: Palette(
+      bg: Color(0xFF0D0D0D),
+      side: Color(0xFF171717),
+      surface: Color(0xFF1C1C1C),
+      surface2: Color(0xFF262626),
+      border: Color(0xFF2F2F2F),
+      text: Color(0xFFECECEC),
+      muted: Color(0xFF9D9D9D),
+      accent: Color(0xFF35C6B5),
+      onAccent: Color(0xFF0D0D0D),
+      accentSoft: Color(0xFF11302C),
+      warn: WarnColors.dark,
+      warnSoft: WarnColors.darkSoft,
+      shadow: [],
+    ),
+    headingFont: FontFamilies.inter,
+    bodyFont: FontFamilies.inter,
+    numberFont: FontFamilies.inter,
+    radius: 16,
+    radiusSmall: 10,
+  );
+
+  static const lab = FamilySpec(
+    light: Palette(
+      bg: Color(0xFFF7F8FA),
+      side: Color(0xFFF0F2F5),
+      surface: Color(0xFFFFFFFF),
+      surface2: Color(0xFFF3F4F7),
+      border: Color(0xFFDEE1E7),
+      text: Color(0xFF16181D),
+      muted: Color(0xFF5B616E),
+      accent: Color(0xFF5361C9),
+      onAccent: Color(0xFFFFFFFF),
+      accentSoft: Color(0xFFECEEFB),
+      warn: WarnColors.light,
+      warnSoft: WarnColors.lightSoft,
+      shadow: [],
+    ),
+    dark: Palette(
+      bg: Color(0xFF0F1013),
+      side: Color(0xFF15161A),
+      surface: Color(0xFF1A1B20),
+      surface2: Color(0xFF222329),
+      border: Color(0xFF2C2E36),
+      text: Color(0xFFE6E7EB),
+      muted: Color(0xFF9298A4),
+      accent: Color(0xFF8E97F2),
+      onAccent: Color(0xFF0F1013),
+      accentSoft: Color(0xFF23264A),
+      warn: WarnColors.dark,
+      warnSoft: WarnColors.darkSoft,
+      shadow: [],
+    ),
+    headingFont: FontFamilies.inter,
+    bodyFont: FontFamilies.inter,
+    numberFont: FontFamilies.jetBrainsMono,
+    radius: 8,
+    radiusSmall: 6,
+  );
+
+  static const campus = FamilySpec(
+    light: Palette(
+      bg: Color(0xFFEEF2F7),
+      side: Color(0xFFFFFFFF),
+      surface: Color(0xFFFFFFFF),
+      surface2: Color(0xFFF1F5FA),
+      border: Color(0xFFDAE2EC),
+      text: Color(0xFF14202E),
+      muted: Color(0xFF566576),
+      accent: Color(0xFF196BB9),
+      onAccent: Color(0xFFFFFFFF),
+      accentSoft: Color(0xFFE1EEFB),
+      warn: WarnColors.light,
+      warnSoft: WarnColors.lightSoft,
+      shadow: [
+        BoxShadow(
+          color: Color(0x0F142846),
+          offset: Offset(0, 2),
+          blurRadius: 8,
+        ),
+      ],
+    ),
+    dark: Palette(
+      bg: Color(0xFF0F1720),
+      side: Color(0xFF17212B),
+      surface: Color(0xFF1C2733),
+      surface2: Color(0xFF24313F),
+      border: Color(0xFF2E3D4D),
+      text: Color(0xFFE8EEF4),
+      muted: Color(0xFF93A3B4),
+      accent: Color(0xFF56B3F6),
+      onAccent: Color(0xFF0F1720),
+      accentSoft: Color(0xFF17334C),
+      warn: WarnColors.dark,
+      warnSoft: WarnColors.darkSoft,
+      shadow: [],
+    ),
+    headingFont: FontFamilies.nunito,
+    bodyFont: FontFamilies.nunito,
+    numberFont: FontFamilies.nunito,
+    radius: 20,
+    radiusSmall: 14,
+  );
+}

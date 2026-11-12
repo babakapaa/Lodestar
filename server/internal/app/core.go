@@ -1,6 +1,8 @@
 package app
 
 import (
+	"time"
+
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/babakapaa/lodestar/server/internal/core/access"
@@ -10,6 +12,7 @@ import (
 	"github.com/babakapaa/lodestar/server/internal/core/settings"
 	"github.com/babakapaa/lodestar/server/internal/core/structure"
 	"github.com/babakapaa/lodestar/server/internal/platform/database"
+	"github.com/babakapaa/lodestar/server/internal/platform/safehttp"
 	"github.com/babakapaa/lodestar/server/internal/platform/secretbox"
 )
 
@@ -47,6 +50,7 @@ func NewCore(pool *pgxpool.Pool, registry *module.Registry, box secretbox.Box) (
 			Notifier: moduleNotifier{notifier: notify.NewNotifier(notifications)},
 			Settings: settingsService,
 			Secrets:  box,
+			Outbound: safehttp.NewClient(15 * time.Second),
 		},
 	}, nil
 }

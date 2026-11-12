@@ -3416,6 +3416,110 @@ paths:
           $ref: "#/components/responses/Error"
         default:
           $ref: "#/components/responses/Error"
+  /v1/notes/sources:
+    get:
+      tags: [notes]
+      operationId: listSources
+      summary: Личная база источников
+      description: Только свои источники. Хранятся зашифрованными и считаются в квоту заметок.
+      security:
+        - bearer: []
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Source"
+        "401":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+    post:
+      tags: [notes]
+      operationId: saveSource
+      summary: Добавить или изменить источник
+      description: id создаёт устройство, поэтому источник можно добавить без сети. Повтор с тем же id обновляет запись.
+      security:
+        - bearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SourceInput"
+      responses:
+        "200":
+          description: Обновлено
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Source"
+        "201":
+          description: Создано
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Source"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "413":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/notes/sources/{id}:
+    delete:
+      tags: [notes]
+      operationId: deleteSource
+      summary: Удалить источник
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "204":
+          description: Готово
+        "401":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/notes/lookup:
+    post:
+      tags: [notes]
+      operationId: lookupSource
+      summary: Найти описание источника по DOI или ссылке
+      description: По DOI сервер спрашивает Crossref, по ссылке читает метаданные страницы. Адреса внутренних сетей сервер не открывает. Результат не сохраняется, его можно поправить и сохранить.
+      security:
+        - bearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SourceLookupInput"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SourceFields"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "422":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
 components:
   securitySchemes:
     bearer:
@@ -4816,6 +4920,89 @@ components:
       properties:
         canEdit:
           type: boolean
+    SourceFields:
+      type: object
+      required: [kind, title, authors, year, container, publisher, city, volume, issue, pages, url, doi, isbn, accessedAt, note]
+      properties:
+        kind:
+          type: string
+          enum: [book, article, chapter, web, thesis, other]
+        title:
+          type: string
+          maxLength: 1000
+        authors:
+          type: array
+          maxItems: 100
+          description: Авторы в виде «Фамилия, И. О.»
+          items:
+            type: string
+        year:
+          type: string
+        container:
+          type: string
+          description: Журнал, сборник или сайт
+        publisher:
+          type: string
+        city:
+          type: string
+        volume:
+          type: string
+        issue:
+          type: string
+        pages:
+          type: string
+        url:
+          type: string
+        doi:
+          type: string
+        isbn:
+          type: string
+        accessedAt:
+          type: string
+          description: Дата обращения для электронных ресурсов, ГГГГ-ММ-ДД
+        note:
+          type: string
+          maxLength: 10000
+    SourceInput:
+      allOf:
+        - $ref: "#/components/schemas/SourceFields"
+        - type: object
+          required: [id]
+          properties:
+            id:
+              type: string
+              format: uuid
+            fileId:
+              type: [string, "null"]
+              format: uuid
+              description: Свой загруженный файл, например PDF
+    Source:
+      allOf:
+        - $ref: "#/components/schemas/SourceFields"
+        - type: object
+          required: [id, fileId, createdAt, changedAt]
+          properties:
+            id:
+              type: string
+              format: uuid
+            fileId:
+              type: [string, "null"]
+              format: uuid
+            createdAt:
+              type: string
+              format: date-time
+            changedAt:
+              type: string
+              format: date-time
+    SourceLookupInput:
+      type: object
+      description: Ровно одно из полей
+      properties:
+        doi:
+          type: string
+        url:
+          type: string
+          format: uri
     Person:
       type: object
       required: [userId, displayName, email]

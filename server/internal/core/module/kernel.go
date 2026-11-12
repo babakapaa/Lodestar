@@ -1,6 +1,8 @@
 package module
 
 import (
+	"net/http"
+
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/babakapaa/lodestar/server/internal/core/access"
@@ -15,4 +17,5 @@ type Kernel struct {
 	Notifier Notifier
 	Settings Settings
 	Secrets  secretbox.Box
+	Outbound *http.Client
 }

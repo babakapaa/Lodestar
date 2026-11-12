@@ -99,7 +99,8 @@ func (NoteStore) Rebase(ctx context.Context, tx pgx.Tx, id string, baseSeq, byte
 
 func (NoteStore) OwnerBytes(ctx context.Context, tx pgx.Tx, ownerID string) (int64, error) {
 	var total int64
-	err := tx.QueryRow(ctx, `SELECT coalesce(sum(bytes), 0) FROM notes.notes WHERE owner_id::text = $1`, ownerID).Scan(&total)
+	err := tx.QueryRow(ctx, `SELECT (SELECT coalesce(sum(bytes), 0) FROM notes.notes WHERE owner_id::text = $1)
+		+ (SELECT coalesce(sum(bytes), 0) FROM notes.sources WHERE owner_id::text = $1)`, ownerID).Scan(&total)
 	if err != nil {
 		return 0, fmt.Errorf("notes usage: %w", err)
 	}

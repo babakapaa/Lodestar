@@ -22,4 +22,8 @@ func (r Routes) Mount(mux *http.ServeMux) {
 	mux.Handle("GET /v1/notes/{id}/members", MembersHandler{service: s})
 	mux.Handle("PUT /v1/notes/{id}/members/{user}", SetMemberHandler{service: s})
 	mux.Handle("DELETE /v1/notes/{id}/members/{user}", RemoveMemberHandler{service: s})
+	mux.Handle("GET /v1/notes/sources", SourcesHandler{service: s})
+	mux.Handle("POST /v1/notes/sources", SaveSourceHandler{service: s})
+	mux.Handle("DELETE /v1/notes/sources/{id}", DeleteSourceHandler{service: s})
+	mux.Handle("POST /v1/notes/lookup", LookupSourceHandler{service: s})
 }

@@ -27,10 +27,17 @@ type Service struct {
 	members  MemberStore
 	people   identity.People
 	live     live.Store
+	sources  SourceStore
+	lookup   SourceLookup
 }
 
 func NewService(k module.Kernel) Service {
-	return Service{tenants: k.Tenants, settings: k.Settings, sealer: Sealer{box: k.Secrets}}
+	return Service{
+		tenants:  k.Tenants,
+		settings: k.Settings,
+		sealer:   Sealer{box: k.Secrets},
+		lookup:   SourceLookup{Client: k.Outbound, Crossref: CrossrefURL},
+	}
 }
 
 func (s Service) List(ctx context.Context, p auth.Principal) ([]Note, error) {

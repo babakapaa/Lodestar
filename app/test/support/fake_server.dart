@@ -8,6 +8,7 @@ import 'fake_directory.dart';
 import 'fake_files.dart';
 import 'fake_league.dart';
 import 'fake_lti.dart';
+import 'fake_sandbox.dart';
 import 'fake_navigator.dart';
 import 'fake_notes.dart';
 import 'fake_sources.dart';
@@ -26,6 +27,7 @@ class FakeServer {
   late final FakeTeams teams = FakeTeams(() => study.role);
   late final FakeLeague league = FakeLeague(() => study.role);
   final FakeLti lti = FakeLti();
+  final FakeSandbox sandbox = FakeSandbox();
   bool offline = false;
   final Map<String, Object?> profile = {
     'userId': 'u1',
@@ -215,6 +217,7 @@ class FakeServer {
       _ when path.startsWith('/v1/team/') => teams.handle(request),
       _ when path.startsWith('/v1/league/') => league.handle(request),
       _ when path.startsWith('/v1/lti/') => lti.handle(request),
+      _ when path.startsWith('/v1/sandbox/') => sandbox.handle(request),
       _ when path == '/v1/files' || path.startsWith('/v1/files/') =>
         files.handle(request),
       _

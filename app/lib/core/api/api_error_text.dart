@@ -95,6 +95,27 @@ abstract final class ApiErrorText {
       'lms_unavailable' => l10n.errorLmsUnavailable,
       'assignment_source_fixed' => l10n.errorLmsSourceFixed,
       'bad_import' => l10n.errorBadImport,
+      'no_term' => l10n.errorSandboxNoTerm,
+      'not_enough_gpu_hours' => l10n.errorSandboxHours,
+      'starter_busy' => l10n.errorSandboxStarterBusy,
+      'run_ended' ||
+      'run_active' ||
+      'run_not_held' => l10n.errorSandboxRunState,
+      'run_not_found' => l10n.errorSandboxRunNotFound,
+      'not_in_team' => l10n.errorSandboxNotInTeam,
+      'topup_pending' => l10n.errorSandboxTopupPending,
+      'gpu_node_busy' => l10n.errorSandboxNodeBusy,
+      'term_overlap' => l10n.errorSandboxTermOverlap,
+      'gpu_class_taken' ||
+      'template_taken' ||
+      'gpu_node_taken' => l10n.errorSandboxNameTaken,
+      'invalid_run' ||
+      'invalid_gpu_class' ||
+      'invalid_term' ||
+      'invalid_template' ||
+      'invalid_gpu_node' ||
+      'invalid_transfer' ||
+      'invalid_topup' => l10n.errorSandboxInvalid,
       _ => l10n.errorGeneric,
     };
   }

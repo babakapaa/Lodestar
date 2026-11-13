@@ -1643,5 +1643,341 @@
   "errorLmsNotLinked": "Сначала свяжите курс LMS с курсом Lodestar",
   "errorLmsUnavailable": "LMS не ответила. Попробуйте позже.",
   "errorLmsSourceFixed": "Источник заданий выбирает университет",
-  "errorBadImport": "Не удалось прочитать таблицу"
+  "errorBadImport": "Не удалось прочитать таблицу",
+  "sandboxTitle": "GPU-песочница",
+  "sandboxHint": "Jupyter, VS Code и задачи на видеокартах вуза",
+  "sandboxHours": "{hours} ч",
+  "@sandboxHours": {
+    "placeholders": {
+      "hours": {
+        "type": "String"
+      }
+    }
+  },
+  "sandboxBalance": "Осталось GPU-часов",
+  "sandboxBalanceOf": "{left} из {total} на семестр",
+  "@sandboxBalanceOf": {
+    "placeholders": {
+      "left": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "sandboxReserved": "{hours} в резерве под запуски",
+  "@sandboxReserved": {
+    "placeholders": {
+      "hours": {
+        "type": "String"
+      }
+    }
+  },
+  "sandboxForecast": "При нынешнем темпе к концу семестра останется {hours}",
+  "@sandboxForecast": {
+    "placeholders": {
+      "hours": {
+        "type": "String"
+      }
+    }
+  },
+  "sandboxForecastShort": "При нынешнем темпе часы закончатся раньше конца семестра",
+  "sandboxWhereFrom": "Откуда часы",
+  "sandboxSourceBase": "Квота вуза",
+  "sandboxSourceTopup": "От преподавателя",
+  "sandboxSourceTransfer": "Перевод",
+  "sandboxSourceRun": "Запуск",
+  "sandboxSourceDivision": "Дивизион лиги",
+  "sandboxSourceAward": "Награда",
+  "sandboxTeamPools": "Запасы команд",
+  "sandboxGive": "Перевести",
+  "sandboxGiveTitle": "Перевести часы команде «{team}»",
+  "@sandboxGiveTitle": {
+    "placeholders": {
+      "team": {
+        "type": "String"
+      }
+    }
+  },
+  "sandboxHoursField": "Часы",
+  "sandboxReasonField": "Зачем нужны часы",
+  "sandboxNoTerm": "Семестр песочницы ещё не начался",
+  "sandboxNoTermBody": "Когда вуз откроет семестр, здесь появятся часы на видеокарты.",
+  "sandboxNoRuns": "Запусков пока нет",
+  "sandboxNoRunsBody": "Откройте Jupyter или запустите задачу на видеокарте.",
+  "sandboxActive": "Сейчас",
+  "sandboxHistory": "История",
+  "sandboxStart": "Запустить",
+  "sandboxExport": "Выгрузить историю",
+  "sandboxTopupsTitle": "Запросы часов",
+  "sandboxTopupsEmpty": "Запросов нет",
+  "sandboxTopupsEmptyBody": "Попросить часы можно со страницы запуска для задания курса.",
+  "sandboxTopupsIncoming": "Ждут решения",
+  "sandboxTopupsMine": "Мои запросы",
+  "sandboxTopupPending": "Ждёт решения преподавателя",
+  "sandboxTopupApproved": "Добавлено {hours}",
+  "@sandboxTopupApproved": {
+    "placeholders": {
+      "hours": {
+        "type": "String"
+      }
+    }
+  },
+  "sandboxTopupDeclined": "Отклонено",
+  "sandboxApprove": "Добавить",
+  "sandboxDecline": "Отклонить",
+  "sandboxApproveTitle": "Сколько часов добавить: {name}",
+  "@sandboxApproveTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "sandboxKindJupyter": "Jupyter",
+  "sandboxKindVscode": "VS Code",
+  "sandboxKindJob": "Задача",
+  "sandboxKindDemo": "Демо",
+  "sandboxStatusQueued": "В очереди",
+  "sandboxStatusStarting": "Запускается",
+  "sandboxStatusRunning": "Работает",
+  "sandboxStatusHeld": "На паузе у сторожа",
+  "sandboxStatusStopping": "Останавливается",
+  "sandboxStatusFinished": "Готово",
+  "sandboxStatusFailed": "Упало",
+  "sandboxStatusStopped": "Остановлено",
+  "sandboxReasonTimeLimit": "Запуск дошёл до предела по времени.",
+  "sandboxReasonNodeLost": "Сервер с видеокартой перестал отвечать. Списано только время до потери связи.",
+  "sandboxReasonVanished": "Контейнер пропал с сервера.",
+  "sandboxReasonIdle": "Сеанс простаивал 30 минут и остановлен. Файлы сохранены.",
+  "sandboxReasonWatchdog": "Запуск остановлен по решению администратора.",
+  "sandboxHeldNotice": "Сторож приостановил запуск: найден процесс {note}. Решит администратор. Время на паузе не списывается.",
+  "@sandboxHeldNotice": {
+    "placeholders": {
+      "note": {
+        "type": "String"
+      }
+    }
+  },
+  "sandboxRefunded": "Запуск упал в первые 5 минут, часы вернулись.",
+  "sandboxSaveTip": "Видеокарта была загружена в среднем на {load}%. В следующий раз хватит карты попроще, это дешевле.",
+  "@sandboxSaveTip": {
+    "placeholders": {
+      "load": {
+        "type": "int"
+      }
+    }
+  },
+  "sandboxPosition": "{position}-й в очереди",
+  "@sandboxPosition": {
+    "placeholders": {
+      "position": {
+        "type": "int"
+      }
+    }
+  },
+  "sandboxFree": "бесплатно",
+  "sandboxNewTitle": "Новый запуск",
+  "sandboxForWork": "Для задания «{title}»",
+  "@sandboxForWork": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "sandboxRunTitle": "Название",
+  "sandboxTemplate": "Окружение",
+  "sandboxStarterName": "{name} (стартовый, бесплатно)",
+  "@sandboxStarterName": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "sandboxStarter": "Стартовый мини-проект",
+  "sandboxStarterHint": "Запуск бесплатный, до 15 минут, один за раз.",
+  "sandboxCommand": "Команда",
+  "sandboxCommandHint": "Например python train.py. Папка /workspace сохраняется между запусками.",
+  "sandboxDemoHint": "Приложение должно слушать порт 8000. Ссылка работает только в сети вуза.",
+  "sandboxMaxHours": "Предел по времени, ч",
+  "sandboxMaxHoursJob": "Для задачи обязательно. Списывается только фактическое время.",
+  "sandboxMaxHoursDefault": "Можно оставить пустым. Списывается только фактическое время.",
+  "sandboxPayFrom": "Платить из",
+  "sandboxPayMine": "Мои часы",
+  "sandboxCost": "Стоимость",
+  "sandboxPickTemplateFirst": "Выберите окружение, и мы посчитаем стоимость.",
+  "sandboxAvailable": "Можно потратить {hours}",
+  "@sandboxAvailable": {
+    "placeholders": {
+      "hours": {
+        "type": "String"
+      }
+    }
+  },
+  "sandboxNightHint": "С {from}:00 до {to}:00 скидка {discount}%.",
+  "@sandboxNightHint": {
+    "placeholders": {
+      "from": {
+        "type": "int"
+      },
+      "to": {
+        "type": "int"
+      },
+      "discount": {
+        "type": "int"
+      }
+    }
+  },
+  "sandboxRefundHint": "Если запуск упадёт в первые 5 минут, часы вернутся.",
+  "sandboxClassName": "{name}, {memory} ГБ",
+  "@sandboxClassName": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "memory": {
+        "type": "int"
+      }
+    }
+  },
+  "sandboxUpTo": "до {hours}",
+  "@sandboxUpTo": {
+    "placeholders": {
+      "hours": {
+        "type": "String"
+      }
+    }
+  },
+  "sandboxAtNight": "ночью {hours}",
+  "@sandboxAtNight": {
+    "placeholders": {
+      "hours": {
+        "type": "String"
+      }
+    }
+  },
+  "sandboxStartsNow": "начнётся сразу",
+  "sandboxQueueLength": "в очереди {count}",
+  "@sandboxQueueLength": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "sandboxNotEnough": "не хватает часов",
+  "sandboxSuggest": "Подобрать за меня",
+  "sandboxNeedTitle": "Добавьте название",
+  "sandboxNeedTemplate": "Выберите окружение",
+  "sandboxNeedCommand": "Добавьте команду",
+  "sandboxNeedHours": "Укажите предел по времени",
+  "sandboxNeedClass": "Выберите видеокарту",
+  "sandboxOpen": "Открыть",
+  "sandboxCopy": "Скопировать ссылку",
+  "sandboxCopied": "Ссылка скопирована",
+  "sandboxDemoQr": "Покажите этот код на защите, чтобы открыть демо с телефона.",
+  "sandboxFactKind": "Вид",
+  "sandboxFactClass": "Видеокарта",
+  "sandboxFactTeam": "Команда",
+  "sandboxFactWork": "Задание",
+  "sandboxFactBy": "Запустил",
+  "sandboxFactCharged": "Списано",
+  "sandboxFactStarted": "Начало",
+  "sandboxFactEnded": "Конец",
+  "sandboxFactExit": "Код выхода",
+  "sandboxStop": "Остановить",
+  "sandboxRerun": "Запустить снова",
+  "sandboxAsk": "Попросить часы у преподавателя",
+  "sandboxAskTitle": "Сколько часов нужно",
+  "sandboxAskSent": "Запрос отправлен преподавателю",
+  "sandboxLog": "Последние строки вывода",
+  "sandboxAdminTitle": "GPU-песочница",
+  "sandboxAdminTile": "Семестры, видеокарты, окружения и серверы",
+  "sandboxAdminHint": "Здесь вуз задаёт семестры квоты, классы видеокарт и их цену в часах, готовые окружения и подключает серверы с видеокартами. Базовые часы, ночная скидка и список процессов для сторожа меняются в настройках вуза.",
+  "sandboxHeldTitle": "На паузе у сторожа",
+  "sandboxHeldNone": "Сейчас ничего не приостановлено.",
+  "sandboxHeldWhy": "Найден процесс {note}. Время на паузе не списывается.",
+  "@sandboxHeldWhy": {
+    "placeholders": {
+      "note": {
+        "type": "String"
+      }
+    }
+  },
+  "sandboxRelease": "Продолжить",
+  "sandboxTerms": "Семестры квоты",
+  "sandboxTermNew": "Новый семестр",
+  "sandboxTermEdit": "Семестр",
+  "sandboxTermDelete": "Удалить семестр",
+  "sandboxTermName": "Название",
+  "sandboxTermFrom": "Начало",
+  "sandboxTermTo": "Конец",
+  "sandboxDateHint": "ГГГГ-ММ-ДД",
+  "sandboxClasses": "Классы видеокарт",
+  "sandboxClassNew": "Новый класс",
+  "sandboxClassEdit": "Класс видеокарт",
+  "sandboxClassField": "Название, например A100",
+  "sandboxMemory": "Память, ГБ",
+  "sandboxRate": "Цена часа в часах квоты",
+  "sandboxRateHint": "Например 1 для T4 и 4 для A100",
+  "sandboxRatePerHour": "{hours} за час работы",
+  "@sandboxRatePerHour": {
+    "placeholders": {
+      "hours": {
+        "type": "String"
+      }
+    }
+  },
+  "sandboxArchived": "В архиве",
+  "sandboxTemplates": "Окружения",
+  "sandboxTemplateNew": "Новое окружение",
+  "sandboxTemplateEdit": "Окружение",
+  "sandboxTemplateName": "Название",
+  "sandboxImage": "Образ Docker",
+  "sandboxImageHint": "Для Jupyter нужен jupyter lab, для VS Code нужен openvscode-server",
+  "sandboxAbout": "Описание",
+  "sandboxNodes": "Серверы с видеокартами",
+  "sandboxNodesHint": "На сервер ставится программа lodestar-agent с ключом, который появится после добавления.",
+  "sandboxNodeNew": "Добавить сервер",
+  "sandboxNodeName": "Имя сервера",
+  "sandboxNodeGpus": "Сколько видеокарт",
+  "sandboxNodeBusy": "занято {busy} из {gpus}",
+  "@sandboxNodeBusy": {
+    "placeholders": {
+      "busy": {
+        "type": "int"
+      },
+      "gpus": {
+        "type": "int"
+      }
+    }
+  },
+  "sandboxNodeDelete": "Удалить сервер",
+  "sandboxNodeToken": "Ключ сервера",
+  "sandboxNodeTokenHint": "Сохраните ключ сейчас, он больше не будет показан. Передайте его в LODESTAR_NODE_TOKEN при запуске lodestar-agent.",
+  "sandboxOnline": "на связи",
+  "sandboxOffline": "не на связи",
+  "sandboxDone": "Готово",
+  "settingSandboxBaseHours": "GPU-часов на семестр каждому",
+  "settingSandboxDeadlineDays": "Задания со сроком в ближайшие N дней идут в очереди первыми",
+  "settingSandboxWatch": "Процессы, которые сторож ставит на паузу",
+  "settingSandboxNightDiscount": "Ночная скидка на GPU, %",
+  "settingSandboxNightFrom": "Ночь начинается в, час",
+  "settingSandboxNightTo": "Ночь заканчивается в, час",
+  "errorSandboxNoTerm": "Семестр песочницы ещё не начался",
+  "errorSandboxHours": "Не хватает GPU-часов",
+  "errorSandboxStarterBusy": "Стартовый проект уже запущен",
+  "errorSandboxRunState": "Запуск уже в другом состоянии, обновите страницу",
+  "errorSandboxRunNotFound": "Запуск не найден",
+  "errorSandboxNotInTeam": "Вы не в этой команде",
+  "errorSandboxTopupPending": "Такой запрос уже ждёт решения",
+  "errorSandboxNodeBusy": "На сервере ещё идут запуски",
+  "errorSandboxTermOverlap": "Семестры пересекаются",
+  "errorSandboxNameTaken": "Такое имя уже есть",
+  "errorSandboxInvalid": "Проверьте поля",
+  "sandboxForWorkTile": "Запустить на GPU",
+  "sandboxForWorkHint": "Часы на задание курса идут в очереди первыми ближе к сроку"
 }

@@ -68,6 +68,12 @@ import '../../features/team/team_join_screen.dart';
 import '../../features/team/team_profile_screen.dart';
 import '../../features/team/team_scope_screen.dart';
 import '../../features/team/team_screen.dart';
+import '../../features/sandbox/run_launch_screen.dart';
+import '../../features/sandbox/run_screen.dart';
+import '../../features/sandbox/run_work.dart';
+import '../../features/sandbox/sandbox_admin_screen.dart';
+import '../../features/sandbox/sandbox_screen.dart';
+import '../../features/sandbox/topups_screen.dart';
 import '../../features/team/teams_screen.dart';
 import '../../features/units/units_screen.dart';
 import '../shell/adaptive_shell.dart';
@@ -269,6 +275,17 @@ class AppRouter {
               ),
             ),
           ),
+          _route(AppRoutes.sandbox, const SandboxScreen()),
+          _route(AppRoutes.sandboxTopups, const TopupsScreen()),
+          _route(AppRoutes.sandboxAdmin, const SandboxAdminScreen()),
+          GoRoute(
+            path: AppRoutes.sandboxNew,
+            pageBuilder: (context, state) => _fade(
+              state,
+              RunLaunchScreen(work: RunWork.parse(state.uri.queryParameters)),
+            ),
+          ),
+          _param(AppRoutes.sandboxRun(':id'), (id) => RunScreen(runId: id)),
           _route(AppRoutes.teams, const TeamsScreen()),
           _route(AppRoutes.teamProfile, const TeamProfileScreen()),
           _param(

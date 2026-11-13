@@ -31,6 +31,10 @@ abstract final class AppRoutes {
   static const journal = '/navigator/journal';
   static const teams = '/teams';
   static const teamProfile = '/teams/profile';
+  static const sandbox = '/sandbox';
+  static const sandboxNew = '/sandbox/new';
+  static const sandboxTopups = '/sandbox/topups';
+  static const sandboxAdmin = '/admin/sandbox';
 
   static String role(String id) => '/admin/roles/$id';
 
@@ -65,6 +69,13 @@ abstract final class AppRoutes {
       '/study/assignments/$assignmentId/students/$studentId';
 
   static String team(String id) => '/teams/$id';
+
+  static String sandboxRun(String id) => '/sandbox/runs/$id';
+
+  static String sandboxNewFor(String kind, String id, String title) => Uri(
+    path: sandboxNew,
+    queryParameters: {'workKind': kind, 'workId': id, 'workTitle': title},
+  ).toString();
 
   static String teamJoin(String code) => '/teams/codes/$code';
 

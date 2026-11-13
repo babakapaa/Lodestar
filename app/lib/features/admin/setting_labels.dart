@@ -20,6 +20,12 @@ class SettingLabels {
     'study.defense_recording' => l10n.settingDefenseRecording,
     'chat.retention_days' => l10n.settingChatRetention,
     'core.lti_assignment_source' => l10n.settingLtiSource,
+    'sandbox.base_hours' => l10n.settingSandboxBaseHours,
+    'sandbox.deadline_days' => l10n.settingSandboxDeadlineDays,
+    'sandbox.watch_processes' => l10n.settingSandboxWatch,
+    'sandbox.night_discount' => l10n.settingSandboxNightDiscount,
+    'sandbox.night_from' => l10n.settingSandboxNightFrom,
+    'sandbox.night_to' => l10n.settingSandboxNightTo,
     _ => key,
   };
 

@@ -8,6 +8,7 @@ import '../../design/tokens/spacing.dart';
 import '../../design/tokens/tokens_context.dart';
 import '../../l10n/l10n_context.dart';
 import '../defense/my_defense_section.dart';
+import '../sandbox/sandbox_work_tile.dart';
 import '../team/team_work_section.dart';
 import 'assignment_details.dart';
 import 'class_work_section.dart';
@@ -91,6 +92,11 @@ class AssignmentScreen extends ConsumerWidget {
         const SizedBox(height: Spacing.l),
         SearchMapTile(assignment: assignment),
         const SizedBox(height: Spacing.l),
+        SandboxWorkTile(
+          kind: 'assignment',
+          id: assignment.id,
+          title: assignment.title,
+        ),
         if (assignment.team == null)
           SubmitForm(details: details)
         else

@@ -12,6 +12,7 @@ import '../../design/tokens/spacing.dart';
 import '../../l10n/l10n_context.dart';
 import '../attendance/attendance_providers.dart';
 import '../attendance/open_lessons_section.dart';
+import '../setup/setup_banner.dart';
 import '../study/agenda.dart';
 import '../study/deadline_tile.dart';
 import '../study/lesson_tile.dart';
@@ -27,6 +28,7 @@ class TodayScreen extends ConsumerWidget {
   List<Widget> _body(BuildContext context, Agenda agenda) {
     final l10n = context.l10n;
     return [
+      const SetupBanner(),
       const OutboxSection(),
       const OpenLessonsSection(),
       Text(

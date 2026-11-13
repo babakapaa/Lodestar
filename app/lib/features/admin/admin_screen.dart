@@ -7,6 +7,8 @@ import '../../core/access/permission_set.dart';
 import '../../core/navigation/app_routes.dart';
 import '../../design/tokens/spacing.dart';
 import '../../l10n/l10n_context.dart';
+import '../setup/setup_providers.dart';
+import '../setup/setup_status.dart';
 
 class AdminScreen extends ConsumerWidget {
   const AdminScreen({super.key});
@@ -16,6 +18,7 @@ class AdminScreen extends ConsumerWidget {
     final l10n = context.l10n;
     final permissions =
         ref.watch(myPermissionsProvider).value ?? PermissionSet.empty;
+    final setup = ref.watch(setupStatusProvider).value ?? SetupStatus.open;
     return Scaffold(
       appBar: AppBar(title: Text(l10n.adminTitle)),
       body: SafeArea(
@@ -27,6 +30,16 @@ class AdminScreen extends ConsumerWidget {
             child: ListView(
               padding: const EdgeInsets.all(Spacing.l),
               children: [
+                if (setup.takesPart && setup.manages)
+                  ListTile(
+                    key: const ValueKey('admin-setup'),
+                    contentPadding: EdgeInsets.zero,
+                    leading: const Icon(Icons.checklist),
+                    title: Text(l10n.setupTitle),
+                    subtitle: Text(l10n.setupHint),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => context.push(AppRoutes.setup),
+                  ),
                 if (permissions.has(PermissionSet.viewStats))
                   ListTile(
                     key: const ValueKey('admin-stats'),

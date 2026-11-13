@@ -24,6 +24,8 @@ const (
 	CodePlatformFailed     = "lms_unavailable"
 	CodeSourceFixed        = "assignment_source_fixed"
 	CodeInvalidSource      = "invalid_assignment_source"
+	CodeDeepLinkNotFound   = "lti_deep_link_not_found"
+	CodeInvalidDeepLink    = "invalid_lti_deep_link"
 )
 
 var errorCodes = []struct {
@@ -44,6 +46,8 @@ var errorCodes = []struct {
 	{ErrPlatformUnavailable, http.StatusBadGateway, CodePlatformFailed},
 	{ErrSourceFixed, http.StatusConflict, CodeSourceFixed},
 	{ErrInvalidSource, http.StatusBadRequest, CodeInvalidSource},
+	{ErrDeepLinkNotFound, http.StatusNotFound, CodeDeepLinkNotFound},
+	{ErrInvalidDeepLink, http.StatusBadRequest, CodeInvalidDeepLink},
 }
 
 func writeError(w http.ResponseWriter, err error) {

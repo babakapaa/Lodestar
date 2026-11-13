@@ -195,4 +195,22 @@ void main() {
     expect(find.text('Добавлено: 1, уже были в курсе: 0'), findsOneWidget);
     expect(server.study.imported, ['erlan@kaznu.kz']);
   });
+
+  testWidgets('a teacher picks a course to add to the LMS', (tester) async {
+    final app = await pumpApp(tester, size: const Size(390, 1000));
+    await go(tester, '/lti/deep-links/d1');
+
+    expect(find.textContaining('Moodle покажет студентам'), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('deep-link-study.course-c1')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('deep-link-send')));
+    await tester.pumpAndSettle();
+
+    expect(app.server.lti.answers.single, {
+      'items': [
+        {'kind': 'study.course', 'id': 'c1'},
+      ],
+    });
+    expect(app.lms.opened.single.queryParameters['code'], 'abc');
+  });
 }

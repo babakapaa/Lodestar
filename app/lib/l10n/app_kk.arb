@@ -1384,5 +1384,11 @@
   "previewStudent": "Студент",
   "previewAnyone": "Кез келген студент, тапсырылған жұмыссыз",
   "previewDate": "Күні",
-  "previewEmpty": "Бұл күні студент тапсырмаларды көрмейді"
+  "previewEmpty": "Бұл күні студент тапсырмаларды көрмейді",
+  "lmsDeepLinkTitle": "LMS-ке қосу",
+  "lmsDeepLinkHint": "{platform} студенттерге не көрсететінін таңдаңыз. Сілтеме Lodestar-дағы таңдалған курсты ашады.",
+  "lmsDeepLinkEmpty": "Сіз жүргізетін курстар жоқ.",
+  "lmsDeepLinkSend": "LMS-ке оралу",
+  "errorLmsDeepLinkGone": "LMS сұрауы ескірді. LMS-те қайта бастаңыз.",
+  "errorLmsDeepLinkInvalid": "LMS мұндай таңдауды қабылдамайды"
 }

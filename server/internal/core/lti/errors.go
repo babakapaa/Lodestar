@@ -25,3 +25,7 @@ var ErrSourceFixed = errors.New("assignment source is chosen by the university")
 var ErrInvalidSource = errors.New("assignment source is invalid")
 
 var ErrPlatformUnavailable = errors.New("lms answered with an error")
+
+var ErrDeepLinkNotFound = errors.New("deep linking request not found or expired")
+
+var ErrInvalidDeepLink = errors.New("deep linking answer is invalid")

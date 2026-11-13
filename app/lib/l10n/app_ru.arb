@@ -2483,5 +2483,18 @@
   "previewStudent": "Студент",
   "previewAnyone": "Любой студент, без сданных работ",
   "previewDate": "Дата",
-  "previewEmpty": "На эту дату студент не видит заданий"
+  "previewEmpty": "На эту дату студент не видит заданий",
+  "lmsDeepLinkTitle": "Добавить в LMS",
+  "lmsDeepLinkHint": "Выберите, что {platform} покажет студентам. Ссылка откроет выбранный курс в Lodestar.",
+  "@lmsDeepLinkHint": {
+    "placeholders": {
+      "platform": {
+        "type": "String"
+      }
+    }
+  },
+  "lmsDeepLinkEmpty": "Нет курсов, которые вы ведёте.",
+  "lmsDeepLinkSend": "Вернуться в LMS",
+  "errorLmsDeepLinkGone": "Запрос LMS устарел. Начните заново в LMS.",
+  "errorLmsDeepLinkInvalid": "LMS не принимает такой выбор"
 }

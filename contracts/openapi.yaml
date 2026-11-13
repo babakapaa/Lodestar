@@ -2137,7 +2137,7 @@ paths:
       tags: [lti]
       operationId: ltiLaunch
       summary: Запуск из LMS
-      description: Проверяет id_token LMS и перенаправляет в приложение на /lti с одноразовым билетом ticket, адресом сервера server, вузом tenant и путём next, при отказе с error=launch_failed.
+      description: Проверяет id_token LMS и перенаправляет в приложение на /lti с одноразовым билетом ticket, адресом сервера server, вузом tenant и путём next, при отказе с error=launch_failed. Запуск выбора содержимого (LtiDeepLinkingRequest) доступен только преподавателю и ведёт на /lti/deep-links/{id}. Ссылка с custom lodestar_kind и lodestar_id открывает выбранное место.
       parameters:
         - $ref: "#/components/parameters/Tenant"
       requestBody:
@@ -2289,6 +2289,82 @@ paths:
       responses:
         "204":
           description: Удалено
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/lti/tenants/{tenant}/deep-links/return:
+    get:
+      tags: [lti]
+      operationId: returnLtiDeepLink
+      summary: Вернуть выбор в LMS
+      description: Одноразовая страница, которая отправляет подписанный ответ LtiDeepLinkingResponse на адрес LMS.
+      parameters:
+        - $ref: "#/components/parameters/Tenant"
+        - name: code
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Страница с формой
+          content:
+            text/html:
+              schema:
+                type: string
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/lti/deep-links/{id}:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    get:
+      tags: [lti]
+      operationId: getLtiDeepLink
+      summary: Запрос LMS на выбор содержимого
+      description: Видит только преподаватель, который пришёл из LMS. Запрос живёт час.
+      security:
+        - bearer: []
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LtiDeepLink"
+        "401":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+    post:
+      tags: [lti]
+      operationId: answerLtiDeepLink
+      summary: Выбрать, что вставить в LMS
+      security:
+        - bearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LtiDeepLinkInput"
+      responses:
+        "200":
+          description: Адрес страницы, которая вернёт выбор в LMS
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LtiDeepLinkAnswer"
         "400":
           $ref: "#/components/responses/Error"
         "401":
@@ -9443,6 +9519,41 @@ components:
           type: string
         id:
           type: string
+    LtiDeepLink:
+      type: object
+      required: [id, platform, acceptMultiple, targets, createdAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        platform:
+          type: string
+        acceptMultiple:
+          type: boolean
+        targets:
+          type: array
+          items:
+            $ref: "#/components/schemas/LinkTarget"
+        createdAt:
+          type: string
+          format: date-time
+    LtiDeepLinkInput:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          minItems: 1
+          maxItems: 20
+          items:
+            $ref: "#/components/schemas/LtiLinkInput"
+    LtiDeepLinkAnswer:
+      type: object
+      required: [formUrl]
+      properties:
+        formUrl:
+          type: string
+          format: uri
     LtiContext:
       type: object
       required: [id, title, label, platform, instructor, link, options, assignmentSource, sourceEditable, canSync, syncedAt, syncError]

@@ -28,6 +28,7 @@ import '../../features/login/login_screen.dart';
 import '../../features/lti/course_lms_screen.dart';
 import '../../features/lti/lms_platforms_screen.dart';
 import '../../features/lti/lti_context_screen.dart';
+import '../../features/lti/lti_deep_link_screen.dart';
 import '../../features/lti/lti_launch.dart';
 import '../../features/lti/lti_launch_screen.dart';
 import '../../features/navigator/dialog_scope.dart';
@@ -364,6 +365,10 @@ class AppRouter {
           _param(
             AppRoutes.ltiContext(':id'),
             (id) => LtiContextScreen(contextId: id),
+          ),
+          _param(
+            AppRoutes.ltiDeepLink(':id'),
+            (id) => LtiDeepLinkScreen(deepLinkId: id),
           ),
           _route(AppRoutes.ltiPlatforms, const LmsPlatformsScreen()),
           _param(

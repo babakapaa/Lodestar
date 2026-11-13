@@ -13,6 +13,7 @@ type Submission struct {
 	ClientID     string       `json:"clientId"`
 	Body         string       `json:"body"`
 	ComposedAt   *time.Time   `json:"composedAt"`
+	SearchMap    *SearchMap   `json:"searchMap"`
 	SubmittedAt  time.Time    `json:"submittedAt"`
 	Files        []files.File `json:"files"`
 }

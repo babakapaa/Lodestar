@@ -12,7 +12,7 @@ type SubmitHandler struct {
 
 func (h SubmitHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	var in SubmissionInput
-	if err := jsonhttp.Read(w, r, &in); err != nil {
+	if err := jsonhttp.ReadLimit(w, r, &in, jsonhttp.LargeBody); err != nil {
 		badRequest(w)
 		return
 	}

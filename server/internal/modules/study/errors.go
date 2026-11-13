@@ -37,3 +37,7 @@ var ErrInvalidSeries = errors.New("schedule series is invalid")
 var ErrInvalidChange = errors.New("lesson change is invalid")
 
 var ErrInvalidRange = errors.New("date range is invalid")
+
+var ErrInvalidSearchMap = errors.New("search map is malformed")
+
+var ErrSearchMapIncomplete = errors.New("search map does not meet the assignment rules")

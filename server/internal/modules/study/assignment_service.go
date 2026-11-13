@@ -379,32 +379,46 @@ func (s AssignmentService) Grade(ctx context.Context, p auth.Principal, id, stud
 		if !a.Published() {
 			return ErrNotPublished
 		}
-		if in, err = in.normalized(a); err != nil {
+		if err := s.student(ctx, tx, c, studentID); err != nil {
 			return err
 		}
-		students, err := s.gate.StudentIDs(ctx, tx, c.ID)
-		if err != nil {
-			return err
-		}
-		if !slices.Contains(students, studentID) {
-			return ErrNotStudent
-		}
-		if g, err = s.grades.Upsert(ctx, tx, id, studentID, p.UserID, in); err != nil {
-			return err
-		}
-		if err := s.log.Record(ctx, tx, p.UserID, audit.Change{
-			Action: ActionGraded, TargetKind: "study.assignment", TargetID: id,
-			Details: map[string]any{"title": a.Title, "student": studentID},
-		}); err != nil {
-			return err
-		}
-		return s.notifier.Notify(ctx, tx, p.TenantID, module.Notification{
-			Type: NotifyGraded, UserIDs: []string{studentID},
-			Params: map[string]any{"assignment": a.Title, "course": c.Title},
-			Link:   assignmentLink(id),
-		})
+		g, err = s.grade(ctx, tx, p, a, c, studentID, in)
+		return err
 	})
 	return g, err
+}
+
+func (s AssignmentService) grade(ctx context.Context, tx pgx.Tx, p auth.Principal, a Assignment, c Course, studentID string, in GradeInput) (Grade, error) {
+	in, err := in.normalized(a)
+	if err != nil {
+		return Grade{}, err
+	}
+	g, err := s.grades.Upsert(ctx, tx, a.ID, studentID, p.UserID, in)
+	if err != nil {
+		return Grade{}, err
+	}
+	if err := s.log.Record(ctx, tx, p.UserID, audit.Change{
+		Action: ActionGraded, TargetKind: "study.assignment", TargetID: a.ID,
+		Details: map[string]any{"title": a.Title, "student": studentID},
+	}); err != nil {
+		return Grade{}, err
+	}
+	return g, s.notifier.Notify(ctx, tx, p.TenantID, module.Notification{
+		Type: NotifyGraded, UserIDs: []string{studentID},
+		Params: map[string]any{"assignment": a.Title, "course": c.Title},
+		Link:   assignmentLink(a.ID),
+	})
+}
+
+func (s AssignmentService) student(ctx context.Context, tx pgx.Tx, c Course, studentID string) error {
+	students, err := s.gate.StudentIDs(ctx, tx, c.ID)
+	if err != nil {
+		return err
+	}
+	if !slices.Contains(students, studentID) {
+		return ErrNotStudent
+	}
+	return nil
 }
 
 func (s AssignmentService) work(ctx context.Context, tx pgx.Tx, a Assignment, student identity.Person) (StudentWork, error) {

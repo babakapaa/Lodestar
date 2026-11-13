@@ -11,7 +11,7 @@ import (
 )
 
 const assignmentColumns = `a.id::text, a.course_id::text, a.title, a.description, a.due_at, a.grading,
-	a.max_points::float8, a.search_map, a.navigator_mode, a.published_at, a.created_at`
+	a.max_points::float8, a.search_map, a.navigator_mode, a.defense, a.published_at, a.created_at`
 
 type AssignmentStore struct{}
 
@@ -44,9 +44,9 @@ func (AssignmentStore) ByCourse(ctx context.Context, tx pgx.Tx, courseID string,
 
 func (AssignmentStore) Insert(ctx context.Context, tx pgx.Tx, courseID, authorID string, in AssignmentInput) (Assignment, error) {
 	rows, err := tx.Query(ctx, `
-		INSERT INTO study.assignments AS a (course_id, title, description, due_at, grading, max_points, published_at, created_by, search_map, navigator_mode)
-		VALUES ($1, $2, $3, $4, $5, $6, CASE WHEN $7 THEN now() END, $8, $9, $10)
-		RETURNING `+assignmentColumns, courseID, in.Title, in.Description, in.DueAt, in.Grading, in.MaxPoints, in.Published, authorID, in.SearchMap, in.NavigatorMode)
+		INSERT INTO study.assignments AS a (course_id, title, description, due_at, grading, max_points, published_at, created_by, search_map, navigator_mode, defense)
+		VALUES ($1, $2, $3, $4, $5, $6, CASE WHEN $7 THEN now() END, $8, $9, $10, $11)
+		RETURNING `+assignmentColumns, courseID, in.Title, in.Description, in.DueAt, in.Grading, in.MaxPoints, in.Published, authorID, in.SearchMap, in.NavigatorMode, in.Defense)
 	if err != nil {
 		return Assignment{}, assignmentError(err)
 	}
@@ -57,9 +57,9 @@ func (AssignmentStore) Insert(ctx context.Context, tx pgx.Tx, courseID, authorID
 func (AssignmentStore) Update(ctx context.Context, tx pgx.Tx, id string, in AssignmentInput) (Assignment, error) {
 	rows, err := tx.Query(ctx, `
 		UPDATE study.assignments a SET title = $2, description = $3, due_at = $4, grading = $5, max_points = $6,
-		       published_at = CASE WHEN $7 THEN coalesce(a.published_at, now()) END, search_map = $8, navigator_mode = $9, updated_at = now()
+		       published_at = CASE WHEN $7 THEN coalesce(a.published_at, now()) END, search_map = $8, navigator_mode = $9, defense = $10, updated_at = now()
 		WHERE a.id::text = $1 RETURNING `+assignmentColumns,
-		id, in.Title, in.Description, in.DueAt, in.Grading, in.MaxPoints, in.Published, in.SearchMap, in.NavigatorMode)
+		id, in.Title, in.Description, in.DueAt, in.Grading, in.MaxPoints, in.Published, in.SearchMap, in.NavigatorMode, in.Defense)
 	if err != nil {
 		return Assignment{}, assignmentError(err)
 	}
@@ -97,7 +97,7 @@ func (AssignmentStore) SetFiles(ctx context.Context, tx pgx.Tx, id string, fileI
 
 func scanAssignment(row pgx.CollectableRow) (Assignment, error) {
 	var a Assignment
-	err := row.Scan(&a.ID, &a.CourseID, &a.Title, &a.Description, &a.DueAt, &a.Grading, &a.MaxPoints, &a.SearchMap, &a.NavigatorMode, &a.PublishedAt, &a.CreatedAt)
+	err := row.Scan(&a.ID, &a.CourseID, &a.Title, &a.Description, &a.DueAt, &a.Grading, &a.MaxPoints, &a.SearchMap, &a.NavigatorMode, &a.Defense, &a.PublishedAt, &a.CreatedAt)
 	return a, err
 }
 

@@ -19,6 +19,9 @@ const (
 	ActionAssignmentPublished = "study.assignment.published"
 	ActionAssignmentDeleted   = "study.assignment.deleted"
 	ActionGraded              = "study.assignment.graded"
+	ActionDefenseFinished     = "study.defense.finished"
+	ActionDefenseSlotsAdded   = "study.defense.slots_added"
+	ActionDefenseSlotDeleted  = "study.defense.slot_deleted"
 )
 
 const (

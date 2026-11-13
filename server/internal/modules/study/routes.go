@@ -6,6 +6,7 @@ type Routes struct {
 	Service     Service
 	Assignments AssignmentService
 	Schedule    ScheduleService
+	Defenses    DefenseService
 }
 
 func (r Routes) Mount(mux *http.ServeMux) {
@@ -40,6 +41,7 @@ func (r Routes) Mount(mux *http.ServeMux) {
 	mux.Handle("GET /v1/study/schedule", ScheduleHandler{service: sc})
 	mux.Handle("GET /v1/study/courses/{id}/schedule", CourseScheduleHandler{service: sc})
 	mux.Handle("GET /v1/study/agenda", AgendaHandler{service: sc})
+	r.mountDefenses(mux)
 	for _, list := range []List{ListTeachers, ListUnits, ListStudents} {
 		path := "/v1/study/courses/{id}/" + string(list) + "/{member}"
 		mux.Handle("PUT "+path, RosterChangeHandler{service: s, list: list, add: true})

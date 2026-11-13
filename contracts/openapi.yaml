@@ -2543,6 +2543,394 @@ paths:
           $ref: "#/components/responses/Error"
         default:
           $ref: "#/components/responses/Error"
+  /v1/study/assignments/{id}/defense-slots:
+    get:
+      tags: [study]
+      operationId: listDefenseSlots
+      summary: Время для записи на защиту
+      description: Преподаватель видит записавшихся, студент видит только занятость и своё время.
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DefenseSlot"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+    post:
+      tags: [study]
+      operationId: addDefenseSlots
+      summary: Добавить время защиты
+      description: Создаёт count слотов подряд, каждый длиной minutes.
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SlotsInput"
+      responses:
+        "201":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DefenseSlot"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/study/defense-slots/{id}:
+    delete:
+      tags: [study]
+      operationId: deleteDefenseSlot
+      summary: Удалить время защиты
+      description: Записавшиеся студенты получают уведомление и записываются заново.
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "204":
+          description: Готово
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/study/assignments/{id}/defense:
+    get:
+      tags: [study]
+      operationId: getMyDefense
+      summary: Моя защита по заданию
+      description: Вопросы и протокол студент видит только после защиты.
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MyDefense"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/study/assignments/{id}/defense/booking:
+    put:
+      tags: [study]
+      operationId: bookDefense
+      summary: Записаться на защиту
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BookingInput"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MyDefense"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+    delete:
+      tags: [study]
+      operationId: cancelDefenseBooking
+      summary: Отменить запись на защиту
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MyDefense"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/study/assignments/{id}/defenses:
+    get:
+      tags: [study]
+      operationId: listDefenses
+      summary: Защиты всех студентов по заданию
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DefenseRow"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/study/assignments/{id}/defenses/sample:
+    post:
+      tags: [study]
+      operationId: sampleDefenses
+      summary: Случайно выбрать студентов на полную защиту
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SampleInput"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SampleResult"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/study/assignments/{id}/defenses/{student}:
+    get:
+      tags: [study]
+      operationId: getDefense
+      summary: Вопросы и протокол защиты студента
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+        - name: student
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Defense"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+    put:
+      tags: [study]
+      operationId: saveDefense
+      summary: Сохранить вопросы и заметки защиты
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+        - name: student
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DefenseInput"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Defense"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/study/assignments/{id}/defenses/{student}/selection:
+    put:
+      tags: [study]
+      operationId: selectForDefense
+      summary: Отметить студента на полную защиту
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+        - name: student
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SelectionInput"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Defense"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/study/assignments/{id}/defenses/{student}/finish:
+    post:
+      tags: [study]
+      operationId: finishDefense
+      summary: Завершить защиту
+      description: Закрепляет протокол и, если передана оценка, сохраняет её в той же операции.
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+        - name: student
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FinishInput"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Defense"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
   /v1/study/assignments/{id}/work:
     get:
       tags: [study]
@@ -5278,7 +5666,7 @@ components:
       description: points баллы до maxPoints, pass зачёт или незачёт, none только отзыв
     Assignment:
       type: object
-      required: [id, courseId, title, description, dueAt, grading, maxPoints, searchMap, navigatorMode, publishedAt, createdAt]
+      required: [id, courseId, title, description, dueAt, grading, maxPoints, searchMap, navigatorMode, defense, publishedAt, createdAt]
       properties:
         id:
           type: string
@@ -5307,6 +5695,11 @@ components:
             - $ref: "#/components/schemas/NavigatorMode"
             - type: "null"
           description: Пусто, если действует режим курса
+        defense:
+          oneOf:
+            - $ref: "#/components/schemas/DefenseFormat"
+            - type: "null"
+          description: Формат защиты. Пусто, если защиты нет
         publishedAt:
           type: [string, "null"]
           format: date-time
@@ -5340,6 +5733,10 @@ components:
         navigatorMode:
           oneOf:
             - $ref: "#/components/schemas/NavigatorMode"
+            - type: "null"
+        defense:
+          oneOf:
+            - $ref: "#/components/schemas/DefenseFormat"
             - type: "null"
         files:
           type: array
@@ -5573,6 +5970,203 @@ components:
         comment:
           type: string
           maxLength: 20000
+    DefenseFormat:
+      type: string
+      enum: [full, short, sample]
+      description: full — полная для всех, short — короткая для всех, sample — полная для выбранных
+    DefenseStatus:
+      type: string
+      enum: [planned, held, missed]
+    DefenseQuestion:
+      type: object
+      required: [kind, text]
+      properties:
+        kind:
+          type: string
+          enum: [understanding, analysis, application, path]
+        text:
+          type: string
+          maxLength: 2000
+        mark:
+          type: [integer, "null"]
+          minimum: 0
+          maximum: 3
+          description: Понимание по шкале 0–3
+        note:
+          type: string
+          maxLength: 2000
+    Defense:
+      type: object
+      required: [assignmentId, studentId, slotId, selected, status, questions, summary, examinerId, heldAt, updatedAt]
+      properties:
+        assignmentId:
+          type: string
+          format: uuid
+        studentId:
+          type: string
+          format: uuid
+        slotId:
+          type: [string, "null"]
+          format: uuid
+        selected:
+          type: boolean
+        status:
+          $ref: "#/components/schemas/DefenseStatus"
+        questions:
+          type: array
+          items:
+            $ref: "#/components/schemas/DefenseQuestion"
+        summary:
+          type: string
+        examinerId:
+          type: [string, "null"]
+          format: uuid
+        heldAt:
+          type: [string, "null"]
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    DefenseInput:
+      type: object
+      properties:
+        questions:
+          type: array
+          maxItems: 20
+          items:
+            $ref: "#/components/schemas/DefenseQuestion"
+        summary:
+          type: string
+          maxLength: 20000
+    DefenseSlot:
+      type: object
+      required: [id, assignmentId, startsAt, minutes, place, capacity, taken, mine]
+      properties:
+        id:
+          type: string
+          format: uuid
+        assignmentId:
+          type: string
+          format: uuid
+        startsAt:
+          type: string
+          format: date-time
+        minutes:
+          type: integer
+        place:
+          type: string
+        capacity:
+          type: integer
+        taken:
+          type: integer
+        mine:
+          type: boolean
+        students:
+          type: array
+          description: Только для преподавателя
+          items:
+            $ref: "#/components/schemas/Person"
+    SlotsInput:
+      type: object
+      required: [startsAt, minutes]
+      properties:
+        startsAt:
+          type: string
+          format: date-time
+        minutes:
+          type: integer
+          minimum: 5
+          maximum: 240
+        place:
+          type: string
+          maxLength: 500
+        capacity:
+          type: integer
+          minimum: 1
+          maximum: 50
+        count:
+          type: integer
+          minimum: 1
+          maximum: 50
+    DefenseRow:
+      type: object
+      required: [student, selected, status, slot, grade]
+      properties:
+        student:
+          $ref: "#/components/schemas/Person"
+        selected:
+          type: boolean
+        status:
+          $ref: "#/components/schemas/DefenseStatus"
+        slot:
+          oneOf:
+            - $ref: "#/components/schemas/DefenseSlot"
+            - type: "null"
+        grade:
+          oneOf:
+            - $ref: "#/components/schemas/Grade"
+            - type: "null"
+    MyDefense:
+      type: object
+      required: [format, required, recorded, status, slot, protocol]
+      properties:
+        format:
+          $ref: "#/components/schemas/DefenseFormat"
+        required:
+          type: boolean
+        recorded:
+          type: boolean
+          description: Вуз включил запись защит
+        status:
+          $ref: "#/components/schemas/DefenseStatus"
+        slot:
+          oneOf:
+            - $ref: "#/components/schemas/DefenseSlot"
+            - type: "null"
+        protocol:
+          oneOf:
+            - $ref: "#/components/schemas/Defense"
+            - type: "null"
+    BookingInput:
+      type: object
+      required: [slotId]
+      properties:
+        slotId:
+          type: string
+          format: uuid
+    SelectionInput:
+      type: object
+      required: [selected]
+      properties:
+        selected:
+          type: boolean
+    SampleInput:
+      type: object
+      required: [count]
+      properties:
+        count:
+          type: integer
+          minimum: 1
+    SampleResult:
+      type: object
+      required: [studentIds]
+      properties:
+        studentIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+    FinishInput:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [held, missed]
+        grade:
+          oneOf:
+            - $ref: "#/components/schemas/GradeInput"
+            - type: "null"
     StudentWork:
       type: object
       required: [student, latest, attempts, grade]

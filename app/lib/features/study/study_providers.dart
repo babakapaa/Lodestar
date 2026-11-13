@@ -4,12 +4,14 @@ import '../../core/auth/auth_providers.dart';
 import '../../core/offline/loaded.dart';
 import '../../core/offline/offline_providers.dart';
 import '../../core/settings/settings_providers.dart';
+import '../../core/sources/source.dart';
 import 'agenda.dart';
 import 'assignment_details.dart';
 import 'assignment_item.dart';
 import 'course.dart';
 import 'course_details.dart';
 import 'lesson.dart';
+import 'search_map_draft.dart';
 import 'outbox_controller.dart';
 import 'student_work.dart';
 import 'study_repository.dart';
@@ -52,6 +54,15 @@ final assignmentProvider = FutureProvider.autoDispose
     .family<Loaded<AssignmentDetails>, String>(
       (ref, id) => ref.watch(studyRepositoryProvider).assignment(id),
     );
+
+final searchMapProvider = FutureProvider.autoDispose
+    .family<Loaded<SearchMapDraft>, String>(
+      (ref, id) => ref.watch(studyRepositoryProvider).searchMap(id),
+    );
+
+final mapSourcesProvider = FutureProvider.autoDispose<Loaded<List<Source>>>(
+  (ref) => ref.watch(studyRepositoryProvider).sources(),
+);
 
 final assignmentWorkProvider = FutureProvider.autoDispose
     .family<List<StudentWork>, String>(

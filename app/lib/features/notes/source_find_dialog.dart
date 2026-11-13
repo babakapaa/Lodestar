@@ -7,7 +7,7 @@ import '../../design/components/form_error.dart';
 import '../../design/tokens/spacing.dart';
 import '../../l10n/l10n_context.dart';
 import 'notes_providers.dart';
-import 'source.dart';
+import '../../core/sources/source.dart';
 
 class SourceFindDialog extends ConsumerStatefulWidget {
   const SourceFindDialog({super.key});

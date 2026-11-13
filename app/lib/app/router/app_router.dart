@@ -19,7 +19,7 @@ import '../../features/notes/note_versions_screen.dart';
 import '../../features/notes/notes_graph_screen.dart';
 import '../../features/notes/notes_screen.dart';
 import '../../features/notes/notes_trash_screen.dart';
-import '../../features/notes/source.dart';
+import '../../core/sources/source.dart';
 import '../../features/notes/source_edit_screen.dart';
 import '../../features/notes/source_screen.dart';
 import '../../features/notes/sources_screen.dart';
@@ -38,6 +38,7 @@ import '../../features/study/assignment_screen.dart';
 import '../../features/study/course_screen.dart';
 import '../../features/study/grade_screen.dart';
 import '../../features/study/schedule_screen.dart';
+import '../../features/study/search_map_screen.dart';
 import '../../features/study/study_screen.dart';
 import '../../features/today/today_screen.dart';
 import '../../features/units/units_screen.dart';
@@ -99,6 +100,10 @@ class AppRouter {
           _param(
             AppRoutes.assignmentEdit(':id'),
             (id) => AssignmentEditScreen(assignmentId: id),
+          ),
+          _param(
+            AppRoutes.searchMap(':id'),
+            (id) => SearchMapScreen(assignmentId: id),
           ),
           GoRoute(
             path: AppRoutes.grade(':id', ':student'),

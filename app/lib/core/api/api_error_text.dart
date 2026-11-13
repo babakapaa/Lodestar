@@ -48,6 +48,8 @@ abstract final class ApiErrorText {
       'invalid_source' => l10n.errorInvalidSource,
       'source_not_found' => l10n.errorSourceNotFound,
       'source_lookup_failed' => l10n.errorSourceLookup,
+      'invalid_search_map' => l10n.errorInvalidSearchMap,
+      'search_map_incomplete' => l10n.errorMapIncomplete,
       _ => l10n.errorGeneric,
     };
   }

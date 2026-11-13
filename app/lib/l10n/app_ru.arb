@@ -544,5 +544,87 @@
   "sourceKindOther": "Другое",
   "errorInvalidSource": "Заполните хотя бы название источника.",
   "errorSourceNotFound": "Источник не найден.",
-  "errorSourceLookup": "Не удалось найти описание. Добавьте источник вручную."
+  "errorSourceLookup": "Не удалось найти описание. Добавьте источник вручную.",
+  "mapTitle": "Карта поиска",
+  "mapRules": "Источников не меньше {sources}, научных от {scholarly}%",
+  "@mapRules": {
+    "placeholders": {
+      "sources": {
+        "type": "int"
+      },
+      "scholarly": {
+        "type": "int"
+      }
+    }
+  },
+  "mapRulesNone": "Преподаватель не задал требований к карте",
+  "mapReady": "Карта готова к сдаче",
+  "mapGapSources": "Использованных источников {have}, нужно не меньше {need}",
+  "@mapGapSources": {
+    "placeholders": {
+      "have": {
+        "type": "int"
+      },
+      "need": {
+        "type": "int"
+      }
+    }
+  },
+  "mapGapScholarly": "Научных источников {have}%, нужно от {need}%",
+  "@mapGapScholarly": {
+    "placeholders": {
+      "have": {
+        "type": "int"
+      },
+      "need": {
+        "type": "int"
+      }
+    }
+  },
+  "mapGapWhy": "Не у всех источников написано, почему выбран или отброшен",
+  "mapGapPath": "Опишите путь поиска",
+  "mapFacts": "Запись и место находки подставляются сами. Почему выбран, почему отброшен и путь поиска пишете вы.",
+  "mapUsed": "Использованные источники",
+  "mapRejected": "Отброшенные источники",
+  "mapNoneHere": "Пока ни одного",
+  "mapPath": "Путь поиска",
+  "mapPathHint": "Главные повороты: сначала искал про X, понял, что важнее Y",
+  "mapQueries": "Главные запросы, по одному в строке",
+  "mapAddSource": "Добавить из моих источников",
+  "mapNoSources": "Все источники из личной базы уже в карте. Новые добавляются в заметках, раздел «Источники».",
+  "mapPickUsed": "В работу",
+  "mapPickRejected": "Отброшен",
+  "mapFound": "Где найден",
+  "mapWhyUsed": "Почему выбран",
+  "mapWhyRejected": "Почему отброшен",
+  "mapTaken": "Что взято в работу",
+  "mapVague": "Напишите конкретнее: что именно вы проверили или взяли",
+  "mapMoveRejected": "Перенести в отброшенные",
+  "mapMoveUsed": "Вернуть в работу",
+  "mapRemove": "Убрать из карты",
+  "mapSave": "Сохранить карту",
+  "mapSaved": "Карта сохранена",
+  "mapExport": "Выгрузить в .md",
+  "mapScheme": "Схема",
+  "mapSchemeLabel": "Схема карты: использовано {used}, отброшено {rejected}",
+  "@mapSchemeLabel": {
+    "placeholders": {
+      "used": {
+        "type": "int"
+      },
+      "rejected": {
+        "type": "int"
+      }
+    }
+  },
+  "mapWork": "Работа",
+  "mapScholarly": "научный",
+  "mapOpen": "Собрать карту поиска",
+  "mapNotReady": "Карта поиска ещё не готова, сдать работу нельзя",
+  "mapAttached": "Карта поиска приложится к работе",
+  "assignmentMapRequired": "Нужна карта поиска",
+  "assignmentMapMinSources": "Минимум источников",
+  "assignmentMapMinScholarly": "Доля научных, %",
+  "errorInvalidSearchMap": "Карта поиска заполнена неверно.",
+  "errorMapIncomplete": "Карта поиска не соответствует требованиям задания."
 }

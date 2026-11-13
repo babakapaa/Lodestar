@@ -13,7 +13,7 @@ import 'notes_store.dart';
 import 'notes_sync.dart';
 import 'notes_sync_controller.dart';
 import 'notes_sync_status.dart';
-import 'source.dart';
+import '../../core/sources/source.dart';
 import 'sources_api.dart';
 
 final notesDatabaseProvider = Provider<NotesDatabase>((ref) {

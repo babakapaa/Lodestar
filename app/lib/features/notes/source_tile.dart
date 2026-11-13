@@ -4,8 +4,8 @@ import 'package:material_ui/material_ui.dart';
 import '../../core/navigation/app_routes.dart';
 import '../../design/tokens/tokens_context.dart';
 import '../../l10n/l10n_context.dart';
-import 'gost_reference.dart';
-import 'source.dart';
+import '../../core/sources/gost_reference.dart';
+import '../../core/sources/source.dart';
 
 class SourceTile extends StatelessWidget {
   const SourceTile({required this.source, super.key});

@@ -2,6 +2,7 @@ import '../../core/api/api_client.dart';
 import '../../core/offline/cached_body.dart';
 import '../../core/offline/cached_reader.dart';
 import '../../core/offline/loaded.dart';
+import '../../core/sources/source.dart';
 import 'agenda.dart';
 import 'assignment.dart';
 import 'assignment_details.dart';
@@ -11,6 +12,8 @@ import 'course.dart';
 import 'course_details.dart';
 import 'grade_input.dart';
 import 'lesson.dart';
+import 'search_map.dart';
+import 'search_map_draft.dart';
 import 'student_work.dart';
 import 'submission.dart';
 import 'submission_draft.dart';
@@ -62,6 +65,25 @@ class StudyRepository {
     '/v1/study/assignments/${_id(draft.assignmentId)}/submissions',
     draft.toRequest(),
   );
+
+  Future<Loaded<SearchMapDraft>> searchMap(String assignmentId) async => _one(
+    await _reader.get('/v1/study/assignments/${_id(assignmentId)}/search-map'),
+    SearchMapDraft.fromJson,
+  );
+
+  Future<SearchMapDraft> saveSearchMap(
+    String assignmentId,
+    SearchMap map,
+  ) async => SearchMapDraft.fromJson(
+    (await _api.put(
+          '/v1/study/assignments/${_id(assignmentId)}/search-map',
+          map.toJson(),
+        ))!
+        as Map<String, Object?>,
+  );
+
+  Future<Loaded<List<Source>>> sources() async =>
+      _list(await _reader.get('/v1/notes/sources'), Source.fromJson);
 
   Future<List<StudentWork>> work(String assignmentId) async => [
     for (final item

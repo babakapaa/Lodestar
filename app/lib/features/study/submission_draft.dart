@@ -1,3 +1,5 @@
+import 'search_map.dart';
+
 class SubmissionDraft {
   const SubmissionDraft({
     required this.clientId,
@@ -5,6 +7,7 @@ class SubmissionDraft {
     required this.assignmentTitle,
     required this.body,
     required this.composedAt,
+    this.searchMap,
     this.error,
   });
 
@@ -15,6 +18,7 @@ class SubmissionDraft {
       assignmentTitle: json['assignmentTitle'] as String? ?? '',
       body: json['body'] as String? ?? '',
       composedAt: DateTime.parse(json['composedAt']! as String),
+      searchMap: SearchMap.maybe(json['searchMap']),
       error: json['error'] as String?,
     );
   }
@@ -24,6 +28,7 @@ class SubmissionDraft {
   final String assignmentTitle;
   final String body;
   final DateTime composedAt;
+  final SearchMap? searchMap;
   final String? error;
 
   bool get failed => error != null;
@@ -34,6 +39,7 @@ class SubmissionDraft {
     assignmentTitle: assignmentTitle,
     body: body,
     composedAt: composedAt,
+    searchMap: searchMap,
     error: code,
   );
 
@@ -43,6 +49,7 @@ class SubmissionDraft {
     'assignmentTitle': assignmentTitle,
     'body': body,
     'composedAt': composedAt.toUtc().toIso8601String(),
+    'searchMap': searchMap?.toJson(),
     'error': ?error,
   };
 
@@ -50,5 +57,6 @@ class SubmissionDraft {
     'clientId': clientId,
     'body': body,
     'composedAt': composedAt.toUtc().toIso8601String(),
+    'searchMap': searchMap?.toJson(),
   };
 }

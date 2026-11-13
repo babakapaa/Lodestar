@@ -2,7 +2,7 @@ import '../../core/api/api_client.dart';
 import '../../core/offline/cached_reader.dart';
 import '../../core/offline/client_id.dart';
 import '../../core/offline/loaded.dart';
-import 'source.dart';
+import '../../core/sources/source.dart';
 
 class SourcesApi {
   const SourcesApi(this._api, this._reader);

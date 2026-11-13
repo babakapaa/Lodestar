@@ -8,6 +8,7 @@ import '../../design/tokens/spacing.dart';
 import '../../design/tokens/tokens_context.dart';
 import '../../l10n/l10n_context.dart';
 import 'assignment_details.dart';
+import 'search_map_view.dart';
 import 'study_labels_context.dart';
 import 'study_providers.dart';
 
@@ -67,6 +68,10 @@ class MyWorkSection extends ConsumerWidget {
                       leading: const Icon(Icons.attach_file),
                       title: Text(file.name),
                     ),
+                  if (latest.searchMap case final map?) ...[
+                    const SizedBox(height: Spacing.m),
+                    SearchMapView(map: map),
+                  ],
                 ],
               ),
             ),

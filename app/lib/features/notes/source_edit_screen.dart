@@ -10,10 +10,10 @@ import '../../design/components/form_error.dart';
 import '../../design/components/lodestar_button.dart';
 import '../../design/tokens/spacing.dart';
 import '../../l10n/l10n_context.dart';
-import 'gost_reference.dart';
+import '../../core/sources/gost_reference.dart';
 import 'notes_providers.dart';
-import 'source.dart';
-import 'source_kind.dart';
+import '../../core/sources/source.dart';
+import '../../core/sources/source_kind.dart';
 import 'source_labels.dart';
 
 class SourceEditScreen extends ConsumerStatefulWidget {

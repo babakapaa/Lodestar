@@ -8,7 +8,8 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-const contextColumns = `id::text, platform_id::text, deployment_id, context_id, title, label, members_url, lineitems_url, ags_scopes, origin_kind, origin_id`
+const contextColumns = `id::text, platform_id::text, deployment_id, context_id, title, label, members_url, lineitems_url, ags_scopes, origin_kind, origin_id,
+	linked_by::text, assignment_source, synced_at, sync_error`
 
 type ContextStore struct{}
 
@@ -63,10 +64,47 @@ func (ContextStore) Unlink(ctx context.Context, tx pgx.Tx, id string) error {
 	return nil
 }
 
+func (ContextStore) Linked(ctx context.Context, tx pgx.Tx) ([]Context, error) {
+	rows, err := tx.Query(ctx, `
+		SELECT `+contextColumns+` FROM lti.contexts
+		WHERE origin_kind IS NOT NULL AND (members_url IS NOT NULL OR lineitems_url IS NOT NULL)
+		ORDER BY synced_at NULLS FIRST, id`)
+	if err != nil {
+		return nil, fmt.Errorf("linked lti contexts: %w", err)
+	}
+	return pgx.CollectRows(rows, scanContext)
+}
+
+func (ContextStore) ByOrigin(ctx context.Context, tx pgx.Tx, kind, originID string) ([]Context, error) {
+	rows, err := tx.Query(ctx, `
+		SELECT `+contextColumns+` FROM lti.contexts WHERE origin_kind = $1 AND origin_id = $2 ORDER BY title, id`, kind, originID)
+	if err != nil {
+		return nil, fmt.Errorf("lti contexts by origin: %w", err)
+	}
+	return pgx.CollectRows(rows, scanContext)
+}
+
+func (ContextStore) SetSource(ctx context.Context, tx pgx.Tx, id string, source *string) error {
+	_, err := tx.Exec(ctx, `UPDATE lti.contexts SET assignment_source = $2, updated_at = now() WHERE id::text = $1`, id, source)
+	if err != nil {
+		return fmt.Errorf("set lti assignment source: %w", err)
+	}
+	return nil
+}
+
+func (ContextStore) Synced(ctx context.Context, tx pgx.Tx, id string, syncErr *string) error {
+	_, err := tx.Exec(ctx, `UPDATE lti.contexts SET synced_at = now(), sync_error = $2 WHERE id::text = $1`, id, syncErr)
+	if err != nil {
+		return fmt.Errorf("mark lti context synced: %w", err)
+	}
+	return nil
+}
+
 func scanContext(row pgx.CollectableRow) (Context, error) {
 	var c Context
 	err := row.Scan(&c.ID, &c.PlatformID, &c.DeploymentID, &c.ContextID, &c.Title, &c.Label,
-		&c.MembersURL, &c.LineItemsURL, &c.Scopes, &c.OriginKind, &c.OriginID)
+		&c.MembersURL, &c.LineItemsURL, &c.Scopes, &c.OriginKind, &c.OriginID,
+		&c.LinkedBy, &c.Source, &c.SyncedAt, &c.SyncError)
 	return c, err
 }
 

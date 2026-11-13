@@ -5,5 +5,6 @@ type ScoredWork struct {
 	ID      string
 	Title   string
 	Project bool
+	Max     float64
 	Results []WorkResult
 }

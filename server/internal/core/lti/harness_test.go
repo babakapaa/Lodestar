@@ -50,11 +50,13 @@ type harness struct {
 	admin    auth.Principal
 	users    identity.Store
 	lmsKey   *rsa.PrivateKey
-	jwks     *httptest.Server
+	lms      *fakeLMS
+	links    *fakeLinks
+	values   *fakeValues
 	platform lti.Platform
 }
 
-func newHarness(t *testing.T, links ...module.LinkSource) *harness {
+func newHarness(t *testing.T) *harness {
 	t.Helper()
 	ctx := context.Background()
 	pool := dbtest.New(t)
@@ -76,16 +78,26 @@ func newHarness(t *testing.T, links ...module.LinkSource) *harness {
 	}
 	tx := database.NewTenantTx(pool)
 	acc := access.NewService(tx, catalog, structure.Tree{})
-	h := &harness{t: t, ctx: ctx, tenant: created.ID, users: identity.NewStore(tx)}
+	h := &harness{
+		t: t, ctx: ctx, tenant: created.ID, users: identity.NewStore(tx),
+		lms: &fakeLMS{}, links: &fakeLinks{}, values: &fakeValues{source: lti.SourceLodestar},
+	}
 	h.lmsKey, err = rsa.GenerateKey(rand.Reader, 2048)
 	if err != nil {
 		t.Fatalf("lms key: %v", err)
 	}
-	h.jwks = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-		set := jose.JSONWebKeySet{Keys: []jose.JSONWebKey{{Key: &h.lmsKey.PublicKey, KeyID: lmsKeyID, Algorithm: string(jose.RS256), Use: "sig"}}}
-		_ = json.NewEncoder(w).Encode(set)
+	lms := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/jwks" {
+			set := jose.JSONWebKeySet{Keys: []jose.JSONWebKey{{Key: &h.lmsKey.PublicKey, KeyID: lmsKeyID, Algorithm: string(jose.RS256), Use: "sig"}}}
+			_ = json.NewEncoder(w).Encode(set)
+			return
+		}
+		if !h.lms.handle(w, r) {
+			http.NotFound(w, r)
+		}
 	}))
-	t.Cleanup(h.jwks.Close)
+	t.Cleanup(lms.Close)
+	h.lms.url = lms.URL
 
 	var handler http.Handler
 	h.server = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -103,7 +115,9 @@ func newHarness(t *testing.T, links ...module.LinkSource) *harness {
 		Access:        acc,
 		Tickets:       authRoutes.Tickets,
 		Authenticator: authRoutes.Authenticator,
-		Links:         links,
+		Links:         module.LinkSources{h.links},
+		Scores:        module.ScoreSources{h.links},
+		Values:        h.values,
 		HTTPClient:    http.DefaultClient,
 		AttemptTTL:    time.Minute,
 		PublicURL:     h.server.URL,
@@ -124,8 +138,8 @@ func newHarness(t *testing.T, links ...module.LinkSource) *harness {
 		Issuer:        lmsIss,
 		ClientID:      clientID,
 		AuthURL:       lmsIss + "/auth",
-		TokenURL:      lmsIss + "/token",
-		JWKSURL:       h.jwks.URL,
+		TokenURL:      lms.URL + "/token",
+		JWKSURL:       lms.URL + "/jwks",
 		DeploymentIDs: []string{deployID},
 		MatchEmail:    true,
 	})
@@ -194,11 +208,11 @@ func (h *harness) claims(nonce, subject, email string, roles ...string) map[stri
 		"https://purl.imsglobal.org/spec/lti/claim/roles":         roles,
 		"https://purl.imsglobal.org/spec/lti/claim/context":       map[string]any{"id": "c-101", "label": "BIO-101", "title": "Основы биологии"},
 		"https://purl.imsglobal.org/spec/lti-nrps/claim/namesroleservice": map[string]any{
-			"context_memberships_url": lmsIss + "/memberships",
+			"context_memberships_url": h.lms.url + "/memberships",
 		},
 		"https://purl.imsglobal.org/spec/lti-ags/claim/endpoint": map[string]any{
-			"scope":     []string{"https://purl.imsglobal.org/spec/lti-ags/scope/lineitem"},
-			"lineitems": lmsIss + "/lineitems",
+			"scope":     []string{lti.ScopeLineItems, lti.ScopeScores},
+			"lineitems": h.lms.url + "/lineitems",
 		},
 	}
 }

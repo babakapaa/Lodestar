@@ -30,7 +30,7 @@ func (s CourseScores) ScoredWorks(ctx context.Context, tx pgx.Tx, courseID strin
 		}
 		works = append(works, module.ScoredWork{
 			Kind: TeamScopeAssignment, ID: a.ID, Title: a.Title,
-			Project: a.Team != nil || a.Defense != nil, Results: results[a.ID],
+			Project: a.Team != nil || a.Defense != nil, Max: a.maxScore(), Results: results[a.ID],
 		})
 	}
 	return works, nil

@@ -6,4 +6,5 @@ const (
 	ActionPlatformDeleted = "core.lti.platform.deleted"
 	ActionContextLinked   = "core.lti.context.linked"
 	ActionContextUnlinked = "core.lti.context.unlinked"
+	ActionSourceChanged   = "core.lti.context.source_changed"
 )

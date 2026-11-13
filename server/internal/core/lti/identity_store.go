@@ -33,3 +33,20 @@ func (s IdentityStore) Bind(ctx context.Context, tx pgx.Tx, platformID, subject,
 	bound, _, err := s.User(ctx, tx, platformID, subject)
 	return bound, err
 }
+
+func (IdentityStore) Subjects(ctx context.Context, tx pgx.Tx, platformID string) (map[string]string, error) {
+	rows, err := tx.Query(ctx, `SELECT user_id::text, subject FROM lti.identities WHERE platform_id::text = $1`, platformID)
+	if err != nil {
+		return nil, fmt.Errorf("lti subjects: %w", err)
+	}
+	out := map[string]string{}
+	var userID, subject string
+	_, err = pgx.ForEachRow(rows, []any{&userID, &subject}, func() error {
+		out[userID] = subject
+		return nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("lti subjects: %w", err)
+	}
+	return out, nil
+}

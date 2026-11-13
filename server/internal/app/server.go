@@ -35,6 +35,7 @@ const (
 	dispatchEvery   = 5 * time.Second
 	auditPruneEvery = 24 * time.Hour
 	eraseEvery      = time.Hour
+	ltiSyncEvery    = 30 * time.Minute
 )
 
 type Server struct {
@@ -85,6 +86,20 @@ func NewServer(version string, cfg config.Config, box secretbox.Box, pool *pgxpo
 	if err != nil {
 		return Server{}, err
 	}
+	integrations := lti.Settings{
+		Box:           box,
+		Access:        accessService,
+		Tickets:       authRoutes.Tickets,
+		Authenticator: authn,
+		Links:         registry.LinkSources(kernel),
+		Scores:        kernel.Scores,
+		Values:        settingsService,
+		HTTPClient:    &http.Client{Timeout: 30 * time.Second},
+		AttemptTTL:    Lifetimes(cfg).Login,
+		SyncEvery:     ltiSyncEvery,
+		PublicURL:     cfg.PublicURL,
+		AppURL:        cfg.AppURL,
+	}
 	handler := NewRouter(version, registry, pool, settings.NewGate(settingsService, authn), kernel,
 		authRoutes,
 		access.Routes{Service: accessService, Authenticator: authn},
@@ -97,17 +112,7 @@ func NewServer(version string, cfg config.Config, box secretbox.Box, pool *pgxpo
 		delivery.Routes{Service: delivery.NewService(tx), Authenticator: authn},
 		search.Routes{Service: searchService, Authenticator: authn},
 		audit.Routes{Service: audit.NewService(tx, accessService), Authenticator: authn},
-		lti.NewRoutes(pool, lti.Settings{
-			Box:           box,
-			Access:        accessService,
-			Tickets:       authRoutes.Tickets,
-			Authenticator: authn,
-			Links:         registry.LinkSources(kernel),
-			HTTPClient:    &http.Client{Timeout: 10 * time.Second},
-			AttemptTTL:    Lifetimes(cfg).Login,
-			PublicURL:     cfg.PublicURL,
-			AppURL:        cfg.AppURL,
-		}),
+		lti.NewRoutes(pool, integrations),
 		privacy.Routes{
 			Service:       privacy.NewService(tx, settingsService),
 			Exporter:      privacy.NewExporter(tx, sections),
@@ -130,6 +135,7 @@ func NewServer(version string, cfg config.Config, box secretbox.Box, pool *pgxpo
 		dispatcher,
 		audit.NewPruner(pool, settingsService, auditPruneEvery),
 		privacy.NewAccountEraser(pool, sections, eraseEvery),
+		lti.NewSyncWorker(pool, integrations),
 	}
 	for _, w := range registry.Workers(kernel) {
 		workers = append(workers, w)

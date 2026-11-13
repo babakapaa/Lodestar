@@ -28,4 +28,7 @@ func (r Routes) Mount(mux *http.ServeMux) {
 	mux.Handle("GET /v1/lti/contexts/{id}", require(ContextHandler{service: s}))
 	mux.Handle("PUT /v1/lti/contexts/{id}/link", require(LinkHandler{service: s}))
 	mux.Handle("DELETE /v1/lti/contexts/{id}/link", require(UnlinkHandler{service: s}))
+	mux.Handle("PUT /v1/lti/contexts/{id}/source", require(SourceHandler{service: s}))
+	mux.Handle("POST /v1/lti/contexts/{id}/sync", require(SyncHandler{service: s}))
+	mux.Handle("GET /v1/lti/links/{kind}/{id}", require(OriginHandler{service: s}))
 }

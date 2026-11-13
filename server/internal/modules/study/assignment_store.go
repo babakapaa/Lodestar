@@ -8,6 +8,8 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
+
+	"github.com/babakapaa/lodestar/server/internal/core/module"
 )
 
 const assignmentColumns = `a.id::text, a.course_id::text, a.title, a.description, a.due_at, a.grading,
@@ -60,6 +62,21 @@ func (AssignmentStore) Update(ctx context.Context, tx pgx.Tx, id string, in Assi
 		       published_at = CASE WHEN $7 THEN coalesce(a.published_at, now()) END, search_map = $8, navigator_mode = $9, defense = $10, team = $11, updated_at = now()
 		WHERE a.id::text = $1 RETURNING `+assignmentColumns,
 		id, in.Title, in.Description, in.DueAt, in.Grading, in.MaxPoints, in.Published, in.SearchMap, in.NavigatorMode, in.Defense, in.Team)
+	if err != nil {
+		return Assignment{}, assignmentError(err)
+	}
+	a, err := pgx.CollectExactlyOneRow(rows, scanAssignment)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return Assignment{}, ErrAssignmentNotFound
+	}
+	return a, assignmentError(err)
+}
+
+func (AssignmentStore) Retitle(ctx context.Context, tx pgx.Tx, courseID, id string, w module.ExternalWork) (Assignment, error) {
+	rows, err := tx.Query(ctx, `
+		UPDATE study.assignments a SET title = $3, due_at = $4, max_points = $5, updated_at = now()
+		WHERE a.id::text = $2 AND a.course_id::text = $1 AND a.grading = 'points'
+		RETURNING `+assignmentColumns, courseID, id, w.Title, w.DueAt, w.Max)
 	if err != nil {
 		return Assignment{}, assignmentError(err)
 	}

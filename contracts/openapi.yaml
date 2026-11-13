@@ -2366,6 +2366,117 @@ paths:
           $ref: "#/components/responses/Error"
         default:
           $ref: "#/components/responses/Error"
+  /v1/lti/contexts/{id}/source:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    put:
+      tags: [lti]
+      operationId: setLtiAssignmentSource
+      summary: Выбрать, откуда берутся задания курса
+      description: Только если вуз передал выбор подразделениям (core.lti_assignment_source = units) и человек управляет курсом Lodestar. null возвращает выбор по умолчанию.
+      security:
+        - bearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [source]
+              properties:
+                source:
+                  oneOf:
+                    - type: string
+                      enum: [lodestar, lms]
+                    - type: "null"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LtiContext"
+        "409":
+          $ref: "#/components/responses/Error"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/lti/contexts/{id}/sync:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    post:
+      tags: [lti]
+      operationId: syncLtiContext
+      summary: Синхронизировать курс с LMS сейчас
+      description: Списки участников (NRPS), задания и оценки (AGS). Сервер также делает это сам раз в 30 минут.
+      security:
+        - bearer: []
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LtiSyncReport"
+        "409":
+          $ref: "#/components/responses/Error"
+        "502":
+          $ref: "#/components/responses/Error"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/lti/links/{kind}/{id}:
+    get:
+      tags: [lti]
+      operationId: listLtiContextsByOrigin
+      summary: Курсы LMS, привязанные к объекту Lodestar
+      security:
+        - bearer: []
+      parameters:
+        - name: kind
+          in: path
+          required: true
+          schema:
+            type: string
+            examples: [study.course]
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/LtiContext"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
   /v1/me/export:
     get:
       tags: [privacy]
@@ -7329,7 +7440,7 @@ components:
           type: string
     LtiContext:
       type: object
-      required: [id, title, label, platform, instructor, link, options]
+      required: [id, title, label, platform, instructor, link, options, assignmentSource, sourceEditable, canSync, syncedAt, syncError]
       properties:
         id:
           type: string
@@ -7350,6 +7461,31 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/LinkTarget"
+        assignmentSource:
+          type: string
+          enum: [lodestar, lms]
+          description: lodestar — задания создаются в Lodestar и копируются в LMS, lms — задания приходят из LMS
+        sourceEditable:
+          type: boolean
+        canSync:
+          type: boolean
+        syncedAt:
+          type: [string, "null"]
+          format: date-time
+        syncError:
+          type: [string, "null"]
+    LtiSyncReport:
+      type: object
+      required: [members, enrolled, works, scores]
+      properties:
+        members:
+          type: integer
+        enrolled:
+          type: integer
+        works:
+          type: integer
+        scores:
+          type: integer
     AuditEntry:
       type: object
       required: [id, actorId, action, targetKind, targetId, details, at]

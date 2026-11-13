@@ -20,6 +20,10 @@ const (
 	CodeLinkTargetNotFound = "link_target_not_found"
 	CodeInvalidState       = "invalid_state"
 	CodeTenantNotFound     = "tenant_not_found"
+	CodeNotLinked          = "lti_context_not_linked"
+	CodePlatformFailed     = "lms_unavailable"
+	CodeSourceFixed        = "assignment_source_fixed"
+	CodeInvalidSource      = "invalid_assignment_source"
 )
 
 var errorCodes = []struct {
@@ -36,6 +40,10 @@ var errorCodes = []struct {
 	{module.ErrLinkTargetNotFound, http.StatusNotFound, CodeLinkTargetNotFound},
 	{ErrInvalidState, http.StatusBadRequest, CodeInvalidState},
 	{tenant.ErrNotFound, http.StatusNotFound, CodeTenantNotFound},
+	{ErrNotLinked, http.StatusConflict, CodeNotLinked},
+	{ErrPlatformUnavailable, http.StatusBadGateway, CodePlatformFailed},
+	{ErrSourceFixed, http.StatusConflict, CodeSourceFixed},
+	{ErrInvalidSource, http.StatusBadRequest, CodeInvalidSource},
 }
 
 func writeError(w http.ResponseWriter, err error) {

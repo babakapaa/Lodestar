@@ -21,3 +21,13 @@ type Assignment struct {
 func (a Assignment) Published() bool {
 	return a.PublishedAt != nil
 }
+
+func (a Assignment) maxScore() float64 {
+	if a.Grading == GradingPass {
+		return 1
+	}
+	if a.MaxPoints == nil {
+		return 0
+	}
+	return *a.MaxPoints
+}

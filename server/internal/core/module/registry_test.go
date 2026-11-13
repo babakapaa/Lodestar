@@ -317,6 +317,18 @@ func (linkKind) CanLink(context.Context, pgx.Tx, auth.Principal, string) error {
 	return nil
 }
 
+func (linkKind) CanManage(context.Context, pgx.Tx, auth.Principal, string) error {
+	return nil
+}
+
+func (linkKind) Enroll(context.Context, pgx.Tx, string, string, []string, []string) (int, error) {
+	return 0, nil
+}
+
+func (linkKind) PutWork(context.Context, pgx.Tx, string, string, string, ExternalWork) (WorkRef, error) {
+	return WorkRef{}, nil
+}
+
 func TestRegistryRequiresOwnLinkKinds(t *testing.T) {
 	if _, err := NewRegistry(linkingModule{stubModule{name: "chat"}, "study.course"}); !errors.Is(err, ErrForeignLinkSource) {
 		t.Fatalf("err = %v, want ErrForeignLinkSource", err)

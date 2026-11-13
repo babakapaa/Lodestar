@@ -19,6 +19,7 @@ type Config struct {
 	SecretKey       string
 	AppRedirects    []string
 	WebOrigins      []string
+	TrustedProxies  []string
 	AppURL          string
 	Storage         objectstore.Config
 	Mail            mail.Config
@@ -33,12 +34,13 @@ type Config struct {
 
 func Load() (Config, error) {
 	cfg := Config{
-		HTTPAddr:     stringEnv("LODESTAR_HTTP_ADDR", ":8080"),
-		DatabaseURL:  stringEnv("LODESTAR_DATABASE_URL", ""),
-		PublicURL:    strings.TrimRight(stringEnv("LODESTAR_PUBLIC_URL", "http://localhost:8080"), "/"),
-		SecretKey:    stringEnv("LODESTAR_SECRET_KEY", ""),
-		AppRedirects: listEnv("LODESTAR_APP_REDIRECTS", "io.github.babakapaa.lodestar:/auth,http://localhost:43823/auth"),
-		WebOrigins:   listEnv("LODESTAR_WEB_ORIGINS", ""),
+		HTTPAddr:       stringEnv("LODESTAR_HTTP_ADDR", ":8080"),
+		DatabaseURL:    stringEnv("LODESTAR_DATABASE_URL", ""),
+		PublicURL:      strings.TrimRight(stringEnv("LODESTAR_PUBLIC_URL", "http://localhost:8080"), "/"),
+		SecretKey:      stringEnv("LODESTAR_SECRET_KEY", ""),
+		AppRedirects:   listEnv("LODESTAR_APP_REDIRECTS", "io.github.babakapaa.lodestar:/auth,http://localhost:43823/auth"),
+		WebOrigins:     listEnv("LODESTAR_WEB_ORIGINS", ""),
+		TrustedProxies: listEnv("LODESTAR_TRUSTED_PROXIES", ""),
 		Storage: objectstore.Config{
 			Endpoint:       stringEnv("LODESTAR_S3_ENDPOINT", ""),
 			PublicEndpoint: stringEnv("LODESTAR_S3_PUBLIC_ENDPOINT", ""),

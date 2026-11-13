@@ -251,6 +251,15 @@ func (r *Registry) TeamDirectory(k Kernel) TeamDirectory {
 	return nil
 }
 
+func (r *Registry) LessonSource(k Kernel) LessonSource {
+	for _, m := range r.modules {
+		if l, ok := m.(LessonProviding); ok {
+			return l.LessonSource(k)
+		}
+	}
+	return nil
+}
+
 func (r *Registry) ScoreSources(k Kernel) ScoreSources {
 	var sources ScoreSources
 	for _, m := range r.modules {

@@ -17,6 +17,7 @@ import (
 	"github.com/babakapaa/lodestar/server/internal/core/settings"
 	"github.com/babakapaa/lodestar/server/internal/core/structure"
 	"github.com/babakapaa/lodestar/server/internal/core/tenant"
+	"github.com/babakapaa/lodestar/server/internal/modules/attendance"
 	"github.com/babakapaa/lodestar/server/internal/modules/chat"
 	"github.com/babakapaa/lodestar/server/internal/modules/league"
 	"github.com/babakapaa/lodestar/server/internal/modules/navigator"
@@ -28,7 +29,7 @@ import (
 )
 
 func Modules() []module.Module {
-	return []module.Module{study.Module{}, notes.Module{}, navigator.Module{}, chat.Module{}, team.Module{}, league.Module{}, sandbox.Module{}}
+	return []module.Module{study.Module{}, notes.Module{}, navigator.Module{}, chat.Module{}, team.Module{}, league.Module{}, sandbox.Module{}, attendance.Module{}}
 }
 
 func CoreMigrations() []database.Migrations {

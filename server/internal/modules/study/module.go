@@ -70,3 +70,7 @@ func (Module) ScoreSources(module.Kernel) []module.ScoreSource {
 func (Module) LinkSources(k module.Kernel) []module.LinkSource {
 	return []module.LinkSource{CourseLinks{gate: CourseGate{access: k.Access}}}
 }
+
+func (Module) LessonSource(k module.Kernel) module.LessonSource {
+	return CourseLessons{settings: k.Settings}
+}

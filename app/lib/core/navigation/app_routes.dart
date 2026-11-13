@@ -140,12 +140,19 @@ abstract final class AppRoutes {
     queryParameters: teach ? {'teach': '1'} : null,
   ).toString();
 
-  static String newDialog({String? scopeKind, String? scopeId}) => Uri(
-    path: dialogNew,
-    queryParameters: scopeKind == null || scopeId == null
-        ? null
-        : {'scopeKind': scopeKind, 'scopeId': scopeId},
-  ).toString();
+  static String newDialog({String? scopeKind, String? scopeId, String? text}) {
+    final query = {
+      if (scopeKind != null && scopeId != null) ...{
+        'scopeKind': scopeKind,
+        'scopeId': scopeId,
+      },
+      'text': ?text,
+    };
+    return Uri(
+      path: dialogNew,
+      queryParameters: query.isEmpty ? null : query,
+    ).toString();
+  }
 
   static String courseMaterials(String courseId) =>
       '/navigator/courses/$courseId/materials';

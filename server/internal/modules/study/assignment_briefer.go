@@ -32,8 +32,12 @@ func (b AssignmentBriefer) Brief(ctx context.Context, tx pgx.Tx, p auth.Principa
 	if a.NavigatorMode != nil {
 		mode = *a.NavigatorMode
 	}
+	teachers, err := RosterStore{}.Teachers(ctx, tx, c.ID)
+	if err != nil {
+		return module.Brief{}, err
+	}
 	return module.Brief{
 		Kind: BriefAssignment, ID: a.ID, Title: a.Title, Description: a.Description,
-		Course: c.Title, CourseID: c.ID, Teaches: st.Teaches(), DueAt: a.DueAt, Mode: mode,
+		Course: c.Title, CourseID: c.ID, Teaches: st.Teaches(), DueAt: a.DueAt, Mode: mode, Teachers: teachers,
 	}, nil
 }

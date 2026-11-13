@@ -7,6 +7,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/jackc/pgx/v5"
+
 	"github.com/babakapaa/lodestar/server/internal/core/module"
 	"github.com/babakapaa/lodestar/server/internal/modules/team"
 )
@@ -71,6 +73,14 @@ func TestTeamHandsInWorkWhenEveryoneAgrees(t *testing.T) {
 	placement, err := w.placement("p1", c.UserID)
 	if err != nil || placement.TeamID != d.ID {
 		t.Fatalf("placement = %+v, %v", placement, err)
+	}
+	var refs []module.TeamRef
+	err = w.tx.Run(w.ctx, w.tenant, func(tx pgx.Tx) error {
+		refs, err = team.Module{}.TeamDirectory(w.kernel).Teams(w.ctx, tx, c.UserID)
+		return err
+	})
+	if err != nil || len(refs) != 1 || refs[0].ID != d.ID || len(refs[0].Members) != len(d.Members) {
+		t.Fatalf("teams of member = %+v, %v", refs, err)
 	}
 }
 

@@ -1,4 +1,7 @@
+import 'dart:typed_data';
+
 import 'package:flutter_test/flutter_test.dart';
+import 'package:lodestar/core/files/opened_file.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../support/fake_server.dart';
@@ -35,6 +38,30 @@ void main() {
     expect(submission['clientId'], isNotEmpty);
     expect(find.text('Клетка состоит из ядра'), findsOneWidget);
     expect(find.text('Сдать заново'), findsOneWidget);
+  });
+
+  testWidgets('a student attaches files to work and downloads them', (
+    tester,
+  ) async {
+    final app = await pumpApp(tester, size: const Size(390, 1400));
+    await openAssignment(tester);
+
+    app.opener.next = [
+      OpenedFile('cell.pdf', Uint8List.fromList([4, 2])),
+    ];
+    await tester.tap(find.byKey(const ValueKey('submit-attach')));
+    await tester.pumpAndSettle();
+    expect(find.text('cell.pdf'), findsOneWidget);
+
+    await tester.tap(find.text('Сдать работу'));
+    await tester.pumpAndSettle();
+    final submission = app.server.study.submissions.single;
+    expect(submission['body'], '');
+    expect(((submission['files']! as List).single as Map)['name'], 'cell.pdf');
+
+    await tester.tap(find.text('cell.pdf'));
+    await tester.pumpAndSettle();
+    expect(app.saver.saved['cell.pdf'], Uint8List.fromList([4, 2]));
   });
 
   testWidgets('work written offline is sent when the network returns', (

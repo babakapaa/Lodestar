@@ -21,4 +21,6 @@ class AttachedFile {
   final String id;
   final String name;
   final int size;
+
+  Map<String, Object?> toJson() => {'id': id, 'name': name, 'size': size};
 }

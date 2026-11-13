@@ -5,6 +5,8 @@ import 'package:http/http.dart' as http;
 import 'fake_defense.dart';
 
 class FakeStudy {
+  Map<String, Map<String, Object?>> files = {};
+
   String role = 'student';
   String? submitError;
   final List<Map<String, Object?>> assignments = [
@@ -217,7 +219,10 @@ class FakeStudy {
       'body': body['body'],
       'searchMap': body['searchMap'],
       'submittedAt': '2026-11-12T10:00:00Z',
-      'files': <Object?>[],
+      'files': [
+        for (final id in body['files'] as List<Object?>? ?? const [])
+          files[id]!,
+      ],
     };
     submissions.add(submission);
     return _json(201, submission);

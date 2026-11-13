@@ -11,6 +11,7 @@ import '../defense/my_defense_section.dart';
 import '../sandbox/sandbox_work_tile.dart';
 import '../team/team_work_section.dart';
 import 'assignment_details.dart';
+import 'attached_file_tile.dart';
 import 'class_work_section.dart';
 import 'course_role.dart';
 import 'defense_format.dart';
@@ -67,12 +68,7 @@ class AssignmentScreen extends ConsumerWidget {
           title: l10n.assignmentFiles,
           child: Column(
             children: [
-              for (final file in details.files)
-                ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  leading: const Icon(Icons.attach_file),
-                  title: Text(file.name),
-                ),
+              for (final file in details.files) AttachedFileTile(file: file),
             ],
           ),
         ),

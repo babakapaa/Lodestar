@@ -21,7 +21,7 @@ import 'fake_teams.dart';
 class FakeServer {
   final List<http.Request> requests = [];
   final FakeDirectory directory = FakeDirectory();
-  final FakeStudy study = FakeStudy();
+  late final FakeStudy study = FakeStudy()..files = files.files;
   final FakeNotes notes = FakeNotes();
   final FakeSources sources = FakeSources();
   final FakeNavigator navigator = FakeNavigator();

@@ -9,7 +9,7 @@ const (
 )
 
 func (Module) NotificationTypes() []module.NotificationType {
-	return append(workTypes(), scheduleTypes()...)
+	return append(append(workTypes(), scheduleTypes()...), defenseTypes()...)
 }
 
 func workTypes() []module.NotificationType {

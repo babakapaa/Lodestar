@@ -8,15 +8,16 @@ import (
 const maxAttachments = 20
 
 type AssignmentInput struct {
-	Title         string     `json:"title"`
-	Description   string     `json:"description"`
-	DueAt         *time.Time `json:"dueAt"`
-	Grading       Grading    `json:"grading"`
-	MaxPoints     *float64   `json:"maxPoints"`
-	SearchMap     *MapRules  `json:"searchMap"`
-	NavigatorMode *string    `json:"navigatorMode"`
-	Files         []string   `json:"files"`
-	Published     bool       `json:"published"`
+	Title         string         `json:"title"`
+	Description   string         `json:"description"`
+	DueAt         *time.Time     `json:"dueAt"`
+	Grading       Grading        `json:"grading"`
+	MaxPoints     *float64       `json:"maxPoints"`
+	SearchMap     *MapRules      `json:"searchMap"`
+	NavigatorMode *string        `json:"navigatorMode"`
+	Defense       *DefenseFormat `json:"defense"`
+	Files         []string       `json:"files"`
+	Published     bool           `json:"published"`
 }
 
 func (in AssignmentInput) normalized() (AssignmentInput, error) {
@@ -25,7 +26,8 @@ func (in AssignmentInput) normalized() (AssignmentInput, error) {
 	if in.Grading == "" {
 		in.Grading = GradingNone
 	}
-	if !in.Grading.valid() || len(in.Files) > maxAttachments || (in.SearchMap != nil && !in.SearchMap.valid()) {
+	if !in.Grading.valid() || len(in.Files) > maxAttachments || (in.SearchMap != nil && !in.SearchMap.valid()) ||
+		(in.Defense != nil && !in.Defense.valid()) {
 		return in, ErrInvalidAssignment
 	}
 	if (in.Grading == GradingPoints) != (in.MaxPoints != nil) {

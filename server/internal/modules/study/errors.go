@@ -40,4 +40,20 @@ var ErrInvalidRange = errors.New("date range is invalid")
 
 var ErrInvalidSearchMap = errors.New("search map is malformed")
 
+var ErrNoDefense = errors.New("assignment has no defense")
+
+var ErrInvalidDefense = errors.New("defense questions or protocol are invalid")
+
+var ErrInvalidSlot = errors.New("defense slot is invalid")
+
+var ErrSlotNotFound = errors.New("defense slot not found")
+
+var ErrSlotFull = errors.New("defense slot is full")
+
+var ErrSlotStarted = errors.New("defense slot has already started")
+
+var ErrDefenseFinished = errors.New("defense is already finished")
+
+var ErrNotChosen = errors.New("student is not chosen for this defense")
+
 var ErrSearchMapIncomplete = errors.New("search map does not meet the assignment rules")

@@ -22,6 +22,7 @@ func (Module) Mount(mux *http.ServeMux, k module.Kernel) {
 		Service:     NewService(k.Tenants, k.Access),
 		Assignments: NewAssignmentService(k.Tenants, k.Access, k.Notifier),
 		Schedule:    NewScheduleService(k),
+		Defenses:    NewDefenseService(k),
 	}.Mount(mux)
 }
 
@@ -42,7 +43,7 @@ func (Module) SearchSources() []search.Source {
 }
 
 func (Module) PrivacySections(module.Kernel) []privacy.Section {
-	return []privacy.Section{PrivacySection{}, WorkPrivacySection{}, SearchMapPrivacySection{}}
+	return []privacy.Section{PrivacySection{}, WorkPrivacySection{}, SearchMapPrivacySection{}, DefensePrivacySection{}}
 }
 
 func (Module) Briefers(k module.Kernel) []module.Briefer {

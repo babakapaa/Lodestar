@@ -29,6 +29,14 @@ const (
 	CodeInvalidRange       = "invalid_range"
 	CodeInvalidSearchMap   = "invalid_search_map"
 	CodeMapIncomplete      = "search_map_incomplete"
+	CodeNoDefense          = "assignment_has_no_defense"
+	CodeInvalidDefense     = "invalid_defense"
+	CodeInvalidSlot        = "invalid_defense_slot"
+	CodeSlotNotFound       = "defense_slot_not_found"
+	CodeSlotFull           = "defense_slot_full"
+	CodeSlotStarted        = "defense_slot_started"
+	CodeDefenseFinished    = "defense_finished"
+	CodeNotChosen          = "defense_not_chosen"
 )
 
 var errorCodes = []struct {
@@ -56,6 +64,14 @@ var errorCodes = []struct {
 	{ErrInvalidRange, http.StatusBadRequest, CodeInvalidRange},
 	{ErrInvalidSearchMap, http.StatusBadRequest, CodeInvalidSearchMap},
 	{ErrSearchMapIncomplete, http.StatusUnprocessableEntity, CodeMapIncomplete},
+	{ErrNoDefense, http.StatusConflict, CodeNoDefense},
+	{ErrInvalidDefense, http.StatusBadRequest, CodeInvalidDefense},
+	{ErrInvalidSlot, http.StatusBadRequest, CodeInvalidSlot},
+	{ErrSlotNotFound, http.StatusNotFound, CodeSlotNotFound},
+	{ErrSlotFull, http.StatusConflict, CodeSlotFull},
+	{ErrSlotStarted, http.StatusConflict, CodeSlotStarted},
+	{ErrDefenseFinished, http.StatusConflict, CodeDefenseFinished},
+	{ErrNotChosen, http.StatusForbidden, CodeNotChosen},
 }
 
 func writeError(w http.ResponseWriter, err error) {

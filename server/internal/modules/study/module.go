@@ -64,3 +64,7 @@ func (Module) TeamScopeSources(k module.Kernel) []module.TeamScopeSource {
 func (Module) ScoreSources(module.Kernel) []module.ScoreSource {
 	return []module.ScoreSource{CourseScores{}}
 }
+
+func (Module) LinkSources(k module.Kernel) []module.LinkSource {
+	return []module.LinkSource{CourseLinks{gate: CourseGate{access: k.Access}}}
+}

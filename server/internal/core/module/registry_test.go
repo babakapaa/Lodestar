@@ -290,6 +290,46 @@ func TestRegistryRequiresOwnScoreKinds(t *testing.T) {
 	}
 }
 
+type linkingModule struct {
+	stubModule
+	kind string
+}
+
+func (m linkingModule) LinkSources(Kernel) []LinkSource {
+	return []LinkSource{linkKind(m.kind)}
+}
+
+type linkKind string
+
+func (k linkKind) Kind() string {
+	return string(k)
+}
+
+func (linkKind) Linkable(context.Context, pgx.Tx, auth.Principal) ([]LinkTarget, error) {
+	return nil, nil
+}
+
+func (linkKind) Describe(context.Context, pgx.Tx, string) (LinkTarget, error) {
+	return LinkTarget{}, ErrLinkTargetNotFound
+}
+
+func (linkKind) CanLink(context.Context, pgx.Tx, auth.Principal, string) error {
+	return nil
+}
+
+func TestRegistryRequiresOwnLinkKinds(t *testing.T) {
+	if _, err := NewRegistry(linkingModule{stubModule{name: "chat"}, "study.course"}); !errors.Is(err, ErrForeignLinkSource) {
+		t.Fatalf("err = %v, want ErrForeignLinkSource", err)
+	}
+	registry, err := NewRegistry(linkingModule{stubModule{name: "study"}, "study.course"})
+	if err != nil {
+		t.Fatalf("registry: %v", err)
+	}
+	if _, ok := registry.LinkSources(Kernel{}).Find("study.course"); !ok {
+		t.Fatal("link source is not collected")
+	}
+}
+
 func TestWorkResultShare(t *testing.T) {
 	cases := []struct {
 		r    WorkResult

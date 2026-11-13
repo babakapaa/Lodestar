@@ -11,6 +11,7 @@ type Routes struct {
 	Sessions      SessionStore
 	Users         identity.Store
 	Authenticator Authenticator
+	Tickets       TicketStore
 }
 
 func (r Routes) Mount(mux *http.ServeMux) {

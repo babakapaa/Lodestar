@@ -30,10 +30,12 @@ var ErrForeignTeamScope = errors.New("module team scope kind must start with the
 
 var ErrForeignScoreSource = errors.New("module score source kind must start with the module name")
 
+var ErrForeignLinkSource = errors.New("module link source kind must start with the module name")
+
 var namePattern = regexp.MustCompile(`^[a-z][a-z0-9]{1,29}$`)
 
 var reservedNames = []string{
-	"auth", "events", "files", "live", "me", "meta", "modules", "notifications", "overrides", "permissions",
+	"auth", "events", "files", "live", "lti", "me", "meta", "modules", "notifications", "overrides", "permissions",
 	"preferences", "role-assignments", "roles", "search", "sessions", "settings", "units", "users",
 }
 
@@ -68,6 +70,9 @@ func NewRegistry(modules ...Module) (*Registry, error) {
 			return nil, err
 		}
 		if err := checkScoreKinds(m); err != nil {
+			return nil, err
+		}
+		if err := checkLinkKinds(m); err != nil {
 			return nil, err
 		}
 	}
@@ -200,6 +205,16 @@ func (r *Registry) Briefs(k Kernel) Briefs {
 		}
 	}
 	return briefs
+}
+
+func (r *Registry) LinkSources(k Kernel) LinkSources {
+	var sources LinkSources
+	for _, m := range r.modules {
+		if s, ok := m.(LinkProviding); ok {
+			sources = append(sources, s.LinkSources(k)...)
+		}
+	}
+	return sources
 }
 
 func (r *Registry) Rosters(k Kernel) Rosters {

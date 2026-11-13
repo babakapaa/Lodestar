@@ -28,6 +28,8 @@ func (h TokenHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	switch req.GrantType {
 	case "authorization_code":
 		pair, err = h.login.Exchange(r.Context(), req.Code, req.CodeVerifier, req.RedirectURI)
+	case "launch_ticket":
+		pair, err = h.login.Claim(r.Context(), req.Ticket)
 	case "refresh_token":
 		pair, err = h.sessions.Refresh(r.Context(), req.RefreshToken)
 	default:

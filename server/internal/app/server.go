@@ -13,6 +13,7 @@ import (
 	"github.com/babakapaa/lodestar/server/internal/core/files"
 	"github.com/babakapaa/lodestar/server/internal/core/identity"
 	"github.com/babakapaa/lodestar/server/internal/core/live"
+	"github.com/babakapaa/lodestar/server/internal/core/lti"
 	"github.com/babakapaa/lodestar/server/internal/core/module"
 	"github.com/babakapaa/lodestar/server/internal/core/notify"
 	"github.com/babakapaa/lodestar/server/internal/core/privacy"
@@ -96,6 +97,17 @@ func NewServer(version string, cfg config.Config, box secretbox.Box, pool *pgxpo
 		delivery.Routes{Service: delivery.NewService(tx), Authenticator: authn},
 		search.Routes{Service: searchService, Authenticator: authn},
 		audit.Routes{Service: audit.NewService(tx, accessService), Authenticator: authn},
+		lti.NewRoutes(pool, lti.Settings{
+			Box:           box,
+			Access:        accessService,
+			Tickets:       authRoutes.Tickets,
+			Authenticator: authn,
+			Links:         registry.LinkSources(kernel),
+			HTTPClient:    &http.Client{Timeout: 10 * time.Second},
+			AttemptTTL:    Lifetimes(cfg).Login,
+			PublicURL:     cfg.PublicURL,
+			AppURL:        cfg.AppURL,
+		}),
 		privacy.Routes{
 			Service:       privacy.NewService(tx, settingsService),
 			Exporter:      privacy.NewExporter(tx, sections),

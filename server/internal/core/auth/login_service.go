@@ -22,6 +22,7 @@ type LoginService struct {
 	providers ProviderStore
 	attempts  AttemptStore
 	grants    GrantStore
+	tickets   TicketStore
 	sessions  SessionStore
 	discovery *Discovery
 	redirects Redirects
@@ -34,6 +35,7 @@ type LoginDeps struct {
 	Providers ProviderStore
 	Attempts  AttemptStore
 	Grants    GrantStore
+	Tickets   TicketStore
 	Sessions  SessionStore
 	Discovery *Discovery
 	Redirects Redirects
@@ -47,6 +49,7 @@ func NewLoginService(d LoginDeps) LoginService {
 		providers: d.Providers,
 		attempts:  d.Attempts,
 		grants:    d.Grants,
+		tickets:   d.Tickets,
 		sessions:  d.Sessions,
 		discovery: d.Discovery,
 		redirects: d.Redirects,
@@ -133,6 +136,14 @@ func (s LoginService) Exchange(ctx context.Context, code, verifier, redirectURI 
 	}
 	if g.RedirectURI != redirectURI || !challengeMatches(g.CodeChallenge, verifier) {
 		return TokenPair{}, ErrInvalidToken
+	}
+	return s.sessions.Start(ctx, g.TenantID, g.UserID, g.DeviceName)
+}
+
+func (s LoginService) Claim(ctx context.Context, ticket string) (TokenPair, error) {
+	g, err := s.tickets.Take(ctx, ticket)
+	if err != nil {
+		return TokenPair{}, err
 	}
 	return s.sessions.Start(ctx, g.TenantID, g.UserID, g.DeviceName)
 }

@@ -44,3 +44,7 @@ func (Module) SearchSources() []search.Source {
 func (Module) PrivacySections(module.Kernel) []privacy.Section {
 	return []privacy.Section{PrivacySection{}, WorkPrivacySection{}, SearchMapPrivacySection{}}
 }
+
+func (Module) Briefers(k module.Kernel) []module.Briefer {
+	return []module.Briefer{AssignmentBriefer{service: NewAssignmentService(k.Tenants, k.Access, k.Notifier)}}
+}

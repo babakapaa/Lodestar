@@ -16,7 +16,7 @@ const (
 	invalidText         = "22P02"
 )
 
-const courseColumns = `c.id::text, c.unit_id::text, c.title, c.code, c.description, c.archived_at, c.created_at`
+const courseColumns = `c.id::text, c.unit_id::text, c.title, c.code, c.description, c.archived_at, c.navigator_mode, c.created_at`
 
 type CourseStore struct{}
 
@@ -47,7 +47,7 @@ func (CourseStore) Mine(ctx context.Context, tx pgx.Tx, userID string, units []s
 	}
 	return pgx.CollectRows(rows, func(row pgx.CollectableRow) (MyCourse, error) {
 		var m MyCourse
-		err := row.Scan(&m.ID, &m.UnitID, &m.Title, &m.Code, &m.Description, &m.ArchivedAt, &m.CreatedAt, &m.Role)
+		err := row.Scan(&m.ID, &m.UnitID, &m.Title, &m.Code, &m.Description, &m.ArchivedAt, &m.NavigatorMode, &m.CreatedAt, &m.Role)
 		return m, err
 	})
 }
@@ -65,8 +65,8 @@ func (CourseStore) ByUnit(ctx context.Context, tx pgx.Tx, unitID *string, archiv
 
 func (CourseStore) Insert(ctx context.Context, tx pgx.Tx, in CourseInput) (Course, error) {
 	rows, err := tx.Query(ctx, `
-		INSERT INTO study.courses AS c (unit_id, title, code, description) VALUES ($1, $2, $3, $4)
-		RETURNING `+courseColumns, in.UnitID, in.Title, in.Code, in.Description)
+		INSERT INTO study.courses AS c (unit_id, title, code, description, navigator_mode) VALUES ($1, $2, $3, $4, $5)
+		RETURNING `+courseColumns, in.UnitID, in.Title, in.Code, in.Description, in.NavigatorMode)
 	if err != nil {
 		return Course{}, courseError(err)
 	}
@@ -76,8 +76,8 @@ func (CourseStore) Insert(ctx context.Context, tx pgx.Tx, in CourseInput) (Cours
 
 func (CourseStore) Update(ctx context.Context, tx pgx.Tx, id string, in CourseInput) (Course, error) {
 	rows, err := tx.Query(ctx, `
-		UPDATE study.courses c SET unit_id = $2, title = $3, code = $4, description = $5, updated_at = now()
-		WHERE c.id::text = $1 RETURNING `+courseColumns, id, in.UnitID, in.Title, in.Code, in.Description)
+		UPDATE study.courses c SET unit_id = $2, title = $3, code = $4, description = $5, navigator_mode = $6, updated_at = now()
+		WHERE c.id::text = $1 RETURNING `+courseColumns, id, in.UnitID, in.Title, in.Code, in.Description, in.NavigatorMode)
 	if err != nil {
 		return Course{}, courseError(err)
 	}
@@ -100,7 +100,7 @@ func (CourseStore) SetArchived(ctx context.Context, tx pgx.Tx, id string, archiv
 
 func scanCourse(row pgx.CollectableRow) (Course, error) {
 	var c Course
-	err := row.Scan(&c.ID, &c.UnitID, &c.Title, &c.Code, &c.Description, &c.ArchivedAt, &c.CreatedAt)
+	err := row.Scan(&c.ID, &c.UnitID, &c.Title, &c.Code, &c.Description, &c.ArchivedAt, &c.NavigatorMode, &c.CreatedAt)
 	return c, err
 }
 

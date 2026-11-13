@@ -8,14 +8,15 @@ import (
 const maxAttachments = 20
 
 type AssignmentInput struct {
-	Title       string     `json:"title"`
-	Description string     `json:"description"`
-	DueAt       *time.Time `json:"dueAt"`
-	Grading     Grading    `json:"grading"`
-	MaxPoints   *float64   `json:"maxPoints"`
-	SearchMap   *MapRules  `json:"searchMap"`
-	Files       []string   `json:"files"`
-	Published   bool       `json:"published"`
+	Title         string     `json:"title"`
+	Description   string     `json:"description"`
+	DueAt         *time.Time `json:"dueAt"`
+	Grading       Grading    `json:"grading"`
+	MaxPoints     *float64   `json:"maxPoints"`
+	SearchMap     *MapRules  `json:"searchMap"`
+	NavigatorMode *string    `json:"navigatorMode"`
+	Files         []string   `json:"files"`
+	Published     bool       `json:"published"`
 }
 
 func (in AssignmentInput) normalized() (AssignmentInput, error) {

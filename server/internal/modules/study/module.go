@@ -74,3 +74,7 @@ func (Module) LinkSources(k module.Kernel) []module.LinkSource {
 func (Module) LessonSource(k module.Kernel) module.LessonSource {
 	return CourseLessons{settings: k.Settings}
 }
+
+func (Module) StatsSources(module.Kernel) []module.StatsSource {
+	return []module.StatsSource{StudyStats{}}
+}

@@ -36,8 +36,14 @@ abstract final class AppRoutes {
   static const sandboxTopups = '/sandbox/topups';
   static const sandboxAdmin = '/admin/sandbox';
   static const attend = '/attend';
+  static const stats = '/admin/stats';
 
   static String role(String id) => '/admin/roles/$id';
+
+  static String unitStats(String id, String name) => Uri(
+    path: stats,
+    queryParameters: {'parent': id, 'name': name},
+  ).toString();
 
   static String ltiContext(String id) => '/lti/contexts/$id';
 

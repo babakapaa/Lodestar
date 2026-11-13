@@ -27,6 +27,16 @@ class AdminScreen extends ConsumerWidget {
             child: ListView(
               padding: const EdgeInsets.all(Spacing.l),
               children: [
+                if (permissions.has(PermissionSet.viewStats))
+                  ListTile(
+                    key: const ValueKey('admin-stats'),
+                    contentPadding: EdgeInsets.zero,
+                    leading: const Icon(Icons.query_stats),
+                    title: Text(l10n.statsTitle),
+                    subtitle: Text(l10n.statsHint),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => context.push(AppRoutes.stats),
+                  ),
                 if (permissions.has(PermissionSet.manageSettings))
                   ListTile(
                     contentPadding: EdgeInsets.zero,

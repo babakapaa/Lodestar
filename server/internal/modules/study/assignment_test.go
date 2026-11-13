@@ -2,11 +2,15 @@ package study_test
 
 import (
 	"errors"
+	"slices"
 	"testing"
 	"time"
 
+	"github.com/jackc/pgx/v5"
+
 	"github.com/babakapaa/lodestar/server/internal/core/access"
 	"github.com/babakapaa/lodestar/server/internal/core/files"
+	"github.com/babakapaa/lodestar/server/internal/core/module"
 	"github.com/babakapaa/lodestar/server/internal/modules/study"
 )
 
@@ -118,6 +122,16 @@ func TestAssignmentFromPublicationToGrade(t *testing.T) {
 	}
 	if _, err := w.work.Attempts(w.ctx, outsider, published.ID, student.UserID); !errors.Is(err, study.ErrAssignmentNotFound) {
 		t.Fatalf("outsider attempts: err = %v", err)
+	}
+	var metrics []module.Metric
+	err = w.tx.Run(w.ctx, w.tenant, func(tx pgx.Tx) error {
+		var err error
+		metrics, err = study.StudyStats{}.Stats(w.ctx, tx, []string{student.UserID, outsider.UserID}, time.Now().Add(-time.Hour), time.Now().Add(time.Hour))
+		return err
+	})
+	want := []module.Metric{{Key: study.MetricSubmitted, Value: 0.5}, {Key: study.MetricOnTime, Value: 1}}
+	if err != nil || !slices.Equal(metrics, want) {
+		t.Fatalf("stats = %+v, %v", metrics, err)
 	}
 }
 

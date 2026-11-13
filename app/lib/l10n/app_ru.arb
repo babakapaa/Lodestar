@@ -2152,5 +2152,53 @@
   },
   "insightsDivisions": "Дивизионы лиги",
   "insightsAttendance": "Посещаемость по занятиям",
-  "insightsUnavailable": "Не удалось загрузить"
+  "insightsUnavailable": "Не удалось загрузить",
+  "statsTitle": "Статистика вуза",
+  "statsHint": "Сдача работ, посещаемость и навигатор по подразделениям",
+  "statsPrivacy": "Подразделения, где меньше {threshold} человек, скрыты. Данных об отдельных людях здесь нет.",
+  "@statsPrivacy": {
+    "placeholders": {
+      "threshold": {
+        "type": "int"
+      }
+    }
+  },
+  "statsFull": "Вам видны и небольшие подразделения. Данных об отдельных людях здесь нет.",
+  "statsHidden": "Меньше {threshold} человек, данные скрыты",
+  "@statsHidden": {
+    "placeholders": {
+      "threshold": {
+        "type": "int"
+      }
+    }
+  },
+  "statsPeople": "Людей: {count}",
+  "@statsPeople": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "statsEmpty": "Здесь нет подразделений",
+  "statsNoData": "Нет данных за этот период",
+  "statsWeek": "Неделя",
+  "statsMonth": "Месяц",
+  "statsQuarter": "3 месяца",
+  "statsYear": "Год",
+  "metricSubmitted": "Сдали хотя бы одну работу",
+  "metricOnTime": "Работы сданы в срок",
+  "metricAttendance": "Посещаемость",
+  "metricNavigator": "Пользуются навигатором",
+  "metricGpu": "Часы GPU",
+  "settingGroupGeneral": "Общее",
+  "settingGroupPrivacy": "Право и данные",
+  "settingGroupStudy": "Учёба",
+  "settingGroupNavigator": "Навигатор",
+  "settingGroupAttendance": "Посещаемость",
+  "settingGroupSandbox": "Песочница GPU",
+  "settingGroupOther": "Другое",
+  "settingNavigatorSupport": "Навигатор: контакты психологической службы",
+  "settingNavigatorMemory": "Навигатор: сколько сообщений диалога он помнит",
+  "settingLeagueGpu": "Лига: часы GPU по дивизионам"
 }

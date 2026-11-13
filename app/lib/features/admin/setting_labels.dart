@@ -2,6 +2,7 @@ import '../../core/settings/app_language.dart';
 import '../../design/tokens/theme_family.dart';
 import '../../l10n/generated/app_localizations.dart';
 import '../settings/settings_labels.dart';
+import 'setting_group.dart';
 
 class SettingLabels {
   const SettingLabels(this.l10n);
@@ -31,7 +32,20 @@ class SettingLabels {
     'attendance.networks' => l10n.settingAttendanceNetworks,
     'attendance.late_minutes' => l10n.settingAttendanceLate,
     'attendance.absent_alert' => l10n.settingAttendanceAlert,
+    'navigator.support_contacts' => l10n.settingNavigatorSupport,
+    'navigator.memory_messages' => l10n.settingNavigatorMemory,
+    'league.division_gpu_hours' => l10n.settingLeagueGpu,
     _ => key,
+  };
+
+  String group(SettingGroup group) => switch (group) {
+    SettingGroup.general => l10n.settingGroupGeneral,
+    SettingGroup.privacy => l10n.settingGroupPrivacy,
+    SettingGroup.study => l10n.settingGroupStudy,
+    SettingGroup.navigator => l10n.settingGroupNavigator,
+    SettingGroup.attendance => l10n.settingGroupAttendance,
+    SettingGroup.sandbox => l10n.settingGroupSandbox,
+    SettingGroup.other => l10n.settingGroupOther,
   };
 
   String option(String key, String option) {

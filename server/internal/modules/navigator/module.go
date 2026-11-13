@@ -32,3 +32,7 @@ func (Module) PrivacySections(k module.Kernel) []privacy.Section {
 		JournalPrivacySection{journal: JournalStore{sealer: Sealer{box: k.Secrets}}},
 	}
 }
+
+func (Module) StatsSources(module.Kernel) []module.StatsSource {
+	return []module.StatsSource{NavigatorStats{}}
+}

@@ -41,6 +41,8 @@ tags:
     description: Чаты, группы и каналы
   - name: team
     description: Команды для заданий и задач
+  - name: league
+    description: Лига курса, дивизионы и споры о баллах
 paths:
   /healthz:
     get:
@@ -5649,6 +5651,284 @@ paths:
           $ref: "#/components/responses/Error"
         default:
           $ref: "#/components/responses/Error"
+  /v1/league/arenas/{kind}/{id}:
+    get:
+      tags: [league]
+      operationId: getLeague
+      summary: Лига курса
+      description: Студент видит свои баллы, дивизион, сколько осталось до следующего и таблицу своего дивизиона. Общего рейтинга нет. Преподаватель видит всех, переходы на подтверждение и открытые споры.
+      security:
+        - bearer: []
+      parameters:
+        - name: kind
+          in: path
+          required: true
+          description: Вид списка, внутри которого идёт лига, например study.course
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          description: Курс или другая группа, внутри которой идёт лига
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LeagueView"
+        "401":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/league/leagues/{id}/rules:
+    put:
+      tags: [league]
+      operationId: setLeagueRules
+      summary: Изменить формулу, дивизионы и режим переходов
+      description: Только преподаватель. Баллы пересчитываются по новой формуле в текущем сезоне. Переход вверх происходит сразу, вниз только в конце сезона.
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LeagueRulesInput"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LeagueView"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/league/leagues/{id}/display:
+    put:
+      tags: [league]
+      operationId: setLeagueDisplay
+      summary: Как меня показывать в таблице
+      description: Имя, «Участник» или никнейм. На баллы и награды не влияет.
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LeagueDisplayInput"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LeagueView"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/league/leagues/{id}/seasons:
+    post:
+      tags: [league]
+      operationId: closeLeagueSeason
+      summary: Закрыть сезон и начать новый
+      description: Студенты с баллами ниже границы своего дивизиона переходят вниз. Баллы нового сезона начинаются с нуля, дивизион сохраняется.
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LeagueView"
+        "401":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/league/leagues/{id}/adjustments:
+    post:
+      tags: [league]
+      operationId: adjustLeaguePoints
+      summary: Начислить или снять баллы с причиной
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LeagueAdjustmentInput"
+      responses:
+        "201":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LeaguePlayer"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/league/leagues/{id}/players/{userId}:
+    get:
+      tags: [league]
+      operationId: getLeaguePlayer
+      summary: Баллы, переходы и споры студента
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LeaguePlayer"
+        "401":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/league/leagues/{id}/disputes:
+    post:
+      tags: [league]
+      operationId: disputeLeague
+      summary: Оспорить начисление или переход
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LeagueDisputeInput"
+      responses:
+        "201":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LeagueDispute"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/league/transitions/{id}:
+    post:
+      tags: [league]
+      operationId: decideLeagueMove
+      summary: Подтвердить или отклонить переход
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LeagueDecisionInput"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LeagueTransition"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/league/disputes/{id}:
+    post:
+      tags: [league]
+      operationId: answerLeagueDispute
+      summary: Ответить на спор
+      description: Принятый спор о начислении может добавить баллы с причиной из ответа. Принятый спор о переходе отменяет его.
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LeagueAnswerInput"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LeagueDispute"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
 components:
   securitySchemes:
     bearer:
@@ -7411,6 +7691,401 @@ components:
                     enum: [agreed, objected, silent]
                   comment:
                     type: string
+    LeagueDivision:
+      type: object
+      required: [name, from]
+      properties:
+        name:
+          type: string
+          maxLength: 40
+          description: Пустое имя показывается номером дивизиона
+        from:
+          type: integer
+          minimum: 0
+          description: Сколько баллов за сезон нужно, первый дивизион начинается с 0
+    LeagueSeason:
+      type: object
+      required: [id, number, startedAt, endedAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        number:
+          type: integer
+        startedAt:
+          type: string
+          format: date-time
+        endedAt:
+          type: [string, "null"]
+          format: date-time
+    LeagueDisplay:
+      type: string
+      enum: [name, hidden, nickname]
+    LeagueEntry:
+      type: object
+      required: [id, seasonId, userId, kind, workKind, workId, title, score, max, weight, points, reason, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        seasonId:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        kind:
+          type: string
+          enum: [work, adjustment]
+        workKind:
+          type: [string, "null"]
+        workId:
+          type: [string, "null"]
+        title:
+          type: string
+        score:
+          type: [number, "null"]
+          description: Оценка за работу
+        max:
+          type: [number, "null"]
+          description: Максимум оценки
+        weight:
+          type: [integer, "null"]
+          description: Сколько баллов даёт работа на максимум
+        points:
+          type: integer
+          description: score / max × weight, округлённое
+        reason:
+          type: string
+          description: Причина ручного начисления
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    LeagueTransition:
+      type: object
+      required: [id, seasonId, userId, from, to, points, status, decidedAt, createdAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        seasonId:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        from:
+          type: integer
+        to:
+          type: integer
+        points:
+          type: integer
+        status:
+          type: string
+          enum: [pending, applied, rejected, reverted]
+        decidedAt:
+          type: [string, "null"]
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+    LeagueDispute:
+      type: object
+      required: [id, userId, entryId, transitionId, text, status, answer, decidedAt, createdAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        entryId:
+          type: [string, "null"]
+          format: uuid
+        transitionId:
+          type: [string, "null"]
+          format: uuid
+        text:
+          type: string
+        status:
+          type: string
+          enum: [open, accepted, rejected]
+        answer:
+          type: string
+        decidedAt:
+          type: [string, "null"]
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+    LeagueWorkWeight:
+      type: object
+      required: [kind, id, title, project, weight]
+      properties:
+        kind:
+          type: string
+        id:
+          type: string
+        title:
+          type: string
+        project:
+          type: boolean
+          description: Проектная работа, по умолчанию даёт 100 баллов, остальные 0
+        weight:
+          type: integer
+    LeagueStanding:
+      type: object
+      required: [points, division, toNext, growth, display, nickname]
+      properties:
+        points:
+          type: integer
+        division:
+          type: integer
+        toNext:
+          type: [integer, "null"]
+          description: Сколько баллов до следующего дивизиона, null в верхнем
+        growth:
+          type: integer
+          description: Рост к прошлому сезону
+        display:
+          $ref: "#/components/schemas/LeagueDisplay"
+        nickname:
+          type: string
+    LeagueTableRow:
+      type: object
+      required: [place, name, display, points, growth, me, topGrowth]
+      properties:
+        place:
+          type: integer
+        name:
+          type: string
+          description: Имя или никнейм, пусто для скрытых
+        display:
+          $ref: "#/components/schemas/LeagueDisplay"
+        points:
+          type: integer
+        growth:
+          type: integer
+        me:
+          type: boolean
+        topGrowth:
+          type: boolean
+          description: Самый большой рост в дивизионе за сезон
+    LeaguePlayerRow:
+      type: object
+      required: [person, division, points, growth, topGrowth, display, nickname]
+      properties:
+        person:
+          $ref: "#/components/schemas/Person"
+        division:
+          type: integer
+        points:
+          type: integer
+        growth:
+          type: integer
+        topGrowth:
+          type: boolean
+        display:
+          $ref: "#/components/schemas/LeagueDisplay"
+        nickname:
+          type: string
+    LeagueTransitionRow:
+      allOf:
+        - $ref: "#/components/schemas/LeagueTransition"
+        - type: object
+          required: [person]
+          properties:
+            person:
+              $ref: "#/components/schemas/Person"
+    LeagueDisputeRow:
+      allOf:
+        - $ref: "#/components/schemas/LeagueDispute"
+        - type: object
+          required: [person, entry, transition]
+          properties:
+            person:
+              $ref: "#/components/schemas/Person"
+            entry:
+              oneOf:
+                - $ref: "#/components/schemas/LeagueEntry"
+                - type: "null"
+            transition:
+              oneOf:
+                - $ref: "#/components/schemas/LeagueTransition"
+                - type: "null"
+    LeagueView:
+      type: object
+      required: [id, kind, originId, title, role, season, divisions, confirm, formula, me, table, entries, transitions, disputes, players, pending, openDisputes]
+      properties:
+        id:
+          type: string
+          format: uuid
+        kind:
+          type: string
+        originId:
+          type: string
+        title:
+          type: string
+        role:
+          type: string
+          enum: [lead, student]
+        season:
+          $ref: "#/components/schemas/LeagueSeason"
+        divisions:
+          type: array
+          items:
+            $ref: "#/components/schemas/LeagueDivision"
+        confirm:
+          type: boolean
+          description: Переходы ждут подтверждения преподавателя
+        formula:
+          type: array
+          items:
+            $ref: "#/components/schemas/LeagueWorkWeight"
+        me:
+          oneOf:
+            - $ref: "#/components/schemas/LeagueStanding"
+            - type: "null"
+        table:
+          type: [array, "null"]
+          description: Таблица своего дивизиона, только студенту
+          items:
+            $ref: "#/components/schemas/LeagueTableRow"
+        entries:
+          type: [array, "null"]
+          items:
+            $ref: "#/components/schemas/LeagueEntry"
+        transitions:
+          type: [array, "null"]
+          items:
+            $ref: "#/components/schemas/LeagueTransition"
+        disputes:
+          type: [array, "null"]
+          items:
+            $ref: "#/components/schemas/LeagueDispute"
+        players:
+          type: [array, "null"]
+          description: Все студенты, только преподавателю
+          items:
+            $ref: "#/components/schemas/LeaguePlayerRow"
+        pending:
+          type: [array, "null"]
+          items:
+            $ref: "#/components/schemas/LeagueTransitionRow"
+        openDisputes:
+          type: [array, "null"]
+          items:
+            $ref: "#/components/schemas/LeagueDisputeRow"
+    LeaguePlayer:
+      type: object
+      required: [person, standing, entries, transitions, disputes]
+      properties:
+        person:
+          $ref: "#/components/schemas/Person"
+        standing:
+          $ref: "#/components/schemas/LeagueStanding"
+        entries:
+          type: array
+          items:
+            $ref: "#/components/schemas/LeagueEntry"
+        transitions:
+          type: array
+          items:
+            $ref: "#/components/schemas/LeagueTransition"
+        disputes:
+          type: array
+          items:
+            $ref: "#/components/schemas/LeagueDispute"
+    LeagueWeightInput:
+      type: object
+      required: [kind, id, weight]
+      properties:
+        kind:
+          type: string
+        id:
+          type: string
+        weight:
+          type: integer
+          minimum: 0
+          maximum: 10000
+    LeagueRulesInput:
+      type: object
+      required: [divisions]
+      properties:
+        divisions:
+          type: array
+          minItems: 1
+          maxItems: 10
+          items:
+            $ref: "#/components/schemas/LeagueDivision"
+        confirm:
+          type: boolean
+        weights:
+          type: array
+          description: Веса, отличные от значений по умолчанию
+          items:
+            $ref: "#/components/schemas/LeagueWeightInput"
+    LeagueDisplayInput:
+      type: object
+      required: [display]
+      properties:
+        display:
+          $ref: "#/components/schemas/LeagueDisplay"
+        nickname:
+          type: string
+          maxLength: 40
+    LeagueAdjustmentInput:
+      type: object
+      required: [userId, points, reason]
+      properties:
+        userId:
+          type: string
+          format: uuid
+        points:
+          type: integer
+          minimum: -10000
+          maximum: 10000
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 1000
+    LeagueDecisionInput:
+      type: object
+      required: [approve]
+      properties:
+        approve:
+          type: boolean
+    LeagueDisputeInput:
+      type: object
+      required: [text]
+      description: Нужен ровно один из entryId и transitionId
+      properties:
+        entryId:
+          type: string
+          format: uuid
+        transitionId:
+          type: string
+          format: uuid
+        text:
+          type: string
+          minLength: 1
+          maxLength: 2000
+    LeagueAnswerInput:
+      type: object
+      required: [accept, answer]
+      properties:
+        accept:
+          type: boolean
+        answer:
+          type: string
+          minLength: 1
+          maxLength: 1000
+        points:
+          type: integer
+          description: Только для принятого спора о начислении
     StudentWork:
       type: object
       required: [student, latest, attempts, grade]

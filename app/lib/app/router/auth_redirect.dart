@@ -6,6 +6,9 @@ abstract final class AuthRedirect {
   static const _entries = {AppRoutes.connect, AppRoutes.login};
 
   static String? target(AuthState auth, String location) {
+    if (location == AppRoutes.ltiLaunch) {
+      return null;
+    }
     final gate = switch (auth) {
       Disconnected() => AppRoutes.connect,
       SignedOut() => AppRoutes.login,

@@ -2129,7 +2129,7 @@ paths:
       tags: [lti]
       operationId: ltiLaunch
       summary: Запуск из LMS
-      description: Проверяет id_token LMS и перенаправляет в приложение на /lti с одноразовым билетом ticket и путём next, при отказе с error=launch_failed.
+      description: Проверяет id_token LMS и перенаправляет в приложение на /lti с одноразовым билетом ticket, адресом сервера server, вузом tenant и путём next, при отказе с error=launch_failed.
       parameters:
         - $ref: "#/components/parameters/Tenant"
       requestBody:

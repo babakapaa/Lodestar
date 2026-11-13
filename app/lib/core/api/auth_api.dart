@@ -51,6 +51,10 @@ class AuthApi {
     });
   }
 
+  Future<TokenPair> claimTicket(ServerAddress address, String ticket) {
+    return _issue(address, {'grantType': 'launch_ticket', 'ticket': ticket});
+  }
+
   Future<TokenPair> refresh(ServerAddress address, TokenPair tokens) {
     return _issue(address, {
       'grantType': 'refresh_token',

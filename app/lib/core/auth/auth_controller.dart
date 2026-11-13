@@ -75,6 +75,16 @@ class AuthController extends Notifier<AuthState> {
     return true;
   }
 
+  Future<void> claim(ServerAddress address, String ticket) async {
+    final tokens = await ref.read(authApiProvider).claimTicket(address, ticket);
+    if (state.address != address) {
+      await ref.read(responseCacheProvider).clear();
+    }
+    await ref.read(connectionStoreProvider).save(address);
+    await ref.read(tokenStoreProvider).save(tokens);
+    state = SignedIn(address);
+  }
+
   Future<void> signOut() async {
     final address = state.address;
     final tokens = ref.read(tokenStoreProvider).current;

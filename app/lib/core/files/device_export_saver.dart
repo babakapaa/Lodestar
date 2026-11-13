@@ -20,6 +20,8 @@ class DeviceExportSaver implements ExportSaver {
       mimeType: switch (extension) {
         'md' => MimeType.markdown,
         'zip' => MimeType.zip,
+        'csv' => MimeType.csv,
+        'xlsx' => MimeType.microsoftExcel,
         _ => MimeType.other,
       },
     );

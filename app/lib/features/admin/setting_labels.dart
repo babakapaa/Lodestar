@@ -19,10 +19,19 @@ class SettingLabels {
     'study.teachers_edit_schedule' => l10n.settingTeachersEditSchedule,
     'study.defense_recording' => l10n.settingDefenseRecording,
     'chat.retention_days' => l10n.settingChatRetention,
+    'core.lti_assignment_source' => l10n.settingLtiSource,
     _ => key,
   };
 
   String option(String key, String option) {
+    if (key == 'core.lti_assignment_source') {
+      return switch (option) {
+        'lodestar' => l10n.settingLtiSourceLodestar,
+        'lms' => l10n.settingLtiSourceLms,
+        'units' => l10n.settingLtiSourceUnits,
+        _ => option,
+      };
+    }
     final labels = SettingsLabels(l10n);
     for (final language in AppLanguage.values) {
       if (key == 'core.default_language' && language.name == option) {

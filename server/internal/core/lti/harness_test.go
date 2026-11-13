@@ -243,6 +243,9 @@ func (h *harness) enter(subject, email string, roles ...string) (string, string)
 	if result.Get("error") != "" {
 		h.t.Fatalf("launch failed: %s", result.Get("error"))
 	}
+	if result.Get("server") != h.server.URL || result.Get("tenant") != "kaznu" {
+		h.t.Fatalf("launch target = %v", result)
+	}
 	return h.claim(result.Get("ticket")), result.Get("next")
 }
 

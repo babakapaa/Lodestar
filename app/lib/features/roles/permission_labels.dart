@@ -12,6 +12,7 @@ class PermissionLabels {
     'core.structure.manage' => l10n.permissionManageStructure,
     'core.structure.members' => l10n.permissionManageMembers,
     'core.audit.view' => l10n.permissionViewAudit,
+    'core.integrations.manage' => l10n.permissionManageIntegrations,
     _ => permission,
   };
 }

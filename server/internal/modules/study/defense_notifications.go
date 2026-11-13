@@ -5,6 +5,7 @@ import "github.com/babakapaa/lodestar/server/internal/core/module"
 const (
 	NotifyDefenseCancelled = "study.defense_cancelled"
 	NotifyDefenseHeld      = "study.defense_held"
+	NotifyDefenseSoon      = "study.defense_soon"
 )
 
 func defenseTypes() []module.NotificationType {
@@ -16,6 +17,15 @@ func defenseTypes() []module.NotificationType {
 				"ru": {Title: "Время защиты отменено: {assignment}", Body: "Запишитесь на другое время. {course}"},
 				"kk": {Title: "Қорғау уақыты жойылды: {assignment}", Body: "Басқа уақытқа жазылыңыз. {course}"},
 				"en": {Title: "Defense time cancelled: {assignment}", Body: "Please book another time. {course}"},
+			},
+		},
+		{
+			Key: NotifyDefenseSoon, InApp: true, Push: true,
+			Names: map[string]string{"ru": "Скорые защиты", "kk": "Жақындаған қорғаулар", "en": "Upcoming defenses"},
+			Texts: map[string]module.NotificationText{
+				"ru": {Title: "Скоро защита: {assignment}", Body: "{course}"},
+				"kk": {Title: "Қорғау жақын: {assignment}", Body: "{course}"},
+				"en": {Title: "Defense soon: {assignment}", Body: "{course}"},
 			},
 		},
 		{

@@ -37,6 +37,9 @@ const (
 	CodeSlotStarted        = "defense_slot_started"
 	CodeDefenseFinished    = "defense_finished"
 	CodeNotChosen          = "defense_not_chosen"
+	CodeNoWork             = "no_submitted_work"
+	CodeAIUnavailable      = "study_ai_unavailable"
+	CodeAIFailed           = "study_ai_failed"
 )
 
 var errorCodes = []struct {
@@ -72,6 +75,9 @@ var errorCodes = []struct {
 	{ErrSlotStarted, http.StatusConflict, CodeSlotStarted},
 	{ErrDefenseFinished, http.StatusConflict, CodeDefenseFinished},
 	{ErrNotChosen, http.StatusForbidden, CodeNotChosen},
+	{ErrNoWork, http.StatusConflict, CodeNoWork},
+	{ErrAIUnavailable, http.StatusServiceUnavailable, CodeAIUnavailable},
+	{ErrAIFailed, http.StatusBadGateway, CodeAIFailed},
 }
 
 func writeError(w http.ResponseWriter, err error) {

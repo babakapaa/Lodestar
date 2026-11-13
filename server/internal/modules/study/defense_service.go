@@ -25,6 +25,7 @@ type DefenseService struct {
 	slots    SlotStore
 	defenses DefenseStore
 	grades   GradeStore
+	drafter  DefenseDrafter
 	people   identity.People
 	log      audit.Log
 	now      func() time.Time
@@ -33,7 +34,7 @@ type DefenseService struct {
 func NewDefenseService(k module.Kernel) DefenseService {
 	return DefenseService{
 		tenants: k.Tenants, work: NewAssignmentService(k.Tenants, k.Access, k.Notifier),
-		settings: k.Settings, notifier: k.Notifier, now: time.Now,
+		settings: k.Settings, notifier: k.Notifier, drafter: DefenseDrafter{model: k.Model}, now: time.Now,
 	}
 }
 
@@ -381,6 +382,59 @@ func (s DefenseService) Finish(ctx context.Context, p auth.Principal, id, studen
 		})
 	})
 	return d, err
+}
+
+func (s DefenseService) DraftQuestions(ctx context.Context, p auth.Principal, id, studentID string) ([]DefenseQuestion, error) {
+	if !s.drafter.ready() {
+		return nil, ErrAIUnavailable
+	}
+	var m DefenseMaterial
+	err := s.tenants.Run(ctx, p.TenantID, func(tx pgx.Tx) error {
+		a, err := s.taughtStudent(ctx, tx, p, id, studentID)
+		if err != nil {
+			return err
+		}
+		attempts, err := s.work.submissions.Attempts(ctx, tx, id, studentID)
+		if err != nil {
+			return err
+		}
+		if len(attempts) == 0 {
+			return ErrNoWork
+		}
+		latest, err := s.work.withFiles(ctx, tx, attempts[0])
+		if err != nil {
+			return err
+		}
+		m = DefenseMaterial{Title: a.Title, Description: a.Description, Work: latest.Body, Map: latest.SearchMap}
+		for _, f := range latest.Files {
+			m.Files = append(m.Files, f.Name)
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	return s.drafter.Questions(ctx, m)
+}
+
+func (s DefenseService) DraftProtocol(ctx context.Context, p auth.Principal, id, studentID string, in DefenseInput) (string, error) {
+	if !s.drafter.ready() {
+		return "", ErrAIUnavailable
+	}
+	in, err := in.normalized()
+	if err != nil {
+		return "", err
+	}
+	var title string
+	err = s.tenants.Run(ctx, p.TenantID, func(tx pgx.Tx) error {
+		a, err := s.taughtStudent(ctx, tx, p, id, studentID)
+		title = a.Title
+		return err
+	})
+	if err != nil {
+		return "", err
+	}
+	return s.drafter.Protocol(ctx, title, in.Questions, in.Summary)
 }
 
 func (s DefenseService) mine(ctx context.Context, tx pgx.Tx, a Assignment, studentID string) (MyDefense, error) {

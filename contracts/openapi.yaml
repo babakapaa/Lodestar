@@ -2931,6 +2931,90 @@ paths:
           $ref: "#/components/responses/Error"
         default:
           $ref: "#/components/responses/Error"
+  /v1/study/assignments/{id}/defenses/{student}/questions-draft:
+    post:
+      tags: [study]
+      operationId: draftDefenseQuestions
+      summary: Предложить вопросы к защите
+      description: ИИ предлагает 5–7 вопросов по последней сданной работе и карте поиска. Ничего не сохраняет, преподаватель выбирает и правит вопросы сам. 503, если модель не настроена.
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+        - name: student
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QuestionsDraft"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        "502":
+          $ref: "#/components/responses/Error"
+        "503":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/study/assignments/{id}/defenses/{student}/protocol-draft:
+    post:
+      tags: [study]
+      operationId: draftDefenseProtocol
+      summary: Черновик протокола защиты
+      description: ИИ собирает текст протокола только из отметок и заметок преподавателя. Ничего не сохраняет.
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+        - name: student
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DefenseInput"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProtocolDraft"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        "502":
+          $ref: "#/components/responses/Error"
+        "503":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
   /v1/study/assignments/{id}/work:
     get:
       tags: [study]
@@ -6167,6 +6251,20 @@ components:
           oneOf:
             - $ref: "#/components/schemas/GradeInput"
             - type: "null"
+    QuestionsDraft:
+      type: object
+      required: [questions]
+      properties:
+        questions:
+          type: array
+          items:
+            $ref: "#/components/schemas/DefenseQuestion"
+    ProtocolDraft:
+      type: object
+      required: [summary]
+      properties:
+        summary:
+          type: string
     StudentWork:
       type: object
       required: [student, latest, attempts, grade]

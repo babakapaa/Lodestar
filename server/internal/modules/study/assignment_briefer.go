@@ -21,7 +21,7 @@ func (AssignmentBriefer) Kind() string {
 }
 
 func (b AssignmentBriefer) Brief(ctx context.Context, tx pgx.Tx, p auth.Principal, id string) (module.Brief, error) {
-	a, c, _, err := b.service.visible(ctx, tx, p, id, false)
+	a, c, st, err := b.service.visible(ctx, tx, p, id, false)
 	if errors.Is(err, ErrAssignmentNotFound) {
 		return module.Brief{}, module.ErrBriefNotFound
 	}
@@ -34,6 +34,6 @@ func (b AssignmentBriefer) Brief(ctx context.Context, tx pgx.Tx, p auth.Principa
 	}
 	return module.Brief{
 		Kind: BriefAssignment, ID: a.ID, Title: a.Title, Description: a.Description,
-		Course: c.Title, DueAt: a.DueAt, Mode: mode,
+		Course: c.Title, CourseID: c.ID, Teaches: st.Teaches(), DueAt: a.DueAt, Mode: mode,
 	}, nil
 }

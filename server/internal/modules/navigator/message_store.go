@@ -100,5 +100,9 @@ func (s MessageStore) scan(row pgx.CollectableRow) (Message, error) {
 	}
 	m.Text, m.Intent, m.Step, m.Support = body.Text, body.Intent, body.Step, body.Support
 	m.LastStep = m.Step.Last()
+	m.Citations = body.Citations
+	if m.Citations == nil {
+		m.Citations = []Citation{}
+	}
 	return m, nil
 }

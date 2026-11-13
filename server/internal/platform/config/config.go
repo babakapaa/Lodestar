@@ -24,6 +24,8 @@ type Config struct {
 	Mail            mail.Config
 	FCMCredentials  string
 	LLM             llm.Config
+	Embed           llm.Config
+	Rerank          llm.Config
 	AccessTTL       time.Duration
 	RefreshTTL      time.Duration
 	ShutdownTimeout time.Duration
@@ -57,6 +59,16 @@ func Load() (Config, error) {
 			Model: stringEnv("LODESTAR_LLM_MODEL", ""),
 			Key:   stringEnv("LODESTAR_LLM_KEY", ""),
 		},
+		Embed: llm.Config{
+			URL:   stringEnv("LODESTAR_EMBED_URL", ""),
+			Model: stringEnv("LODESTAR_EMBED_MODEL", ""),
+			Key:   stringEnv("LODESTAR_EMBED_KEY", ""),
+		},
+		Rerank: llm.Config{
+			URL:   stringEnv("LODESTAR_RERANK_URL", ""),
+			Model: stringEnv("LODESTAR_RERANK_MODEL", ""),
+			Key:   stringEnv("LODESTAR_RERANK_KEY", ""),
+		},
 	}
 	cfg.AppURL = strings.TrimRight(stringEnv("LODESTAR_APP_URL", cfg.PublicURL), "/")
 	if cfg.DatabaseURL == "" {
@@ -78,6 +90,7 @@ func Load() (Config, error) {
 	if cfg.LLM.Timeout, err = durationEnv("LODESTAR_LLM_TIMEOUT", 2*time.Minute); err != nil {
 		return Config{}, err
 	}
+	cfg.Embed.Timeout, cfg.Rerank.Timeout = cfg.LLM.Timeout, cfg.LLM.Timeout
 	return cfg, nil
 }
 

@@ -35,8 +35,8 @@ func (h AskHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	stream := newEventStream(w)
-	a, _, err := h.service.Ask(r.Context(), principal(r), r.PathValue("id"), in, func(text string) error {
-		return stream.send("delta", map[string]string{"text": text})
+	a, _, err := h.service.Ask(r.Context(), principal(r), r.PathValue("id"), in, func(st Stage) error {
+		return stream.send("stage", map[string]Stage{"stage": st})
 	})
 	if err != nil {
 		if !stream.started {

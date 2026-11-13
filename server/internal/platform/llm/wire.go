@@ -29,3 +29,28 @@ func (r chatReply) text(stream bool) string {
 	}
 	return r.Choices[0].Message.Content
 }
+
+type embedBody struct {
+	Model string   `json:"model"`
+	Input []string `json:"input"`
+}
+
+type embedReply struct {
+	Data []struct {
+		Index     int       `json:"index"`
+		Embedding []float32 `json:"embedding"`
+	} `json:"data"`
+}
+
+type rerankBody struct {
+	Model     string   `json:"model"`
+	Query     string   `json:"query"`
+	Documents []string `json:"documents"`
+}
+
+type rerankReply struct {
+	Results []struct {
+		Index int     `json:"index"`
+		Score float64 `json:"relevance_score"`
+	} `json:"results"`
+}

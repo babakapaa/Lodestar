@@ -13,9 +13,10 @@ type Prompt struct {
 	Brief     *module.Brief
 	Intent    Intent
 	Step      Step
-	Fragments []string
+	Fragments []Fragment
 	Memory    []Message
 	Question  string
+	Retry     string
 	Now       time.Time
 }
 
@@ -33,15 +34,9 @@ func (p Prompt) Messages() []llm.Message {
 		parts = append(parts, text)
 	}
 	parts = append(parts, briefText(p.Brief, p.Now))
-	if len(p.Fragments) == 0 {
-		parts = append(parts, "Фрагменты: по этому вопросу в базе ничего не найдено.")
-	} else {
-		var fragments strings.Builder
-		fragments.WriteString("Фрагменты:")
-		for i, f := range p.Fragments {
-			fragments.WriteString("\n[" + strconv.Itoa(i+1) + "] " + f)
-		}
-		parts = append(parts, fragments.String())
+	parts = append(parts, fragmentsText(p.Fragments))
+	if p.Retry != "" {
+		parts = append(parts, "Прошлый вариант ответа не прошёл проверку: "+p.Retry+" Напиши ответ заново по правилам.")
 	}
 	out := []llm.Message{{Role: llm.RoleSystem, Content: strings.Join(parts, "\n\n")}}
 	for _, m := range p.Memory {
@@ -58,4 +53,32 @@ func (p Prompt) Messages() []llm.Message {
 		question = "Дай следующую подсказку."
 	}
 	return append(out, llm.Message{Role: llm.RoleUser, Content: question})
+}
+
+func fragmentsText(fragments []Fragment) string {
+	if len(fragments) == 0 {
+		return "Фрагменты: по этому вопросу в базе ничего не найдено."
+	}
+	var b strings.Builder
+	b.WriteString("Фрагменты:")
+	for i, f := range fragments {
+		b.WriteString("\n\n[" + strconv.Itoa(i+1) + "] " + f.Title)
+		if f.Reference != "" {
+			b.WriteString(" (" + f.Reference + ")")
+		}
+		b.WriteString("\n" + f.Text)
+	}
+	return b.String()
+}
+
+func (p Prompt) query() string {
+	if p.Question != "" {
+		return p.Question
+	}
+	for i := len(p.Memory) - 1; i >= 0; i-- {
+		if p.Memory[i].Role == RoleStudent && p.Memory[i].Text != "" {
+			return p.Memory[i].Text
+		}
+	}
+	return ""
 }

@@ -115,7 +115,7 @@ func TestNavigatorOverHTTP(t *testing.T) {
 	rec = w.post(student, "/v1/navigator/dialogs/"+dialogID+"/messages", `{"key":"k1","text":"Что такое митоз?"}`,
 		map[string]string{"Accept": "text/event-stream"})
 	body := rec.Body.String()
-	if rec.Code != http.StatusOK || !strings.Contains(body, "event: delta") || !strings.Contains(body, "event: answer") || !strings.Contains(body, `"step":"question"`) {
+	if rec.Code != http.StatusOK || !strings.Contains(body, "event: stage") || !strings.Contains(body, "event: answer") || !strings.Contains(body, `"step":"question"`) {
 		t.Fatalf("stream: %d %s", rec.Code, body)
 	}
 	rec = w.post(student, "/v1/navigator/dialogs/"+dialogID+"/messages", `{"key":"k1","text":"Что такое митоз?"}`, nil)

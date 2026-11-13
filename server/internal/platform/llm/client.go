@@ -2,41 +2,33 @@ package llm
 
 import (
 	"bufio"
-	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
 	"io"
-	"net/http"
 	"strings"
 )
 
 const maxReply = 4 << 20
 
 type Client struct {
-	cfg  Config
-	http *http.Client
+	transport transport
 }
 
 func NewClient(cfg Config) Client {
-	return Client{cfg: cfg, http: &http.Client{Timeout: cfg.Timeout}}
+	return Client{transport: newTransport(cfg)}
 }
 
 func (c Client) Complete(ctx context.Context, req Request) (string, error) {
-	resp, err := c.send(ctx, req, false)
-	if err != nil {
-		return "", err
-	}
-	defer func() { _ = resp.Body.Close() }()
 	var reply chatReply
-	if err := json.NewDecoder(io.LimitReader(resp.Body, maxReply)).Decode(&reply); err != nil {
-		return "", fmt.Errorf("%w: decode reply: %w", ErrModelFailed, err)
+	if err := c.transport.call(ctx, "/chat/completions", c.body(req, false), &reply); err != nil {
+		return "", err
 	}
 	return reply.text(false), nil
 }
 
 func (c Client) Stream(ctx context.Context, req Request, delta func(string) error) (string, error) {
-	resp, err := c.send(ctx, req, true)
+	resp, err := c.transport.open(ctx, "/chat/completions", c.body(req, true))
 	if err != nil {
 		return "", err
 	}
@@ -72,9 +64,9 @@ func (c Client) Stream(ctx context.Context, req Request, delta func(string) erro
 	return full.String(), nil
 }
 
-func (c Client) send(ctx context.Context, req Request, stream bool) (*http.Response, error) {
+func (c Client) body(req Request, stream bool) chatBody {
 	body := chatBody{
-		Model:       c.cfg.Model,
+		Model:       c.transport.cfg.Model,
 		Messages:    req.Messages,
 		Temperature: req.Temperature,
 		MaxTokens:   req.MaxTokens,
@@ -83,25 +75,5 @@ func (c Client) send(ctx context.Context, req Request, stream bool) (*http.Respo
 	if req.JSON {
 		body.ResponseFormat = &responseFormat{Type: "json_object"}
 	}
-	raw, err := json.Marshal(body)
-	if err != nil {
-		return nil, err
-	}
-	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, strings.TrimRight(c.cfg.URL, "/")+"/chat/completions", bytes.NewReader(raw))
-	if err != nil {
-		return nil, err
-	}
-	httpReq.Header.Set("Content-Type", "application/json")
-	if c.cfg.Key != "" {
-		httpReq.Header.Set("Authorization", "Bearer "+c.cfg.Key)
-	}
-	resp, err := c.http.Do(httpReq)
-	if err != nil {
-		return nil, fmt.Errorf("%w: %w", ErrModelFailed, err)
-	}
-	if resp.StatusCode != http.StatusOK {
-		_ = resp.Body.Close()
-		return nil, fmt.Errorf("%w: status %d", ErrModelFailed, resp.StatusCode)
-	}
-	return resp, nil
+	return body
 }

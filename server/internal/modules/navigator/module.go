@@ -16,7 +16,14 @@ func (Module) Manifest() module.Manifest {
 }
 
 func (Module) Mount(mux *http.ServeMux, k module.Kernel) {
-	Routes{Service: NewService(k)}.Mount(mux)
+	Routes{Service: NewService(k), Materials: NewMaterialService(k)}.Mount(mux)
+}
+
+func (Module) Workers(k module.Kernel) []module.Worker {
+	if k.Embedder == nil {
+		return nil
+	}
+	return []module.Worker{NewIndexer(k)}
 }
 
 func (Module) PrivacySections(k module.Kernel) []privacy.Section {

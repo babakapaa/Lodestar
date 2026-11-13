@@ -46,5 +46,13 @@ func OpenIntegrations(ctx context.Context, cfg config.Config) (Integrations, err
 	} else {
 		slog.Warn("navigator is not configured, set LODESTAR_LLM_URL and LODESTAR_LLM_MODEL to an OpenAI-compatible server such as vLLM or Ollama")
 	}
+	if cfg.Embed.Enabled() {
+		ext.Embedder = llm.NewEmbedClient(cfg.Embed)
+	} else {
+		slog.Warn("navigator search is not configured, set LODESTAR_EMBED_URL and LODESTAR_EMBED_MODEL to an OpenAI-compatible embeddings server")
+	}
+	if cfg.Rerank.Enabled() {
+		ext.Reranker = llm.NewRerankClient(cfg.Rerank)
+	}
 	return ext, nil
 }

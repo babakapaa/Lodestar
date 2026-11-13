@@ -11,3 +11,7 @@ var ErrInvalidDialog = errors.New("dialog id or scope is invalid")
 var ErrInvalidMessage = errors.New("message is empty, too long or asks for a closed type")
 
 var ErrModelFailed = errors.New("navigator could not get an answer from the model")
+
+var ErrInvalidMaterial = errors.New("material title, link or text is empty or too long")
+
+var ErrMaterialNotFound = errors.New("material not found")

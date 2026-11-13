@@ -16,4 +16,6 @@ func (r Routes) mountDefenses(mux *http.ServeMux) {
 	mux.Handle("PUT /v1/study/assignments/{id}/defenses/{student}", SaveDefenseHandler{service: d})
 	mux.Handle("PUT /v1/study/assignments/{id}/defenses/{student}/selection", SelectHandler{service: d})
 	mux.Handle("POST /v1/study/assignments/{id}/defenses/{student}/finish", FinishHandler{service: d})
+	mux.Handle("POST /v1/study/assignments/{id}/defenses/{student}/questions-draft", DraftQuestionsHandler{service: d})
+	mux.Handle("POST /v1/study/assignments/{id}/defenses/{student}/protocol-draft", DraftProtocolHandler{service: d})
 }

@@ -27,7 +27,7 @@ func (Module) Mount(mux *http.ServeMux, k module.Kernel) {
 }
 
 func (Module) Workers(k module.Kernel) []module.Worker {
-	return []module.Worker{NewDeadlineReminder(k)}
+	return []module.Worker{NewDeadlineReminder(k), NewDefenseReminder(k)}
 }
 
 func (Module) FileLinks(k module.Kernel) []files.Link {

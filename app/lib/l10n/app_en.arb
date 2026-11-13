@@ -1367,5 +1367,11 @@
   "setupPilotCourses": "{count, plural, one{Open on {count} course} other{Open on {count} courses}}",
   "setupExpand": "Open for everyone",
   "setupPilotBanner": "Lodestar is running as a pilot on a few courses. Yours are not among them yet.",
-  "errorCallNotStarted": "A channel admin starts the call. Wait for it to begin."
+  "errorCallNotStarted": "A channel admin starts the call. Wait for it to begin.",
+  "previewTitle": "Through a student’s eyes",
+  "previewHint": "What a student will see on a chosen date",
+  "previewStudent": "Student",
+  "previewAnyone": "Any student, nothing submitted",
+  "previewDate": "Date",
+  "previewEmpty": "The student sees no assignments on this date"
 }

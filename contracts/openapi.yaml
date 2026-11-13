@@ -2870,6 +2870,46 @@ paths:
           $ref: "#/components/responses/Error"
         default:
           $ref: "#/components/responses/Error"
+  /v1/study/courses/{id}/preview:
+    get:
+      tags: [study]
+      operationId: previewCourse
+      summary: Курс глазами студента
+      description: Только преподаватель курса. Задания, выданные к моменту at, и прогресс выбранного студента на этот момент. Без student прогресс пустой.
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+        - name: student
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: at
+          in: query
+          description: По умолчанию сейчас
+          schema:
+            type: string
+            format: date-time
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AssignmentItem"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
   /v1/study/courses/{id}/assignments:
     get:
       tags: [study]

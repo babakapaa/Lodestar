@@ -131,6 +131,8 @@ abstract final class AppRoutes {
 
   static String chatInfo(String id) => '/chats/$id/info';
 
+  static String chatCall(String id) => '/chats/$id/call';
+
   static String courseChats(String courseId, {bool teach = false}) => Uri(
     path: '$courseChatsPath/$courseId',
     queryParameters: teach ? {'teach': '1'} : null,

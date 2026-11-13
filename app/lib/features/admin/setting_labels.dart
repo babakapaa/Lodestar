@@ -20,6 +20,8 @@ class SettingLabels {
     'study.teachers_edit_schedule' => l10n.settingTeachersEditSchedule,
     'study.defense_recording' => l10n.settingDefenseRecording,
     'chat.retention_days' => l10n.settingChatRetention,
+    'chat.calls' => l10n.settingChatCalls,
+    'chat.screen_share' => l10n.settingChatScreenShare,
     'core.lti_assignment_source' => l10n.settingLtiSource,
     'sandbox.base_hours' => l10n.settingSandboxBaseHours,
     'sandbox.deadline_days' => l10n.settingSandboxDeadlineDays,
@@ -49,6 +51,13 @@ class SettingLabels {
   };
 
   String option(String key, String option) {
+    if (key == 'chat.screen_share') {
+      return switch (option) {
+        'everyone' => l10n.settingScreenShareEveryone,
+        'admins' => l10n.settingScreenShareAdmins,
+        _ => option,
+      };
+    }
     if (key == 'core.lti_assignment_source') {
       return switch (option) {
         'lodestar' => l10n.settingLtiSourceLodestar,

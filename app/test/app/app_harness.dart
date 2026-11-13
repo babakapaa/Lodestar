@@ -7,6 +7,7 @@ import 'package:lodestar/core/api/token_pair.dart';
 import 'package:lodestar/core/auth/auth_providers.dart';
 import 'package:lodestar/core/live/live_providers.dart';
 import 'package:lodestar/core/settings/settings_providers.dart';
+import 'package:lodestar/features/calls/calls_providers.dart';
 import 'package:lodestar/features/chats/chats_database.dart';
 import 'package:lodestar/features/chats/chats_providers.dart';
 import 'package:lodestar/features/notes/notes_database.dart';
@@ -16,6 +17,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../support/fake_authenticator.dart';
+import '../support/fake_call_engine.dart';
 import '../support/fake_export_saver.dart';
 import '../support/fake_file_opener.dart';
 import '../support/fake_live_socket.dart';
@@ -29,12 +31,13 @@ const signedInStorage = <String, Object>{
 };
 
 class AppHarness {
-  const AppHarness(this.server, this.live, this.saver, this.opener);
+  const AppHarness(this.server, this.live, this.saver, this.opener, this.calls);
 
   final FakeServer server;
   final FakeLiveSocket live;
   final FakeExportSaver saver;
   final FakeFileOpener opener;
+  final List<FakeCallEngine> calls;
 }
 
 Future<AppHarness> pumpApp(
@@ -54,6 +57,7 @@ Future<AppHarness> pumpApp(
   final live = FakeLiveSocket();
   final saver = FakeExportSaver();
   final opener = FakeFileOpener();
+  final calls = <FakeCallEngine>[];
   final tokens = MemoryTokenStore(
     signedIn
         ? const TokenPair(accessToken: 'access-1', refreshToken: 'refresh-1')
@@ -88,6 +92,11 @@ Future<AppHarness> pumpApp(
           ref.onDispose(db.close);
           return db;
         }),
+        callEngineFactoryProvider.overrideWithValue(() {
+          final engine = FakeCallEngine();
+          calls.add(engine);
+          return engine;
+        }),
         webAuthenticatorProvider.overrideWithValue(
           authenticator ?? FakeAuthenticator(),
         ),
@@ -96,5 +105,5 @@ Future<AppHarness> pumpApp(
     ),
   );
   await tester.pumpAndSettle();
-  return AppHarness(fake, live, saver, opener);
+  return AppHarness(fake, live, saver, opener, calls);
 }

@@ -8,6 +8,7 @@ import '../../design/tokens/motion.dart';
 import '../../features/admin/admin_screen.dart';
 import '../../features/admin/audit_screen.dart';
 import '../../features/admin/tenant_settings_screen.dart';
+import '../../features/calls/call_screen.dart';
 import '../../features/chats/chat_info_screen.dart';
 import '../../features/chats/chat_reports_screen.dart';
 import '../../features/chats/chat_screen.dart';
@@ -242,6 +243,7 @@ class AppRouter {
             ),
           ),
           _param(AppRoutes.chatInfo(':id'), (id) => ChatInfoScreen(chatId: id)),
+          _param(AppRoutes.chatCall(':id'), (id) => CallScreen(chatId: id)),
           _param(
             AppRoutes.courseMaterials(':id'),
             (id) => MaterialsScreen(courseId: id),

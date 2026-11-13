@@ -2346,5 +2346,41 @@
   "permissionSetupLegal": "Утверждать ответы «Право и безопасность»",
   "permissionSetupSign": "Подписывать протокол подключения",
   "permissionViewStats": "Смотреть статистику вуза",
-  "permissionFullStats": "Видеть статистику небольших групп"
+  "permissionFullStats": "Видеть статистику небольших групп",
+  "callStart": "Позвонить",
+  "callTitle": "Звонок",
+  "callFailed": "Не получилось войти в звонок",
+  "callYou": "{name} (вы)",
+  "@callYou": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "callMute": "Выключить микрофон",
+  "callUnmute": "Включить микрофон",
+  "callCameraOn": "Включить камеру",
+  "callCameraOff": "Выключить камеру",
+  "callScreenOn": "Показать экран",
+  "callScreenOff": "Перестать показывать экран",
+  "callHangUp": "Завершить",
+  "callOngoing": "Идёт звонок",
+  "callPeople": "{count, plural, =0{пока никого} one{{count} участник} few{{count} участника} other{{count} участников}}",
+  "@callPeople": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "callJoin": "Войти",
+  "errorCallsOff": "Вуз выключил звонки",
+  "errorCallsUnavailable": "Сервер звонков не настроен",
+  "errorCallFull": "В звонке уже 50 человек",
+  "errorCallNotFound": "Звонок уже закончился",
+  "settingChatCalls": "Звонки в чатах",
+  "settingChatScreenShare": "Кто показывает экран в звонке",
+  "settingScreenShareEveryone": "Все участники",
+  "settingScreenShareAdmins": "Только администраторы чата"
 }

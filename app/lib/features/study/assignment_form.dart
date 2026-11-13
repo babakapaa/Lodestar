@@ -15,6 +15,7 @@ import 'assignment_details.dart';
 import 'assignment_input.dart';
 import 'grading.dart';
 import 'map_rules.dart';
+import 'navigator_mode.dart';
 import 'points_text.dart';
 import 'study_labels_context.dart';
 import 'study_providers.dart';
@@ -42,6 +43,8 @@ class _AssignmentFormState extends ConsumerState<AssignmentForm> {
   late Grading _grading = _assignment?.grading ?? Grading.points;
   late bool _published = _assignment?.published ?? false;
   late bool _mapRequired = _assignment?.searchMap != null;
+  late NavigatorMode _navigatorMode =
+      _assignment?.navigatorMode ?? NavigatorMode.course;
   late final _minSources = TextEditingController(
     text: '${_assignment?.searchMap?.minSources ?? 5}',
   );
@@ -153,6 +156,7 @@ class _AssignmentFormState extends ConsumerState<AssignmentForm> {
       searchMap: _mapRequired
           ? MapRules(minSources: minSources!, minScholarly: minScholarly!)
           : null,
+      navigatorMode: _navigatorMode,
     );
     final assignment = _assignment;
     await _run(
@@ -285,6 +289,16 @@ class _AssignmentFormState extends ConsumerState<AssignmentForm> {
               ),
             ],
           ),
+        const SizedBox(height: Spacing.xl),
+        Section(
+          title: l10n.assignmentNavigator,
+          child: ChoiceGroup<NavigatorMode>(
+            values: NavigatorMode.values,
+            selected: _navigatorMode,
+            labelOf: labels.navigatorMode,
+            onSelected: (value) => setState(() => _navigatorMode = value),
+          ),
+        ),
         const SizedBox(height: Spacing.l),
         SwitchListTile(
           contentPadding: EdgeInsets.zero,

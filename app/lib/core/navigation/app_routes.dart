@@ -20,6 +20,7 @@ abstract final class AppRoutes {
   static const notesGraph = '/notes/graph';
   static const sourcesPath = '/notes/sources';
   static const sourceNew = '/notes/sources/new';
+  static const dialogNew = '/navigator/new';
 
   static String role(String id) => '/admin/roles/$id';
 
@@ -53,4 +54,19 @@ abstract final class AppRoutes {
       '/notes/$id/versions/$version';
 
   static String schedule(String date) => '$schedulePath?date=$date';
+
+  static String dialog(String id) => '/navigator/dialogs/$id';
+
+  static String newDialog({String? scopeKind, String? scopeId}) => Uri(
+    path: dialogNew,
+    queryParameters: scopeKind == null || scopeId == null
+        ? null
+        : {'scopeKind': scopeKind, 'scopeId': scopeId},
+  ).toString();
+
+  static String courseMaterials(String courseId) =>
+      '/navigator/courses/$courseId/materials';
+
+  static String materialNew(String courseId) =>
+      '/navigator/courses/$courseId/materials/new';
 }

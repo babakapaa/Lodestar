@@ -1,5 +1,6 @@
 import 'grading.dart';
 import 'map_rules.dart';
+import 'navigator_mode.dart';
 
 class Assignment {
   const Assignment({
@@ -12,6 +13,7 @@ class Assignment {
     required this.maxPoints,
     required this.published,
     this.searchMap,
+    this.navigatorMode = NavigatorMode.course,
   });
 
   factory Assignment.fromJson(Map<String, Object?> json) {
@@ -26,6 +28,7 @@ class Assignment {
       maxPoints: (json['maxPoints'] as num?)?.toDouble(),
       published: json['publishedAt'] != null,
       searchMap: MapRules.maybe(json['searchMap']),
+      navigatorMode: NavigatorMode.parse(json['navigatorMode']),
     );
   }
 
@@ -38,4 +41,5 @@ class Assignment {
   final double? maxPoints;
   final bool published;
   final MapRules? searchMap;
+  final NavigatorMode navigatorMode;
 }

@@ -626,5 +626,109 @@
   "assignmentMapMinSources": "Минимум источников",
   "assignmentMapMinScholarly": "Доля научных, %",
   "errorInvalidSearchMap": "Карта поиска заполнена неверно.",
-  "errorMapIncomplete": "Карта поиска не соответствует требованиям задания."
+  "errorMapIncomplete": "Карта поиска не соответствует требованиям задания.",
+  "navigatorNewQuestion": "Новый вопрос",
+  "navigatorUntitled": "Без названия",
+  "navigatorAskHint": "Что непонятно или что нужно найти?",
+  "navigatorSend": "Отправить",
+  "navigatorThinking": "Навигатор ищет в материалах и проверяет ответ…",
+  "navigatorRetry": "Повторить",
+  "navigatorMore": "Ещё подсказку",
+  "navigatorMisread": "Меня не так поняли",
+  "navigatorPickIntent": "Чего вы хотите?",
+  "navigatorLastStep": "Это последняя ступень подсказок, дальше решаете вы",
+  "navigatorStep": "Ступень {n} из 5: {name}",
+  "@navigatorStep": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "stepQuestion": "уточняющий вопрос",
+  "stepDirection": "направление",
+  "stepSource": "источник",
+  "stepFragment": "фрагмент",
+  "stepExample": "похожий пример",
+  "intentUnderstand": "Понять тему",
+  "intentFind": "Найти источник",
+  "intentCheck": "Проверить своё",
+  "intentDoForMe": "Сделать за меня",
+  "intentOrganize": "Сроки и правила",
+  "intentState": "Мне тяжело",
+  "navigatorSupport": "Если тяжело, здесь помогут",
+  "navigatorSources": "Источники ответа",
+  "navigatorAboutAssignment": "Задание: {title}",
+  "@navigatorAboutAssignment": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "navigatorAboutCourse": "Курс: {title}",
+  "@navigatorAboutCourse": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "navigatorModeStudy": "Учебный режим: подсказки по шагам, без готовых решений",
+  "navigatorModeProject": "Проектный режим: помощь прямее, она попадёт в ИИ-декларацию",
+  "navigatorEmptyDialog": "Навигатор отвечает по материалам курса со ссылками на источник и не пишет работу за вас.",
+  "navigatorDelete": "Удалить диалог",
+  "navigatorDeleteConfirm": "Удалить диалог? Вернуть его будет нельзя.",
+  "navigatorAsk": "Спросить навигатора",
+  "materialsTitle": "Материалы для навигатора",
+  "materialsHint": "Навигатор ищет ответы студентам только в этих материалах и ссылается на них.",
+  "materialsEmpty": "Материалов пока нет",
+  "materialsAdd": "Добавить материал",
+  "materialTitle": "Название",
+  "materialReference": "Запись источника",
+  "materialUrl": "Ссылка",
+  "materialText": "Текст",
+  "materialImport": "Загрузить .txt или .md",
+  "materialIndexing": "Индексируется: {done} из {total}",
+  "@materialIndexing": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "materialReady": "Готов, фрагментов: {count}",
+  "@materialReady": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "materialDelete": "Удалить материал",
+  "materialDeleteConfirm": "Удалить «{title}»?",
+  "@materialDeleteConfirm": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "assignmentNavigator": "Навигатор в этом задании",
+  "navigatorModeCourse": "Как в курсе",
+  "navigatorModeStudyShort": "Учебный",
+  "navigatorModeProjectShort": "Проектный",
+  "errorNavigatorUnavailable": "Навигатор в вашем вузе ещё не подключён.",
+  "errorNavigatorFailed": "Модель вуза не ответила. Попробуйте ещё раз.",
+  "errorDialogNotFound": "Диалог не найден.",
+  "errorScopeNotFound": "Задание или курс недоступны.",
+  "errorInvalidMessage": "Вопрос пустой или слишком длинный.",
+  "errorInvalidMaterial": "Нужны название и текст. Ссылка должна начинаться с http.",
+  "errorMaterialNotFound": "Материал не найден."
 }

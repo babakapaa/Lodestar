@@ -1,5 +1,6 @@
 import 'grading.dart';
 import 'map_rules.dart';
+import 'navigator_mode.dart';
 
 class AssignmentInput {
   const AssignmentInput({
@@ -11,6 +12,7 @@ class AssignmentInput {
     required this.published,
     required this.files,
     this.searchMap,
+    this.navigatorMode = NavigatorMode.course,
   });
 
   final String title;
@@ -21,6 +23,7 @@ class AssignmentInput {
   final bool published;
   final List<String> files;
   final MapRules? searchMap;
+  final NavigatorMode navigatorMode;
 
   Map<String, Object?> toJson() => {
     'title': title,
@@ -31,5 +34,6 @@ class AssignmentInput {
     'published': published,
     'files': files,
     'searchMap': searchMap?.toJson(),
+    'navigatorMode': navigatorMode.wire,
   };
 }

@@ -12,7 +12,11 @@ import (
 const refundWindow = 5 * time.Minute
 
 func (s Service) end(ctx context.Context, tx pgx.Tx, r Run, e runEnd) error {
-	e.charged = r.cost(e.at)
+	t, err := s.tariff(ctx, tx)
+	if err != nil {
+		return err
+	}
+	e.charged = r.cost(e.at, t)
 	if e.status == RunFailed && r.StartedAt != nil && r.used(e.at) < refundWindow {
 		e.charged, e.refunded = 0, true
 	}

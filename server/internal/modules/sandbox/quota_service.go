@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"slices"
+	"time"
 
 	"github.com/jackc/pgx/v5"
 
@@ -41,7 +42,22 @@ func (s Service) quota(ctx context.Context, tx pgx.Tx, t Term, userID string) (Q
 	if err != nil {
 		return Quota{}, err
 	}
-	return Quota{Term: &t, Lines: lines, Hours: total(lines), Reserved: reserved, Teams: teams}, nil
+	q := Quota{Term: &t, Lines: lines, Hours: total(lines), Reserved: reserved, Teams: teams}
+	q.Spent, q.Forecast = pace(t, lines, time.Now())
+	return q, nil
+}
+
+func pace(t Term, lines []QuotaLine, now time.Time) (float64, float64) {
+	var spent float64
+	for _, l := range lines {
+		if l.Source == SourceRun {
+			spent -= l.Hours
+		}
+	}
+	from, to := t.bounds()
+	elapsed := max(now.Sub(from).Hours()/24, 1)
+	left := max(to.Sub(now).Hours()/24, 0)
+	return hours(spent), hours(total(lines) - spent/elapsed*left)
 }
 
 func (s Service) userLines(ctx context.Context, tx pgx.Tx, t Term, userID string) ([]QuotaLine, error) {

@@ -10,6 +10,7 @@ type TemplateInput struct {
 	About    string `json:"about"`
 	Image    string `json:"image"`
 	Archived bool   `json:"archived"`
+	Starter  bool   `json:"starter"`
 }
 
 func (in TemplateInput) normalized() (TemplateInput, error) {

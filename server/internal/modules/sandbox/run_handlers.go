@@ -38,3 +38,10 @@ func (h StopRunHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	run, err := h.service.StopRun(r.Context(), principal(r), r.PathValue("id"))
 	respond(w, http.StatusOK, run, err)
 }
+
+type RerunHandler struct{ service Service }
+
+func (h RerunHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	run, err := h.service.RerunRun(r.Context(), principal(r), r.PathValue("id"))
+	respond(w, http.StatusCreated, run, err)
+}

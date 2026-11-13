@@ -36,6 +36,8 @@ const (
 	CodeRunNotFound     = "run_not_found"
 	CodeRunEnded        = "run_ended"
 	CodeRunNotHeld      = "run_not_held"
+	CodeRunActive       = "run_active"
+	CodeStarterBusy     = "starter_busy"
 )
 
 var errorCodes = []struct {
@@ -69,6 +71,8 @@ var errorCodes = []struct {
 	{ErrRunNotFound, http.StatusNotFound, CodeRunNotFound},
 	{ErrRunEnded, http.StatusConflict, CodeRunEnded},
 	{ErrRunNotHeld, http.StatusConflict, CodeRunNotHeld},
+	{ErrRunActive, http.StatusConflict, CodeRunActive},
+	{ErrStarterBusy, http.StatusConflict, CodeStarterBusy},
 }
 
 func writeError(w http.ResponseWriter, err error) {

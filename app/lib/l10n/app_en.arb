@@ -1274,7 +1274,7 @@
   "setupProtocol": "Setup protocol",
   "setupProtocolSigned": "Version {version}, signed",
   "setupProtocolUnsigned": "Not signed",
-  "setupDownload": "Download",
+  "setupDownload": "Download Markdown",
   "setupSign": "Sign",
   "setupBanner": "The university is not launched yet. Students and teachers will see the app after the launch.",
   "setupOpen": "Open the wizard",
@@ -1354,5 +1354,6 @@
   "lessonNote": "Note for students",
   "errorInvalidSeries": "Check the time, length and dates",
   "errorInvalidChange": "The class change is not valid",
-  "errorSeriesNotFound": "Class not found"
+  "errorSeriesNotFound": "Class not found",
+  "setupDownloadPdf": "Download PDF"
 }

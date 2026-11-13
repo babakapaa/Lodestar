@@ -33,7 +33,7 @@ func NewCore(pool *pgxpool.Pool, registry *module.Registry, box secretbox.Box) (
 	if err != nil {
 		return Core{}, err
 	}
-	notifications, err := notify.NewCatalog(registry.NotificationTypes()...)
+	notifications, err := notify.NewCatalog(NotificationTypes(registry)...)
 	if err != nil {
 		return Core{}, err
 	}

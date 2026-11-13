@@ -1,6 +1,7 @@
 package setup_test
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -9,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/babakapaa/lodestar/server/internal/core/access"
 	"github.com/babakapaa/lodestar/server/internal/core/audit"
@@ -48,6 +50,8 @@ type world struct {
 	admin     auth.Principal
 	lonely    int
 	count     int
+	pool      *pgxpool.Pool
+	sent      *sentNotifications
 }
 
 func newWorld(t *testing.T) *world {
@@ -83,9 +87,12 @@ func newWorld(t *testing.T) *world {
 	}
 	tx := database.NewTenantTx(pool)
 	acc := access.NewService(tx, catalog, structure.Tree{})
-	w := &world{t: t, ctx: ctx, tenant: created.ID, users: identity.NewStore(tx), access: acc, structure: structure.NewService(tx, acc)}
+	w := &world{
+		t: t, ctx: ctx, tenant: created.ID, users: identity.NewStore(tx), access: acc, structure: structure.NewService(tx, acc),
+		pool: pool, sent: &sentNotifications{},
+	}
 	w.settings = settings.NewService(tx, acc, defs, registry)
-	w.setup = setup.NewService(tx, acc, w.settings, lonelyCourses{count: &w.lonely})
+	w.setup = setup.NewService(tx, acc, w.settings, w.sent, lonelyCourses{count: &w.lonely})
 	w.admin = w.user()
 	if _, err := access.NewBootstrap(tx).GrantTopRole(ctx, w.tenant, w.admin.UserID); err != nil {
 		t.Fatalf("grant: %v", err)
@@ -224,6 +231,9 @@ func TestWizardFromDelegationToLaunch(t *testing.T) {
 	protocol, err := w.setup.Protocol(w.ctx, lawyer)
 	if text := protocol.Markdown(); err != nil || !strings.Contains(text, "Основание: Приказ ректора №1") || !strings.Contains(text, "версия 1") {
 		t.Fatalf("protocol = %s, %v", text, err)
+	}
+	if doc, err := protocol.PDF(); err != nil || !bytes.HasPrefix(doc, []byte("%PDF-")) {
+		t.Fatalf("pdf = %d bytes, %v", len(doc), err)
 	}
 	if _, err := w.setup.Answer(w.ctx, lawyer, "recording", setup.AnswerInput{Answer: "Только с согласия", Basis: "Приказ №2"}); err != nil {
 		t.Fatalf("change answer: %v", err)

@@ -62,6 +62,33 @@ func (Store) PutSection(ctx context.Context, tx pgx.Tx, s SectionState, by strin
 	return nil
 }
 
+func (Store) DueSoon(ctx context.Context, tx pgx.Tx, from, to string) ([]SectionState, error) {
+	rows, err := tx.Query(ctx, `
+		SELECT section, assignee_id::text, to_char(due_on, 'YYYY-MM-DD') FROM core.setup_sections
+		WHERE assignee_id IS NOT NULL AND status <> 'approved' AND due_on BETWEEN $1::date AND $2::date
+			AND reminded_on IS DISTINCT FROM due_on
+		ORDER BY section`, from, to)
+	if err != nil {
+		return nil, fmt.Errorf("read due sections: %w", err)
+	}
+	out, err := pgx.CollectRows(rows, func(row pgx.CollectableRow) (SectionState, error) {
+		var s SectionState
+		err := row.Scan(&s.Key, &s.AssigneeID, &s.DueOn)
+		return s, err
+	})
+	if err != nil {
+		return nil, fmt.Errorf("read due sections: %w", err)
+	}
+	return out, nil
+}
+
+func (Store) MarkReminded(ctx context.Context, tx pgx.Tx, key, due string) error {
+	if _, err := tx.Exec(ctx, `UPDATE core.setup_sections SET reminded_on = $2::date WHERE section = $1`, key, due); err != nil {
+		return fmt.Errorf("mark reminded: %w", err)
+	}
+	return nil
+}
+
 func (Store) ClearAssignees(ctx context.Context, tx pgx.Tx) error {
 	if _, err := tx.Exec(ctx, `UPDATE core.setup_sections SET assignee_id = NULL, due_on = NULL`); err != nil {
 		return fmt.Errorf("clear assignees: %w", err)

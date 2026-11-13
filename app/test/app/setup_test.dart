@@ -10,7 +10,11 @@ void main() {
   testWidgets('the owner goes through the wizard and launches', (tester) async {
     final server = FakeServer()..permissions = ['core.administrator'];
     server.setup.launched = false;
-    await pumpApp(tester, size: const Size(390, 1600), server: server);
+    final app = await pumpApp(
+      tester,
+      size: const Size(390, 1600),
+      server: server,
+    );
 
     expect(find.textContaining('Вуз ещё не запущен'), findsOneWidget);
     await openAdmin(tester, 'Мастер установки');
@@ -42,6 +46,9 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('setup-sign')));
     await tester.pumpAndSettle();
     expect(find.text('Версия 1, подписан'), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('setup-protocol-pdf')));
+    await tester.pumpAndSettle();
+    expect(app.saver.saved.keys, contains('protocol.pdf'));
     await tester.ensureVisible(find.byKey(const ValueKey('setup-approve')));
     await tester.tap(find.byKey(const ValueKey('setup-approve')));
     await tester.pumpAndSettle();

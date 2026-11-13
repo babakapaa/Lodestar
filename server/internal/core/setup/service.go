@@ -21,13 +21,14 @@ type Service struct {
 	tenants  database.TenantTx
 	access   access.Service
 	settings SettingsWriter
+	notifier module.Notifier
 	sources  []module.ReadinessSource
 	store    Store
 	log      audit.Log
 }
 
-func NewService(tenants database.TenantTx, acc access.Service, settings SettingsWriter, sources ...module.ReadinessSource) Service {
-	return Service{tenants: tenants, access: acc, settings: settings, sources: sources}
+func NewService(tenants database.TenantTx, acc access.Service, settings SettingsWriter, notifier module.Notifier, sources ...module.ReadinessSource) Service {
+	return Service{tenants: tenants, access: acc, settings: settings, notifier: notifier, sources: sources}
 }
 
 func (s Service) Begin(ctx context.Context, tenantID string) error {
@@ -154,12 +155,20 @@ func (s Service) Assign(ctx context.Context, p auth.Principal, key string, in As
 				return ErrInvalidAssignee
 			}
 		}
+		before := sec.AssigneeID
 		sec.AssigneeID, sec.DueOn = in.UserID, in.DueOn
 		if in.UserID == nil {
 			sec.DueOn = nil
 		}
-		out, err = s.save(ctx, tx, p, sec)
-		return err
+		if out, err = s.save(ctx, tx, p, sec); err != nil {
+			return err
+		}
+		if in.UserID == nil || *in.UserID == p.UserID || (before != nil && *before == *in.UserID) {
+			return nil
+		}
+		return s.notifier.Notify(ctx, tx, p.TenantID, module.Notification{
+			Type: NotifyAssigned, UserIDs: []string{*in.UserID}, Link: sectionLink(key),
+		})
 	})
 	return out, err
 }

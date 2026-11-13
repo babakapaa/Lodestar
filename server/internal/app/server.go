@@ -32,14 +32,15 @@ import (
 )
 
 const (
-	liveRetention   = 7 * 24 * time.Hour
-	pruneEvery      = time.Hour
-	uploadDeadline  = 24 * time.Hour
-	sweepEvery      = time.Hour
-	dispatchEvery   = 5 * time.Second
-	auditPruneEvery = 24 * time.Hour
-	eraseEvery      = time.Hour
-	ltiSyncEvery    = 30 * time.Minute
+	liveRetention    = 7 * 24 * time.Hour
+	pruneEvery       = time.Hour
+	uploadDeadline   = 24 * time.Hour
+	sweepEvery       = time.Hour
+	dispatchEvery    = 5 * time.Second
+	auditPruneEvery  = 24 * time.Hour
+	eraseEvery       = time.Hour
+	ltiSyncEvery     = 30 * time.Minute
+	setupRemindEvery = time.Hour
 )
 
 type Server struct {
@@ -107,7 +108,7 @@ func NewServer(version string, cfg config.Config, box secretbox.Box, pool *pgxpo
 		PublicURL:     cfg.PublicURL,
 		AppURL:        cfg.AppURL,
 	}
-	setupService := setup.NewService(tx, accessService, settingsService, registry.ReadinessSources(kernel)...)
+	setupService := setup.NewService(tx, accessService, settingsService, kernel.Notifier, registry.ReadinessSources(kernel)...)
 	proxies, err := clientip.Parse(cfg.TrustedProxies)
 	if err != nil {
 		return Server{}, fmt.Errorf("LODESTAR_TRUSTED_PROXIES: %w", err)
@@ -134,7 +135,7 @@ func NewServer(version string, cfg config.Config, box secretbox.Box, pool *pgxpo
 		},
 	)
 	dispatcher := delivery.NewDispatcher(pool, delivery.DispatcherConfig{
-		Texts:       delivery.NewTexts(registry.NotificationTypes()...),
+		Texts:       delivery.NewTexts(NotificationTypes(registry)...),
 		Preferences: profileService,
 		Settings:    settingsService,
 		Directory:   identity.Store{},
@@ -150,6 +151,7 @@ func NewServer(version string, cfg config.Config, box secretbox.Box, pool *pgxpo
 		audit.NewPruner(pool, settingsService, auditPruneEvery),
 		privacy.NewAccountEraser(pool, sections, eraseEvery),
 		lti.NewSyncWorker(pool, integrations),
+		setup.NewReminder(pool, kernel.Notifier, setupRemindEvery),
 	}
 	for _, w := range registry.Workers(kernel) {
 		workers = append(workers, w)

@@ -2324,7 +2324,7 @@
     }
   },
   "setupProtocolUnsigned": "Не подписан",
-  "setupDownload": "Скачать",
+  "setupDownload": "Скачать Markdown",
   "setupSign": "Подписать",
   "setupBanner": "Вуз ещё не запущен. Студенты и преподаватели увидят приложение после запуска.",
   "setupOpen": "Открыть мастер",
@@ -2432,5 +2432,6 @@
   "lessonNote": "Комментарий для студентов",
   "errorInvalidSeries": "Проверьте время, длительность и даты",
   "errorInvalidChange": "Изменение занятия заполнено неверно",
-  "errorSeriesNotFound": "Занятие не найдено"
+  "errorSeriesNotFound": "Занятие не найдено",
+  "setupDownloadPdf": "Скачать PDF"
 }

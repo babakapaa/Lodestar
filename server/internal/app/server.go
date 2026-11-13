@@ -1,6 +1,7 @@
 package app
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
@@ -22,6 +23,7 @@ import (
 	"github.com/babakapaa/lodestar/server/internal/core/search"
 	"github.com/babakapaa/lodestar/server/internal/core/settings"
 	"github.com/babakapaa/lodestar/server/internal/core/structure"
+	"github.com/babakapaa/lodestar/server/internal/platform/clientip"
 	"github.com/babakapaa/lodestar/server/internal/platform/config"
 	"github.com/babakapaa/lodestar/server/internal/platform/database"
 	"github.com/babakapaa/lodestar/server/internal/platform/secretbox"
@@ -78,6 +80,7 @@ func NewServer(version string, cfg config.Config, box secretbox.Box, pool *pgxpo
 	kernel.Teams = registry.TeamDirectory(kernel)
 	kernel.Rosters = registry.Rosters(kernel)
 	kernel.GPU = registry.GPUSources(kernel)
+	kernel.Lessons = registry.LessonSource(kernel)
 	sources := append([]search.Source{profile.PeopleSource{}, structure.UnitsSource{}}, registry.SearchSources()...)
 	searchService, err := search.NewService(tx, settingsService, sources...)
 	if err != nil {
@@ -100,6 +103,10 @@ func NewServer(version string, cfg config.Config, box secretbox.Box, pool *pgxpo
 		SyncEvery:     ltiSyncEvery,
 		PublicURL:     cfg.PublicURL,
 		AppURL:        cfg.AppURL,
+	}
+	proxies, err := clientip.Parse(cfg.TrustedProxies)
+	if err != nil {
+		return Server{}, fmt.Errorf("LODESTAR_TRUSTED_PROXIES: %w", err)
 	}
 	handler := NewRouter(version, registry, pool, settings.NewGate(settingsService, authn), kernel,
 		authRoutes,
@@ -145,7 +152,7 @@ func NewServer(version string, cfg config.Config, box secretbox.Box, pool *pgxpo
 		workers = append(workers, files.NewSweeper(pool, ext.Storage, uploadDeadline, sweepEvery))
 	}
 	return Server{
-		Handler:    handler,
+		Handler:    proxies.Wrap(handler),
 		Workers:    workers,
 		OnShutdown: []func(){hub.Close},
 	}, nil

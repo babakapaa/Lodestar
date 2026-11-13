@@ -47,6 +47,8 @@ tags:
     description: Лига курса, дивизионы и споры о баллах
   - name: sandbox
     description: Песочница GPU, квоты в GPU-часах и запуски
+  - name: attendance
+    description: Посещаемость занятий по QR, коду и списку
 paths:
   /healthz:
     get:
@@ -7536,6 +7538,362 @@ paths:
           $ref: "#/components/responses/Error"
         default:
           $ref: "#/components/responses/Error"
+  /v1/attendance/lessons/{series}/{date}/open:
+    post:
+      tags: [attendance]
+      operationId: openAttendance
+      summary: Открыть отметку на занятии
+      description: Отметку открывает преподаватель занятия или тот, у кого есть право attendance.manage. Повторный вызов снова открывает закрытую отметку и выдаёт новый код.
+      security:
+        - bearer: []
+      parameters:
+        - name: series
+          in: path
+          required: true
+          description: Серия занятий из расписания
+          schema:
+            type: string
+        - name: date
+          in: path
+          required: true
+          description: День занятия, YYYY-MM-DD
+          schema:
+            type: string
+            format: date
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AttendanceSession"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/attendance/sessions/{id}:
+    get:
+      tags: [attendance]
+      operationId: getAttendanceSession
+      summary: Отметка на занятии со списком студентов
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AttendanceSession"
+        "401":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/attendance/sessions/{id}/qr:
+    get:
+      tags: [attendance]
+      operationId: getAttendanceQR
+      summary: Текущий QR для экрана в аудитории
+      description: Токен меняется каждые 15 секунд, предыдущий тоже принимается. Приложение кодирует в QR ссылку /attend?s={id}&t={token}.
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AttendanceQR"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/attendance/sessions/{id}/code:
+    post:
+      tags: [attendance]
+      operationId: refreshAttendanceCode
+      summary: Новый код из 4 цифр на 2 минуты
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AttendanceSession"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/attendance/sessions/{id}/marks/{user}:
+    put:
+      tags: [attendance]
+      operationId: markAttendance
+      summary: Отметить студента по списку или исправить отметку
+      description: Пока отметка открыта, способ list. После закрытия исправление записывается как manual и попадает в журнал аудита. Пустой status снимает отметку.
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+        - name: user
+          in: path
+          required: true
+          description: Студент
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AttendanceMarkInput"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AttendanceSession"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/attendance/sessions/{id}/close:
+    post:
+      tags: [attendance]
+      operationId: closeAttendance
+      summary: Закрыть отметку
+      description: Кто не отметился, получает отметку absent.
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AttendanceSession"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/attendance/check:
+    post:
+      tags: [attendance]
+      operationId: checkAttendance
+      summary: Студент отмечается по QR или коду
+      description: Если вуз задал attendance.networks, отметка работает только из сети вуза. После 5 неверных кодов за 10 минут сервер отвечает 429. Геолокация не используется.
+      security:
+        - bearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AttendanceCheckInput"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AttendanceCheck"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        "429":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/attendance/open:
+    get:
+      tags: [attendance]
+      operationId: openAttendanceLessons
+      summary: Открытые отметки на моих занятиях
+      security:
+        - bearer: []
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AttendanceOpenLesson"
+        "401":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/attendance/mine:
+    get:
+      tags: [attendance]
+      operationId: myAttendance
+      summary: Мои отметки
+      security:
+        - bearer: []
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AttendanceMyMark"
+        "401":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/attendance/courses/{id}:
+    get:
+      tags: [attendance]
+      operationId: courseAttendance
+      summary: Журнал посещаемости курса
+      description: Видят преподаватели курса и те, у кого есть право attendance.manage. Студенты, пропустившие подряд attendance.absent_alert занятий, помечены longAbsent. Студентам об этом ничего не отправляется.
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+        - name: from
+          in: query
+          required: false
+          description: Начало, по умолчанию 120 дней назад
+          schema:
+            type: string
+            format: date
+        - name: to
+          in: query
+          required: false
+          description: Конец, по умолчанию сегодня
+          schema:
+            type: string
+            format: date
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CourseAttendance"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/attendance/courses/{id}/export:
+    get:
+      tags: [attendance]
+      operationId: exportCourseAttendance
+      summary: Выгрузка журнала посещаемости для ведомости
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+        - name: from
+          in: query
+          required: false
+          description: Начало
+          schema:
+            type: string
+            format: date
+        - name: to
+          in: query
+          required: false
+          description: Конец
+          schema:
+            type: string
+            format: date
+        - name: format
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [csv, xlsx]
+      responses:
+        "200":
+          description: Таблица
+          content:
+            text/csv:
+              schema:
+                type: string
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema:
+                type: string
+                format: binary
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
 components:
   securitySchemes:
     bearer:
@@ -11767,3 +12125,232 @@ components:
           type: integer
         enough:
           type: boolean
+    AttendanceStatus:
+      type: string
+      enum: [present, late, absent, excused]
+    AttendanceMethod:
+      type: string
+      enum: [qr, code, list, manual]
+    AttendanceMethods:
+      type: object
+      required: [qr, code]
+      properties:
+        qr:
+          type: boolean
+        code:
+          type: boolean
+    AttendanceCounts:
+      type: object
+      required: [present, late, absent, excused, unmarked]
+      properties:
+        present:
+          type: integer
+        late:
+          type: integer
+        absent:
+          type: integer
+        excused:
+          type: integer
+        unmarked:
+          type: integer
+    AttendanceMark:
+      type: object
+      required: [userId, name, status, method, markedAt]
+      properties:
+        userId:
+          type: string
+        name:
+          type: string
+        status:
+          oneOf:
+            - $ref: "#/components/schemas/AttendanceStatus"
+            - type: "null"
+        method:
+          oneOf:
+            - $ref: "#/components/schemas/AttendanceMethod"
+            - type: "null"
+        markedAt:
+          type: [string, "null"]
+          format: date-time
+    AttendanceSession:
+      type: object
+      required: [id, seriesId, date, courseId, courseTitle, room, startsAt, endsAt, open, methods, counts, marks]
+      properties:
+        id:
+          type: string
+        seriesId:
+          type: string
+        date:
+          type: string
+          format: date
+        courseId:
+          type: string
+        courseTitle:
+          type: string
+        room:
+          type: string
+        startsAt:
+          type: string
+          format: date-time
+        endsAt:
+          type: string
+          format: date-time
+        open:
+          type: boolean
+        code:
+          type: string
+          description: Код из 4 цифр, есть пока отметка открыта и способ включён
+        codeUntil:
+          type: string
+          format: date-time
+        methods:
+          $ref: "#/components/schemas/AttendanceMethods"
+        counts:
+          $ref: "#/components/schemas/AttendanceCounts"
+        marks:
+          type: array
+          items:
+            $ref: "#/components/schemas/AttendanceMark"
+    AttendanceQR:
+      type: object
+      required: [token, expiresAt]
+      properties:
+        token:
+          type: string
+        expiresAt:
+          type: string
+          format: date-time
+    AttendanceMarkInput:
+      type: object
+      properties:
+        status:
+          oneOf:
+            - $ref: "#/components/schemas/AttendanceStatus"
+            - type: "null"
+    AttendanceCheckInput:
+      type: object
+      description: Либо sessionId и token из QR, либо code из 4 цифр
+      properties:
+        sessionId:
+          type: string
+        token:
+          type: string
+        code:
+          type: string
+          pattern: "^[0-9]{4}$"
+    AttendanceCheck:
+      type: object
+      required: [sessionId, courseTitle, startsAt, status]
+      properties:
+        sessionId:
+          type: string
+        courseTitle:
+          type: string
+        startsAt:
+          type: string
+          format: date-time
+        status:
+          $ref: "#/components/schemas/AttendanceStatus"
+    AttendanceOpenLesson:
+      type: object
+      required: [sessionId, courseTitle, room, startsAt, endsAt, status, methods]
+      properties:
+        sessionId:
+          type: string
+        courseTitle:
+          type: string
+        room:
+          type: string
+        startsAt:
+          type: string
+          format: date-time
+        endsAt:
+          type: string
+          format: date-time
+        status:
+          oneOf:
+            - $ref: "#/components/schemas/AttendanceStatus"
+            - type: "null"
+        methods:
+          $ref: "#/components/schemas/AttendanceMethods"
+    AttendanceMyMark:
+      type: object
+      required: [sessionId, courseId, courseTitle, startsAt, status, method]
+      properties:
+        sessionId:
+          type: string
+        courseId:
+          type: string
+        courseTitle:
+          type: string
+        startsAt:
+          type: string
+          format: date-time
+        status:
+          $ref: "#/components/schemas/AttendanceStatus"
+        method:
+          $ref: "#/components/schemas/AttendanceMethod"
+    AttendanceLesson:
+      type: object
+      required: [seriesId, date, startsAt, room, cancelled, sessionId, open, counts]
+      properties:
+        seriesId:
+          type: string
+        date:
+          type: string
+          format: date
+        startsAt:
+          type: string
+          format: date-time
+        room:
+          type: string
+        cancelled:
+          type: boolean
+        sessionId:
+          type: [string, "null"]
+        open:
+          type: boolean
+        counts:
+          $ref: "#/components/schemas/AttendanceCounts"
+    AttendanceStudent:
+      type: object
+      required: [userId, name, counts, rate, streak, longAbsent]
+      properties:
+        userId:
+          type: string
+        name:
+          type: string
+        counts:
+          $ref: "#/components/schemas/AttendanceCounts"
+        rate:
+          type: [number, "null"]
+          description: Доля занятий с отметкой present или late, без уважительных
+        streak:
+          type: integer
+          description: Пропусков подряд на последних закрытых занятиях
+        longAbsent:
+          type: boolean
+    CourseAttendance:
+      type: object
+      required: [courseId, courseTitle, from, to, absentAlert, lessons, students]
+      properties:
+        courseId:
+          type: string
+        courseTitle:
+          type: string
+        from:
+          type: string
+          format: date
+        to:
+          type: string
+          format: date
+        absentAlert:
+          type: integer
+        lessons:
+          type: array
+          items:
+            $ref: "#/components/schemas/AttendanceLesson"
+        students:
+          type: array
+          items:
+            $ref: "#/components/schemas/AttendanceStudent"

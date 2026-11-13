@@ -58,6 +58,8 @@ abstract final class AppRoutes {
 
   static String dialog(String id) => '/navigator/dialogs/$id';
 
+  static String chat(String id) => '/chats/$id';
+
   static String newDialog({String? scopeKind, String? scopeId}) => Uri(
     path: dialogNew,
     queryParameters: scopeKind == null || scopeId == null

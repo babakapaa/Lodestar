@@ -7,6 +7,8 @@ import 'package:lodestar/core/api/token_pair.dart';
 import 'package:lodestar/core/auth/auth_providers.dart';
 import 'package:lodestar/core/live/live_providers.dart';
 import 'package:lodestar/core/settings/settings_providers.dart';
+import 'package:lodestar/features/chats/chats_database.dart';
+import 'package:lodestar/features/chats/chats_providers.dart';
 import 'package:lodestar/features/notes/notes_database.dart';
 import 'package:lodestar/features/notes/notes_providers.dart';
 import 'package:lodestar/core/files/files_providers.dart';
@@ -68,6 +70,16 @@ Future<AppHarness> pumpApp(
         fileOpenerProvider.overrideWithValue(opener),
         notesDatabaseProvider.overrideWith((ref) {
           final db = NotesDatabase(
+            DatabaseConnection(
+              NativeDatabase.memory(),
+              closeStreamsSynchronously: true,
+            ),
+          );
+          ref.onDispose(db.close);
+          return db;
+        }),
+        chatsDatabaseProvider.overrideWith((ref) {
+          final db = ChatsDatabase(
             DatabaseConnection(
               NativeDatabase.memory(),
               closeStreamsSynchronously: true,

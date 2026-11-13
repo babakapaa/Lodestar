@@ -9,6 +9,7 @@ import '../core/auth/auth_providers.dart';
 import '../core/auth/auth_state.dart';
 import '../core/settings/settings_providers.dart';
 import '../design/lodestar_theme.dart';
+import '../features/chats/chats_providers.dart';
 import '../features/notes/notes_providers.dart';
 import '../design/tokens/motion.dart';
 import '../l10n/generated/app_localizations.dart';
@@ -39,6 +40,7 @@ class _LodestarAppState extends ConsumerState<LodestarApp> {
           previous != null &&
           previous is! Disconnected) {
         ref.read(notesStoreProvider).clear();
+        ref.read(chatsStoreProvider).clear();
       }
     }, fireImmediately: true);
   }

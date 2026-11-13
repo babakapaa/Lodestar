@@ -29,3 +29,7 @@ final materialsProvider = FutureProvider.autoDispose
     .family<Loaded<List<CourseMaterial>>, String>(
       (ref, courseId) => ref.watch(navigatorApiProvider).materials(courseId),
     );
+
+final supportProvider = FutureProvider.autoDispose<String>(
+  (ref) => ref.watch(navigatorApiProvider).support(),
+);

@@ -730,5 +730,46 @@
   "errorScopeNotFound": "Задание или курс недоступны.",
   "errorInvalidMessage": "Вопрос пустой или слишком длинный.",
   "errorInvalidMaterial": "Нужны название и текст. Ссылка должна начинаться с http.",
-  "errorMaterialNotFound": "Материал не найден."
+  "errorMaterialNotFound": "Материал не найден.",
+  "navigatorModeClosedShort": "Закрыт на контрольную",
+  "navigatorModeClosed": "Навигатор закрыт преподавателем на время контрольной",
+  "mapFromJournal": "Взять запросы из журнала поиска",
+  "mapJournalEmpty": "В журнале нет новых запросов по этому заданию",
+  "journalTitle": "Журнал поиска",
+  "journalEnabled": "Вести журнал поиска",
+  "journalHint": "Вопросы к навигатору и найденные источники. Видны только вам, их можно взять в карту поиска.",
+  "journalEmpty": "Журнал пока пуст",
+  "journalDelete": "Удалить запись",
+  "letterTitle": "Написать преподавателю",
+  "letterHint": "Черновик собран из диалога. Допишите, где застряли, и отправьте преподавателю удобным способом.",
+  "letterCopy": "Скопировать письмо",
+  "letterCopied": "Письмо скопировано",
+  "letterGreeting": "Здравствуйте!",
+  "letterAssignment": "Я работаю над заданием «{title}» по курсу «{course}».",
+  "@letterAssignment": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "course": {
+        "type": "String"
+      }
+    }
+  },
+  "letterCourse": "У меня вопрос по курсу «{title}».",
+  "@letterCourse": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "letterQuestion": "Мой вопрос:",
+  "letterTried": "Что я уже выяснял:",
+  "letterSources": "Источники, которые я нашёл:",
+  "letterStuck": "Где я застрял: ",
+  "letterThanks": "Спасибо!",
+  "supportTitle": "Мне тяжело",
+  "supportBody": "Это нормально. Здесь люди, которые могут помочь прямо сейчас.",
+  "supportFallback": "Вуз пока не указал контакты. Если вам угрожает опасность, звоните в местную экстренную службу."
 }

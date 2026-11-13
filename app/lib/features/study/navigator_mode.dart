@@ -1,11 +1,13 @@
 enum NavigatorMode {
   course,
   study,
-  project;
+  project,
+  closed;
 
   static NavigatorMode parse(Object? value) => switch (value) {
     'study' => study,
     'project' => project,
+    'closed' => closed,
     _ => course,
   };
 

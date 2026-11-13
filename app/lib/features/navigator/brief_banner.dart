@@ -25,7 +25,11 @@ class BriefBanner extends StatelessWidget {
         ),
         const SizedBox(height: Spacing.xs),
         Text(
-          brief.project ? l10n.navigatorModeProject : l10n.navigatorModeStudy,
+          brief.closed
+              ? l10n.navigatorModeClosed
+              : brief.project
+              ? l10n.navigatorModeProject
+              : l10n.navigatorModeStudy,
           style: textTheme.bodySmall!.copyWith(color: context.palette.muted),
         ),
       ],

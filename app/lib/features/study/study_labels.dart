@@ -24,6 +24,7 @@ class StudyLabels {
     NavigatorMode.course => _l10n.navigatorModeCourse,
     NavigatorMode.study => _l10n.navigatorModeStudyShort,
     NavigatorMode.project => _l10n.navigatorModeProjectShort,
+    NavigatorMode.closed => _l10n.navigatorModeClosedShort,
   };
 
   String grading(Grading grading) => switch (grading) {

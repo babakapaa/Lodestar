@@ -62,6 +62,12 @@ class NavigatorApi {
   Future<void> deleteMaterial(String id) =>
       _api.delete('/v1/navigator/materials/${Uri.encodeComponent(id)}');
 
+  Future<String> support() async {
+    final body = await _api.get('/v1/navigator/support');
+    return ((body! as Map<String, Object?>)['contacts'] as String? ?? '')
+        .trim();
+  }
+
   static String _dialog(String id) =>
       '/v1/navigator/dialogs/${Uri.encodeComponent(id)}';
 

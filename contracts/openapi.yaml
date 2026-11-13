@@ -8553,11 +8553,15 @@ components:
                 - type: "null"
     LeagueTaskDetails:
       type: object
-      required: [task, league, role, solutions]
+      required: [task, league, kind, originId, role, solutions, people]
       properties:
         task:
           $ref: "#/components/schemas/LeagueTask"
         league:
+          type: string
+        kind:
+          type: string
+        originId:
           type: string
         role:
           type: string
@@ -8566,6 +8570,10 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/LeagueSolutionRow"
+        people:
+          type: array
+          items:
+            $ref: "#/components/schemas/Person"
     LeagueReviewInput:
       type: object
       required: [points, passed]

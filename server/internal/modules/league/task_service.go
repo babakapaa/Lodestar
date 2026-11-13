@@ -2,6 +2,7 @@ package league
 
 import (
 	"context"
+	"slices"
 
 	"github.com/jackc/pgx/v5"
 
@@ -80,7 +81,8 @@ func (s Service) Task(ctx context.Context, p auth.Principal, id string) (TaskDet
 		if err != nil {
 			return err
 		}
-		d = TaskDetails{Task: t, League: r.Title, Role: role, Solutions: []SolutionRow{}}
+		d = TaskDetails{Task: t, League: r.Title, Kind: r.Kind, OriginID: r.ID, Role: role, Solutions: []SolutionRow{}}
+		var members []string
 		for _, sol := range list {
 			if role == RoleStudent && !sol.has(p.UserID) {
 				continue
@@ -94,8 +96,11 @@ func (s Service) Task(ctx context.Context, p auth.Principal, id string) (TaskDet
 				row.Similar = &similar
 			}
 			d.Solutions = append(d.Solutions, row)
+			members = append(members, sol.Members...)
 		}
-		return nil
+		slices.Sort(members)
+		d.People, err = s.people.ByIDs(ctx, tx, slices.Compact(members))
+		return err
 	})
 	return d, err
 }

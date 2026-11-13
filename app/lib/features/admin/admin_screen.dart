@@ -82,6 +82,16 @@ class AdminScreen extends ConsumerWidget {
                     trailing: const Icon(Icons.chevron_right),
                     onTap: () => context.push(AppRoutes.chatReports),
                   ),
+                if (permissions.has(PermissionSet.manageAwards))
+                  ListTile(
+                    key: const ValueKey('admin-awards'),
+                    contentPadding: EdgeInsets.zero,
+                    leading: const Icon(Icons.emoji_events_outlined),
+                    title: Text(l10n.awardsTitle),
+                    subtitle: Text(l10n.awardsHint),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => context.push(AppRoutes.awards),
+                  ),
               ],
             ),
           ),

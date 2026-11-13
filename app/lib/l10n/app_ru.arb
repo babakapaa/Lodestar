@@ -1197,5 +1197,304 @@
   "errorNotInvited": "Приглашение не найдено",
   "errorLeavePending": "Просьба о выходе уже отправлена",
   "errorTeamWork": "Эту работу сдаёт команда",
-  "errorTeamAi": "Подбор сейчас недоступен"
+  "errorTeamAi": "Подбор сейчас недоступен",
+  "leagueTitle": "Лига",
+  "leagueHint": "Дивизионы, баллы и задачи курса",
+  "leagueSeason": "Сезон {number}",
+  "@leagueSeason": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "leaguePoints": "{points} баллов",
+  "@leaguePoints": {
+    "placeholders": {
+      "points": {
+        "type": "int"
+      }
+    }
+  },
+  "leaguePlus": "+{points}",
+  "@leaguePlus": {
+    "placeholders": {
+      "points": {
+        "type": "int"
+      }
+    }
+  },
+  "leagueToNext": "До дивизиона «{division}»: {points}",
+  "@leagueToNext": {
+    "placeholders": {
+      "points": {
+        "type": "int"
+      },
+      "division": {
+        "type": "String"
+      }
+    }
+  },
+  "leagueTopDivision": "Высший дивизион",
+  "leagueGrowth": "рост +{points} к прошлому сезону",
+  "@leagueGrowth": {
+    "placeholders": {
+      "points": {
+        "type": "int"
+      }
+    }
+  },
+  "leagueNoGrowth": "без роста к прошлому сезону",
+  "leagueGpuHours": "{hours} ч GPU",
+  "@leagueGpuHours": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+  "leagueShownAs": "В таблице: {display}",
+  "@leagueShownAs": {
+    "placeholders": {
+      "display": {
+        "type": "String"
+      }
+    }
+  },
+  "leagueDisplayTitle": "Как вас показывать",
+  "leagueDisplayHint": "Таблицу видят только участники вашего дивизиона.",
+  "leagueDisplayName": "по имени",
+  "leagueDisplayHidden": "скрыто",
+  "leagueDisplayNickname": "под ником",
+  "leagueNickname": "Ник",
+  "leagueTable": "Дивизион «{division}»",
+  "@leagueTable": {
+    "placeholders": {
+      "division": {
+        "type": "String"
+      }
+    }
+  },
+  "leagueYou": "{name} (вы)",
+  "@leagueYou": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "leagueTopGrowth": "лучший рост",
+  "leagueTasks": "Задачи лиги",
+  "leagueTasksNone": "Задач пока нет.",
+  "leagueTaskClosed": "закрыта",
+  "leagueEntries": "Начисления",
+  "leagueEntriesNone": "Начислений пока нет.",
+  "leagueEntryWork": "{score} из {max}, вес {weight}",
+  "@leagueEntryWork": {
+    "placeholders": {
+      "score": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      },
+      "weight": {
+        "type": "int"
+      }
+    }
+  },
+  "leagueEntryPending": "ждёт оценки",
+  "leagueEntryAdjustment": "поправка: {reason}",
+  "@leagueEntryAdjustment": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "leagueEntryTask": "задача лиги",
+  "leagueDispute": "Оспорить",
+  "leagueDisputeText": "Что не так",
+  "leagueDisputes": "Споры",
+  "leagueDisputeOpen": "ждёт ответа",
+  "leagueDisputeAccepted": "принят",
+  "leagueDisputeRejected": "отклонён",
+  "leagueDisputeAnswer": "Ответ на спор",
+  "leagueAnswer": "Ответ",
+  "leagueAnswerPoints": "Поправка баллов",
+  "leagueAccept": "Принять",
+  "leagueReject": "Отклонить",
+  "leagueMoves": "Переходы",
+  "leaguePendingMoves": "Переходы на подтверждение",
+  "leagueMoveUp": "из «{from}» в «{to}»",
+  "@leagueMoveUp": {
+    "placeholders": {
+      "from": {
+        "type": "String"
+      },
+      "to": {
+        "type": "String"
+      }
+    }
+  },
+  "leagueMoveDown": "из «{from}» в «{to}»",
+  "@leagueMoveDown": {
+    "placeholders": {
+      "from": {
+        "type": "String"
+      },
+      "to": {
+        "type": "String"
+      }
+    }
+  },
+  "leagueMovePending": "ждёт подтверждения",
+  "leagueMoveApplied": "применён",
+  "leagueMoveRejected": "отклонён",
+  "leagueMoveReverted": "отменён",
+  "leagueAwards": "Награды",
+  "leagueAwardsNone": "Наград пока нет.",
+  "leagueRevoke": "Отозвать",
+  "leagueFormula": "Как считаются баллы",
+  "leagueFormulaHint": "Баллы = доля оценки × вес работы.",
+  "leagueWeight": "вес {weight}",
+  "@leagueWeight": {
+    "placeholders": {
+      "weight": {
+        "type": "int"
+      }
+    }
+  },
+  "leagueRules": "Правила лиги",
+  "leagueCloseSeason": "Закрыть сезон",
+  "leagueCloseSeasonHint": "Баллы сезона замрут, переходы вниз встанут в очередь, новый сезон начнётся с нуля.",
+  "leagueTaskNew": "Новая задача",
+  "leagueTaskEdit": "Изменить задачу",
+  "leaguePlayers": "Участники: {count}",
+  "@leaguePlayers": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "leagueAdjust": "Поправить баллы",
+  "leagueAdjustPoints": "Баллы, можно со знаком минус",
+  "leagueAdjustReason": "Причина",
+  "leagueGrant": "Вручить награду",
+  "leagueGrantReason": "За что",
+  "leagueDivisions": "Дивизионы",
+  "leagueDivisionsHint": "С какого балла начинается дивизион и сколько часов GPU он даёт.",
+  "leagueDivisionName": "Название",
+  "leagueDivisionFrom": "С балла",
+  "leagueDivisionGpu": "Ч GPU",
+  "leagueDivisionAdd": "Добавить дивизион",
+  "leagueDivisionRemove": "Убрать дивизион",
+  "leagueConfirm": "Подтверждать переходы вверх",
+  "leagueConfirmHint": "Без подтверждения студент переходит сразу.",
+  "leagueWeightsHint": "Вес 0 исключает работу из лиги.",
+  "leagueTaskFrom": "от {partner}",
+  "@leagueTaskFrom": {
+    "placeholders": {
+      "partner": {
+        "type": "String"
+      }
+    }
+  },
+  "leagueTaskTeamHint": "Задача решается командой",
+  "leagueSolutions": "Решения: {count}",
+  "@leagueSolutions": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "leagueSolutionsNone": "Решений пока нет.",
+  "leagueSimilar": "Похоже на решение команды «{team}» по задаче «{task}» ({percent}%)",
+  "@leagueSimilar": {
+    "placeholders": {
+      "team": {
+        "type": "String"
+      },
+      "task": {
+        "type": "String"
+      },
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "leagueExplanation": "Команда объясняет: {text}",
+  "@leagueExplanation": {
+    "placeholders": {
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "leagueReviewed": "Оценено: {points}, защитили: {names}",
+  "@leagueReviewed": {
+    "placeholders": {
+      "points": {
+        "type": "int"
+      },
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "leagueNotReviewed": "Ещё не оценено",
+  "leagueReview": "Оценить",
+  "leagueReviewPoints": "Баллы",
+  "leagueReviewPassed": "Кто защитил решение",
+  "leagueReviewComment": "Комментарий",
+  "leagueExplain": "Чем решение отличается",
+  "leagueExplainText": "Объяснение для преподавателя",
+  "leagueSolutionText": "Решение",
+  "leagueSolutionLinks": "Ссылки, по одной в строке",
+  "leagueTaskTitle": "Название",
+  "leagueTaskAbout": "Описание",
+  "leagueTaskPartner": "Кто дал задачу",
+  "leagueTaskPartnerHint": "Пусто, если задача от вуза",
+  "leagueTaskPoints": "Баллы за решение",
+  "leagueTaskClose": "Задача закрыта",
+  "awardsTitle": "Награды лиги",
+  "awardsHint": "Каталог наград, которые преподаватели вручают в лигах",
+  "awardNew": "Новая награда",
+  "awardEdit": "Награда",
+  "awardTitle": "Название",
+  "awardAbout": "Описание",
+  "awardGpu": "Часы GPU",
+  "awardQuantity": "Сколько всего",
+  "awardQuantityHint": "Пусто, если без ограничения",
+  "awardArchived": "В архиве",
+  "awardGranted": "вручено: {count}",
+  "@awardGranted": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "awardGrantedOf": "вручено {count} из {total}",
+  "@awardGrantedOf": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "errorLeagueRules": "Проверьте дивизионы и веса",
+  "errorLeagueSolution": "Добавьте текст или ссылку",
+  "errorLeagueTask": "Проверьте задачу: название, баллы и размер команды от 2 до 12",
+  "errorLeagueNotFound": "Лига не найдена",
+  "errorLeagueInput": "Проверьте введённые данные",
+  "errorLeagueDisputeOpen": "Спор уже ждёт ответа",
+  "errorLeagueArchived": "Лига в архиве",
+  "errorLeagueTaskClosed": "Задача закрыта",
+  "errorAwardGone": "Награды этого вида закончились"
 }

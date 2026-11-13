@@ -13,6 +13,7 @@ abstract final class AppRoutes {
   static const people = '/admin/people';
   static const units = '/admin/units';
   static const chatReports = '/admin/chat-reports';
+  static const awards = '/admin/awards';
   static const connect = '/connect';
   static const login = '/login';
   static const schedulePath = '/study/schedule';
@@ -61,6 +62,21 @@ abstract final class AppRoutes {
   static String teamJoin(String code) => '/teams/codes/$code';
 
   static String teamScope(String kind, String id) => '/teams/scopes/$kind/$id';
+
+  static String league(String kind, String id) => '/league/$kind/$id';
+
+  static String leagueRules(String kind, String id) =>
+      '/league/$kind/$id/rules';
+
+  static String leaguePlayer(String kind, String id, String userId) =>
+      '/league/$kind/$id/players/$userId';
+
+  static String leagueTaskNew(String kind, String id) =>
+      '/league/$kind/$id/tasks/new';
+
+  static String leagueTask(String id) => '/league/tasks/$id';
+
+  static String leagueTaskEdit(String id) => '/league/tasks/$id/edit';
 
   static String note(String id) => '/notes/$id';
 

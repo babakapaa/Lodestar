@@ -17,6 +17,12 @@ import '../../features/connect/connect_screen.dart';
 import '../../features/defense/defense_booking_screen.dart';
 import '../../features/defense/defense_screen.dart';
 import '../../features/defense/defenses_screen.dart';
+import '../../features/league/awards_screen.dart';
+import '../../features/league/league_player_screen.dart';
+import '../../features/league/league_rules_screen.dart';
+import '../../features/league/league_screen.dart';
+import '../../features/league/league_task_edit_screen.dart';
+import '../../features/league/league_task_screen.dart';
 import '../../features/login/login_screen.dart';
 import '../../features/navigator/dialog_scope.dart';
 import '../../features/navigator/dialog_screen.dart';
@@ -226,6 +232,38 @@ class AppRouter {
             AppRoutes.materialNew(':id'),
             (id) => MaterialFormScreen(courseId: id),
           ),
+          _route(AppRoutes.awards, const AwardsScreen()),
+          _param(
+            AppRoutes.leagueTask(':id'),
+            (id) => LeagueTaskScreen(taskId: id),
+          ),
+          _param(
+            AppRoutes.leagueTaskEdit(':id'),
+            (id) => LeagueTaskEditScreen(taskId: id),
+          ),
+          _arena(
+            AppRoutes.league(':kind', ':id'),
+            (kind, id) => LeagueScreen(kind: kind, originId: id),
+          ),
+          _arena(
+            AppRoutes.leagueRules(':kind', ':id'),
+            (kind, id) => LeagueRulesScreen(kind: kind, originId: id),
+          ),
+          _arena(
+            AppRoutes.leagueTaskNew(':kind', ':id'),
+            (kind, id) => LeagueTaskEditScreen(kind: kind, originId: id),
+          ),
+          GoRoute(
+            path: AppRoutes.leaguePlayer(':kind', ':id', ':user'),
+            pageBuilder: (context, state) => _fade(
+              state,
+              LeaguePlayerScreen(
+                kind: state.pathParameters['kind']!,
+                originId: state.pathParameters['id']!,
+                userId: state.pathParameters['user']!,
+              ),
+            ),
+          ),
           _route(AppRoutes.teams, const TeamsScreen()),
           _route(AppRoutes.teamProfile, const TeamProfileScreen()),
           _param(
@@ -267,6 +305,19 @@ class AppRouter {
       path: path,
       pageBuilder: (context, state) =>
           _fade(state, screen(state.pathParameters['id']!)),
+    );
+  }
+
+  static GoRoute _arena(
+    String path,
+    Widget Function(String kind, String id) screen,
+  ) {
+    return GoRoute(
+      path: path,
+      pageBuilder: (context, state) => _fade(
+        state,
+        screen(state.pathParameters['kind']!, state.pathParameters['id']!),
+      ),
     );
   }
 

@@ -6,6 +6,7 @@ import 'package:http/testing.dart';
 import 'fake_chats.dart';
 import 'fake_directory.dart';
 import 'fake_files.dart';
+import 'fake_league.dart';
 import 'fake_navigator.dart';
 import 'fake_notes.dart';
 import 'fake_sources.dart';
@@ -22,6 +23,7 @@ class FakeServer {
   final FakeFiles files = FakeFiles();
   late final FakeChats chats = FakeChats(files.files);
   late final FakeTeams teams = FakeTeams(() => study.role);
+  late final FakeLeague league = FakeLeague(() => study.role);
   bool offline = false;
   final Map<String, Object?> profile = {
     'userId': 'u1',
@@ -209,6 +211,7 @@ class FakeServer {
       _ when path.startsWith('/v1/navigator/') => navigator.handle(request),
       _ when path.startsWith('/v1/chat/') => chats.handle(request),
       _ when path.startsWith('/v1/team/') => teams.handle(request),
+      _ when path.startsWith('/v1/league/') => league.handle(request),
       _ when path == '/v1/files' || path.startsWith('/v1/files/') =>
         files.handle(request),
       _

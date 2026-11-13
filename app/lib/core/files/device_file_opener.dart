@@ -9,8 +9,8 @@ class DeviceFileOpener implements FileOpener {
   @override
   Future<List<OpenedFile>> open(List<String> extensions) async {
     final files = await FilePicker.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: extensions,
+      type: extensions.isEmpty ? FileType.any : FileType.custom,
+      allowedExtensions: extensions.isEmpty ? null : extensions,
     );
     return [
       for (final file in files) OpenedFile(file.name, await file.readAsBytes()),

@@ -4,6 +4,8 @@ import 'package:material_ui/material_ui.dart';
 import '../../design/tokens/spacing.dart';
 import '../../design/tokens/tokens_context.dart';
 import '../../l10n/l10n_context.dart';
+import 'chat_file.dart';
+import 'chat_file_link.dart';
 import 'chat_message.dart';
 import 'reply_quote.dart';
 
@@ -14,6 +16,7 @@ class ChatBubble extends StatelessWidget {
     required this.author,
     this.quote,
     this.onLongPress,
+    this.onFile,
     super.key,
   });
 
@@ -22,6 +25,7 @@ class ChatBubble extends StatelessWidget {
   final String? author;
   final ReplyQuote? quote;
   final VoidCallback? onLongPress;
+  final ValueChanged<ChatFile>? onFile;
 
   @override
   Widget build(BuildContext context) {
@@ -76,23 +80,15 @@ class ChatBubble extends StatelessWidget {
                     )
                   else if (message.text.isNotEmpty)
                     Text(message.text),
-                  for (final file in message.files)
-                    Padding(
-                      padding: const EdgeInsets.only(top: Spacing.xs),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(Icons.attach_file, size: 16),
-                          const SizedBox(width: Spacing.xs),
-                          Flexible(
-                            child: Text(
-                              file.name,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
+                  if (!message.deleted)
+                    for (final file in message.files)
+                      Padding(
+                        padding: const EdgeInsets.only(top: Spacing.xs),
+                        child: ChatFileLink(
+                          file: file,
+                          onTap: onFile == null ? null : () => onFile!(file),
+                        ),
                       ),
-                    ),
                   const SizedBox(height: Spacing.xs),
                   Row(
                     mainAxisSize: MainAxisSize.min,

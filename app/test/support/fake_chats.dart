@@ -3,7 +3,14 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class FakeChats {
+  FakeChats(this.files);
+
   static const me = 'u1';
+
+  final Map<String, Map<String, Object?>> files;
+  final Set<String> blocked = {};
+  final List<Map<String, Object?>> reports = [];
+  final Map<String, Map<String, String>> roles = {};
 
   final Map<String, Map<String, Object?>> chats = {};
   final Map<String, List<Map<String, Object?>>> messages = {};
@@ -18,13 +25,14 @@ class FakeChats {
     String role = 'member',
     bool request = false,
     Map<String, String> people = const {},
+    Map<String, Object?>? origin,
   }) {
     final chat = <String, Object?>{
       'id': id,
       'kind': kind,
       'title': title,
       'about': '',
-      'origin': null,
+      'origin': origin,
       'peerId': kind == 'direct' ? people.keys.first : null,
       'role': role,
       'muted': false,
@@ -42,11 +50,16 @@ class FakeChats {
     chats[id] = chat;
     messages[id] = [];
     members[id] = {me: 'Айгерим Сапарова', ...people};
+    roles[id] = {me: role};
     return chat;
   }
 
-  Map<String, Object?> incoming(String chatId, String authorId, String text) =>
-      _append(chatId, authorId, null, text, null);
+  Map<String, Object?> incoming(
+    String chatId,
+    String authorId,
+    String text, {
+    List<String> fileIds = const [],
+  }) => _append(chatId, authorId, null, text, null, fileIds: fileIds);
 
   http.Response handle(http.Request request) {
     final segments = request.url.pathSegments.skip(2).toList();
@@ -70,6 +83,23 @@ class FakeChats {
         _body(request)['text'] as String?,
       ),
       ('DELETE', ['messages', final id]) => _change(id, null),
+      ('PATCH', ['chats', final id]) => _update(id, _body(request)),
+      ('POST', ['chats', final id, 'members']) => _add(id, _body(request)),
+      ('DELETE', ['chats', final id, 'members', final userId]) => _remove(
+        id,
+        userId,
+      ),
+      ('GET', ['blocks']) => _json(200, [
+        for (final id in blocked) {'userId': id, 'displayName': id},
+      ]),
+      ('POST', ['blocks']) => _block(_body(request)['userId']! as String),
+      ('DELETE', ['blocks', final userId]) => _unblock(userId),
+      ('POST', ['reports']) => _report(_body(request)),
+      ('GET', ['reports']) => _json(200, [
+        for (final r in reports)
+          if (r['resolvedAt'] == null) r,
+      ]),
+      ('POST', ['reports', final id, 'resolve']) => _resolve(id),
       _ => _json(404, {'code': 'not_found'}),
     };
   }
@@ -79,8 +109,9 @@ class FakeChats {
     addChat(
       id: id,
       kind: body['kind']! as String,
-      title: body['title']! as String,
+      title: (body['title'] as String?) ?? '',
       role: 'owner',
+      origin: body['origin'] as Map<String, Object?>?,
     );
     return _json(201, _full(id));
   }
@@ -149,6 +180,14 @@ class FakeChats {
       clientId,
       body['text'] as String? ?? '',
       body['replyTo'] as int?,
+      fileIds: [
+        for (final id in body['fileIds'] as List<Object?>? ?? const [])
+          id! as String,
+      ],
+      mentions: [
+        for (final id in body['mentions'] as List<Object?>? ?? const [])
+          id! as String,
+      ],
     );
     chats[id]!['readSeq'] = m['seq'];
     chats[id]!['unread'] = 0;
@@ -181,8 +220,10 @@ class FakeChats {
     String authorId,
     String? clientId,
     String text,
-    int? replyTo,
-  ) {
+    int? replyTo, {
+    List<String> fileIds = const [],
+    List<String> mentions = const [],
+  }) {
     final chat = chats[chatId]!;
     final seq = (chat['seq']! as int) + 1;
     final rev = (chat['rev']! as int) + 1;
@@ -195,8 +236,8 @@ class FakeChats {
       'clientId': clientId,
       'text': text,
       'replyTo': replyTo,
-      'mentions': <Object?>[],
-      'files': <Object?>[],
+      'mentions': mentions,
+      'files': [for (final id in fileIds) files[id]],
       'views': chat['kind'] == 'channel' ? 0 : null,
       'deleted': false,
       'editedAt': null,
@@ -218,13 +259,80 @@ class FakeChats {
         {
           'userId': key,
           'displayName': value,
-          'role': 'member',
+          'role': roles[id]![key] ?? 'member',
           'synced': false,
           'joinedAt': '2026-11-13T09:00:00Z',
         },
     ],
     'peerReadSeq': null,
   };
+
+  http.Response _update(String id, Map<String, Object?> body) {
+    chats[id]!['title'] = body['title'];
+    chats[id]!['about'] = body['about'];
+    return _json(200, _full(id));
+  }
+
+  http.Response _add(String id, Map<String, Object?> body) {
+    for (final userId in body['userIds']! as List<Object?>) {
+      members[id]![userId! as String] = 'Ерлан Ким';
+    }
+    chats[id]!['memberCount'] = members[id]!.length;
+    return _json(200, _full(id));
+  }
+
+  http.Response _remove(String id, String userId) {
+    members[id]!.remove(userId);
+    if (userId == me) {
+      chats.remove(id);
+    } else {
+      chats[id]!['memberCount'] = members[id]!.length;
+    }
+    return http.Response('', 204);
+  }
+
+  http.Response _block(String userId) {
+    blocked.add(userId);
+    return http.Response('', 204);
+  }
+
+  http.Response _unblock(String userId) {
+    blocked.remove(userId);
+    return http.Response('', 204);
+  }
+
+  http.Response _report(Map<String, Object?> body) {
+    final chatId = body['chatId']! as String;
+    final ids = body['messageIds']! as List<Object?>;
+    final report = <String, Object?>{
+      'id': 'r${_next++}',
+      'chatId': chatId,
+      'chatTitle': chats[chatId]!['title'],
+      'reporterId': me,
+      'reason': body['reason'],
+      'messages': [
+        for (final m in messages[chatId]!)
+          if (ids.contains(m['id']))
+            {
+              'seq': m['seq'],
+              'authorId': m['authorId'],
+              'authorName': members[chatId]![m['authorId']] ?? '',
+              'text': m['text'],
+              'createdAt': m['createdAt'],
+            },
+      ],
+      'createdAt': '2026-11-13T11:00:00Z',
+      'resolvedAt': null,
+    };
+    reports.add(report);
+    return _json(201, report);
+  }
+
+  http.Response _resolve(String id) {
+    final report = reports.firstWhere((r) => r['id'] == id);
+    report['resolvedAt'] = '2026-11-13T12:00:00Z';
+    return _json(200, report);
+  }
 
   static Map<String, Object?> _body(http.Request request) =>
       jsonDecode(request.body) as Map<String, Object?>;

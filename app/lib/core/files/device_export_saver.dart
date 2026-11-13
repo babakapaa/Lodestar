@@ -17,7 +17,11 @@ class DeviceExportSaver implements ExportSaver {
       name: name,
       bytes: bytes,
       fileExtension: extension,
-      mimeType: extension == 'md' ? MimeType.markdown : MimeType.zip,
+      mimeType: switch (extension) {
+        'md' => MimeType.markdown,
+        'zip' => MimeType.zip,
+        _ => MimeType.other,
+      },
     );
   }
 }

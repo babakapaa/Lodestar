@@ -1,8 +1,10 @@
 import '../../core/api/api_client.dart';
 import '../../core/offline/cached_reader.dart';
+import 'blocked_user.dart';
 import 'chat.dart';
 import 'chat_details.dart';
 import 'chat_message.dart';
+import 'chat_report.dart';
 import 'message_page.dart';
 import 'new_chat.dart';
 import 'outgoing.dart';
@@ -84,6 +86,34 @@ class ChatsApi {
 
   Future<ChatMessage> delete(String id) async => ChatMessage.fromJson(
     (await _api.delete(_message(id)))! as Map<String, Object?>,
+  );
+
+  Future<List<BlockedUser>> blocks() async => [
+    for (final item in (await _api.get('/v1/chat/blocks'))! as List<Object?>)
+      BlockedUser.fromJson(item! as Map<String, Object?>),
+  ];
+
+  Future<void> block(String userId) =>
+      _api.post('/v1/chat/blocks', {'userId': userId});
+
+  Future<void> unblock(String userId) =>
+      _api.delete('/v1/chat/blocks/${Uri.encodeComponent(userId)}');
+
+  Future<void> report(String chatId, List<String> messageIds, String reason) =>
+      _api.post('/v1/chat/reports', {
+        'chatId': chatId,
+        'messageIds': messageIds,
+        'reason': reason,
+      });
+
+  Future<List<ChatReport>> reports() async => [
+    for (final item in (await _api.get('/v1/chat/reports'))! as List<Object?>)
+      ChatReport.fromJson(item! as Map<String, Object?>),
+  ];
+
+  Future<ChatReport> resolve(String id) async => ChatReport.fromJson(
+    (await _api.post('/v1/chat/reports/${Uri.encodeComponent(id)}/resolve'))!
+        as Map<String, Object?>,
   );
 
   Future<MessagePage> _page(String id, Map<String, String> query) async =>

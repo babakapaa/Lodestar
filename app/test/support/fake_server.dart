@@ -3,8 +3,9 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 
-import 'fake_directory.dart';
 import 'fake_chats.dart';
+import 'fake_directory.dart';
+import 'fake_files.dart';
 import 'fake_navigator.dart';
 import 'fake_notes.dart';
 import 'fake_sources.dart';
@@ -17,7 +18,8 @@ class FakeServer {
   final FakeNotes notes = FakeNotes();
   final FakeSources sources = FakeSources();
   final FakeNavigator navigator = FakeNavigator();
-  final FakeChats chats = FakeChats();
+  final FakeFiles files = FakeFiles();
+  late final FakeChats chats = FakeChats(files.files);
   bool offline = false;
   final Map<String, Object?> profile = {
     'userId': 'u1',
@@ -79,6 +81,9 @@ class FakeServer {
       throw http.ClientException('offline', request.url);
     }
     requests.add(request);
+    if (request.url.host == FakeFiles.host) {
+      return files.storage(request);
+    }
     final path = request.url.path;
     final route = '${request.method} $path';
     if (path.startsWith('/v1/auth/')) {
@@ -201,6 +206,8 @@ class FakeServer {
       _ when path.startsWith('/v1/study/') => study.handle(request),
       _ when path.startsWith('/v1/navigator/') => navigator.handle(request),
       _ when path.startsWith('/v1/chat/') => chats.handle(request),
+      _ when path == '/v1/files' || path.startsWith('/v1/files/') =>
+        files.handle(request),
       _
           when path.startsWith('/v1/notes/sources') ||
               path == '/v1/notes/lookup' =>

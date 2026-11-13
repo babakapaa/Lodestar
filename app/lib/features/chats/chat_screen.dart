@@ -1,8 +1,10 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/api/api_error_text.dart';
+import '../../core/navigation/app_routes.dart';
 import '../../design/components/notice_banner.dart';
 import '../../design/tokens/spacing.dart';
 import '../../design/tokens/tokens_context.dart';
@@ -10,7 +12,10 @@ import '../../l10n/l10n_context.dart';
 import 'chat.dart';
 import 'chat_bubble.dart';
 import 'chat_composer.dart';
+import 'chat_draft.dart';
 import 'chat_entry.dart';
+import 'chat_file.dart';
+import 'chat_files.dart';
 import 'chat_kind.dart';
 import 'chat_member.dart';
 import 'chat_message.dart';
@@ -20,6 +25,7 @@ import 'message_action.dart';
 import 'message_actions_sheet.dart';
 import 'outgoing_bubble.dart';
 import 'reply_quote.dart';
+import 'report_dialog.dart';
 
 class ChatScreen extends ConsumerStatefulWidget {
   const ChatScreen({required this.chatId, super.key});
@@ -60,10 +66,51 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     }
   }
 
-  Future<void> _send(String text) async {
+  Future<void> _send(ChatDraft draft) async {
     final reply = _replyTo?.seq;
     setState(() => _replyTo = null);
-    await ref.read(chatsStoreProvider).queue(_id, text, replyTo: reply);
+    await ref
+        .read(chatsStoreProvider)
+        .queue(
+          _id,
+          draft.text,
+          replyTo: reply,
+          mentions: draft.mentions,
+          files: draft.files,
+        );
+  }
+
+  Future<List<ChatFile>> _attach() async {
+    try {
+      return await ChatFiles(ref).pick(ChatComposer.maxFiles);
+    } on Object catch (error) {
+      _fail(error);
+      return const [];
+    }
+  }
+
+  Future<void> _save(ChatFile file) async {
+    try {
+      await ChatFiles(ref).save(file);
+    } on Object catch (error) {
+      _fail(error);
+    }
+  }
+
+  Future<void> _report(ChatMessage message) async {
+    final reason = await ReportDialog.show(context);
+    if (reason == null || !mounted) {
+      return;
+    }
+    try {
+      await ref.read(chatsApiProvider).report(_id, [message.id], reason);
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(context.l10n.chatsReported)));
+      }
+    } on Object catch (error) {
+      _fail(error);
+    }
   }
 
   Future<void> _act(Chat chat, ChatMessage message, bool mine) async {
@@ -74,6 +121,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           (mine || (chat.kind != ChatKind.direct && chat.role.manages)))
         MessageAction.delete,
       if (message.text.isNotEmpty) MessageAction.copy,
+      if (!mine) MessageAction.report,
     ];
     final action = await MessageActionsSheet.show(context, actions);
     if (action == null || !mounted) {
@@ -97,6 +145,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         }
       case MessageAction.delete:
         await _change(() => ref.read(chatsApiProvider).delete(message.id));
+      case MessageAction.report:
+        await _report(message);
     }
   }
 
@@ -104,17 +154,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     try {
       final changed = await request();
       await ref.read(chatsStoreProvider).saveMessages(_id, [changed]);
-    } on Object catch (error) {
-      _fail(error);
-    }
-  }
-
-  Future<void> _mute(Chat chat) async {
-    try {
-      final changed = await ref
-          .read(chatsApiProvider)
-          .mute(_id, muted: !chat.muted);
-      await ref.read(chatsStoreProvider).saveChat(changed);
     } on Object catch (error) {
       _fail(error);
     }
@@ -184,13 +223,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         ),
         actions: [
           IconButton(
-            tooltip: chat.muted ? l10n.chatsUnmute : l10n.chatsMute,
-            icon: Icon(
-              chat.muted
-                  ? Icons.notifications_off_outlined
-                  : Icons.notifications_none,
-            ),
-            onPressed: () => _mute(chat),
+            key: const ValueKey('chat-info'),
+            tooltip: l10n.chatsInfo,
+            icon: const Icon(Icons.info_outline),
+            onPressed: () => context.push(AppRoutes.chatInfo(_id)),
           ),
         ],
       ),
@@ -243,6 +279,12 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 if (chat.writable)
                   ChatComposer(
                     onSend: _send,
+                    onAttach: _attach,
+                    members: [
+                      for (final member
+                          in details?.members ?? const <ChatMember>[])
+                        if (member.userId != me) member,
+                    ],
                     quote: quoteOf(_replyTo),
                     onCancelReply: () => setState(() => _replyTo = null),
                   )
@@ -295,6 +337,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           : names[message.authorId] ?? context.l10n.chatsUnknown,
       quote: reply == null ? null : quoteOf(bySeq[reply]),
       onLongPress: () => _act(chat, message, mine),
+      onFile: _save,
     );
   }
 }

@@ -21,6 +21,7 @@ class FakeStudy {
   final List<Map<String, Object?>> lessons = [];
   final List<Map<String, Object?>> deadlines = [];
   final Map<String, Map<String, Object?>> grades = {};
+  final Map<String, Map<String, Object?>> maps = {};
   int _next = 1;
 
   static const _student = {
@@ -69,6 +70,14 @@ class FakeStudy {
         request,
         id,
       ),
+      ('GET', ['assignments', final id, 'search-map']) => _json(200, {
+        'map':
+            maps[id] ?? {'used': [], 'rejected': [], 'path': '', 'queries': []},
+        'rules': _assignment(id)['searchMap'],
+        'missing': <Object?>[],
+        'changedAt': maps[id] == null ? null : '2026-11-12T10:00:00Z',
+      }),
+      ('PUT', ['assignments', final id, 'search-map']) => _saveMap(request, id),
       ('GET', ['assignments', final id, 'work']) => _json(200, [_work(id)]),
       ('GET', ['assignments', final id, 'students', 'u2', 'submissions']) =>
         _json(200, _mine(id)),
@@ -139,6 +148,7 @@ class FakeStudy {
     'grading': body['grading'],
     'maxPoints': body['maxPoints'],
     'publishedAt': body['published'] == true ? '2026-11-12T10:00:00Z' : null,
+    'searchMap': body['searchMap'],
   };
 
   http.Response _create(http.Request request) {
@@ -172,11 +182,22 @@ class FakeStudy {
       'assignmentId': id,
       'clientId': body['clientId'],
       'body': body['body'],
+      'searchMap': body['searchMap'],
       'submittedAt': '2026-11-12T10:00:00Z',
       'files': <Object?>[],
     };
     submissions.add(submission);
     return _json(201, submission);
+  }
+
+  http.Response _saveMap(http.Request request, String id) {
+    maps[id] = _body(request);
+    return _json(200, {
+      'map': maps[id],
+      'rules': _assignment(id)['searchMap'],
+      'missing': <Object?>[],
+      'changedAt': '2026-11-12T10:00:00Z',
+    });
   }
 
   http.Response _grade(http.Request request, String id) {

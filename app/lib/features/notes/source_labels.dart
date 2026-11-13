@@ -1,5 +1,5 @@
 import '../../l10n/generated/app_localizations.dart';
-import 'source_kind.dart';
+import '../../core/sources/source_kind.dart';
 
 class SourceLabels {
   const SourceLabels(this._l10n);

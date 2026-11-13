@@ -10,6 +10,7 @@ import '../../design/tokens/tokens_context.dart';
 import '../../l10n/l10n_context.dart';
 import 'assignment.dart';
 import 'grade_form.dart';
+import 'search_map_view.dart';
 import 'student_work.dart';
 import 'study_labels_context.dart';
 import 'study_providers.dart';
@@ -53,6 +54,10 @@ class GradeScreen extends ConsumerWidget {
                   leading: const Icon(Icons.attach_file),
                   title: Text(file.name),
                 ),
+              if (attempt.searchMap case final map?) ...[
+                const SizedBox(height: Spacing.m),
+                SearchMapView(map: map),
+              ],
             ],
           ),
         ),

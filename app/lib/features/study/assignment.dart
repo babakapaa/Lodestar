@@ -1,4 +1,5 @@
 import 'grading.dart';
+import 'map_rules.dart';
 
 class Assignment {
   const Assignment({
@@ -10,6 +11,7 @@ class Assignment {
     required this.grading,
     required this.maxPoints,
     required this.published,
+    this.searchMap,
   });
 
   factory Assignment.fromJson(Map<String, Object?> json) {
@@ -23,6 +25,7 @@ class Assignment {
       grading: Grading.parse(json['grading']),
       maxPoints: (json['maxPoints'] as num?)?.toDouble(),
       published: json['publishedAt'] != null,
+      searchMap: MapRules.maybe(json['searchMap']),
     );
   }
 
@@ -34,4 +37,5 @@ class Assignment {
   final Grading grading;
   final double? maxPoints;
   final bool published;
+  final MapRules? searchMap;
 }

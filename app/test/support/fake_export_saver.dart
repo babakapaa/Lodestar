@@ -6,5 +6,9 @@ class FakeExportSaver implements ExportSaver {
   final Map<String, Uint8List> saved = {};
 
   @override
-  Future<void> save(String name, Uint8List bytes) async => saved[name] = bytes;
+  Future<void> save(
+    String name,
+    Uint8List bytes, {
+    String extension = 'zip',
+  }) async => saved['$name.$extension'] = bytes;
 }

@@ -8,12 +8,16 @@ class DeviceExportSaver implements ExportSaver {
   const DeviceExportSaver();
 
   @override
-  Future<void> save(String name, Uint8List bytes) async {
+  Future<void> save(
+    String name,
+    Uint8List bytes, {
+    String extension = 'zip',
+  }) async {
     await FileSaver.instance.saveFile(
       name: name,
       bytes: bytes,
-      fileExtension: 'zip',
-      mimeType: MimeType.zip,
+      fileExtension: extension,
+      mimeType: extension == 'md' ? MimeType.markdown : MimeType.zip,
     );
   }
 }

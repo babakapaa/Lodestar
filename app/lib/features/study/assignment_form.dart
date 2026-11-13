@@ -14,6 +14,7 @@ import '../../l10n/l10n_context.dart';
 import 'assignment_details.dart';
 import 'assignment_input.dart';
 import 'grading.dart';
+import 'map_rules.dart';
 import 'points_text.dart';
 import 'study_labels_context.dart';
 import 'study_providers.dart';
@@ -40,6 +41,13 @@ class _AssignmentFormState extends ConsumerState<AssignmentForm> {
   late DateTime? _dueAt = _assignment?.dueAt?.toLocal();
   late Grading _grading = _assignment?.grading ?? Grading.points;
   late bool _published = _assignment?.published ?? false;
+  late bool _mapRequired = _assignment?.searchMap != null;
+  late final _minSources = TextEditingController(
+    text: '${_assignment?.searchMap?.minSources ?? 5}',
+  );
+  late final _minScholarly = TextEditingController(
+    text: '${_assignment?.searchMap?.minScholarly ?? 50}',
+  );
   String? _error;
   bool _busy = false;
 
@@ -48,6 +56,8 @@ class _AssignmentFormState extends ConsumerState<AssignmentForm> {
     _title.dispose();
     _description.dispose();
     _maxPoints.dispose();
+    _minSources.dispose();
+    _minScholarly.dispose();
     super.dispose();
   }
 
@@ -115,7 +125,18 @@ class _AssignmentFormState extends ConsumerState<AssignmentForm> {
     final maxPoints = double.tryParse(
       _maxPoints.text.trim().replaceAll(',', '.'),
     );
+    final minSources = int.tryParse(_minSources.text.trim());
+    final minScholarly = int.tryParse(_minScholarly.text.trim());
+    final mapInvalid =
+        _mapRequired &&
+        (minSources == null ||
+            minSources < 0 ||
+            minSources > 200 ||
+            minScholarly == null ||
+            minScholarly < 0 ||
+            minScholarly > 100);
     if (_title.text.trim().isEmpty ||
+        mapInvalid ||
         (_grading == Grading.points && (maxPoints == null || maxPoints <= 0))) {
       setState(() => _error = l10n.errorInvalidAssignment);
       return;
@@ -129,6 +150,9 @@ class _AssignmentFormState extends ConsumerState<AssignmentForm> {
       maxPoints: maxPoints,
       published: _published,
       files: [...?widget.details?.files.map((file) => file.id)],
+      searchMap: _mapRequired
+          ? MapRules(minSources: minSources!, minScholarly: minScholarly!)
+          : null,
     );
     final assignment = _assignment;
     await _run(
@@ -230,6 +254,37 @@ class _AssignmentFormState extends ConsumerState<AssignmentForm> {
             decoration: InputDecoration(labelText: l10n.assignmentMaxPoints),
           ),
         ],
+        const SizedBox(height: Spacing.l),
+        SwitchListTile(
+          contentPadding: EdgeInsets.zero,
+          title: Text(l10n.assignmentMapRequired),
+          value: _mapRequired,
+          onChanged: (value) => setState(() => _mapRequired = value),
+        ),
+        if (_mapRequired)
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _minSources,
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    labelText: l10n.assignmentMapMinSources,
+                  ),
+                ),
+              ),
+              const SizedBox(width: Spacing.m),
+              Expanded(
+                child: TextField(
+                  controller: _minScholarly,
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    labelText: l10n.assignmentMapMinScholarly,
+                  ),
+                ),
+              ),
+            ],
+          ),
         const SizedBox(height: Spacing.l),
         SwitchListTile(
           contentPadding: EdgeInsets.zero,

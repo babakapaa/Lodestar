@@ -7,9 +7,9 @@ import '../../core/navigation/app_routes.dart';
 import '../../design/components/empty_state.dart';
 import '../../l10n/l10n_context.dart';
 import '../study/loaded_list_view.dart';
-import 'gost_reference.dart';
+import '../../core/sources/gost_reference.dart';
 import 'notes_providers.dart';
-import 'source.dart';
+import '../../core/sources/source.dart';
 import 'source_find_dialog.dart';
 import 'source_tile.dart';
 

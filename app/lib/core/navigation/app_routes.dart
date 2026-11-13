@@ -36,6 +36,8 @@ abstract final class AppRoutes {
 
   static String assignmentEdit(String id) => '/study/assignments/$id/edit';
 
+  static String searchMap(String id) => '/study/assignments/$id/map';
+
   static String grade(String assignmentId, String studentId) =>
       '/study/assignments/$assignmentId/students/$studentId';
 

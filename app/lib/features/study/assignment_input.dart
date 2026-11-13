@@ -1,4 +1,5 @@
 import 'grading.dart';
+import 'map_rules.dart';
 
 class AssignmentInput {
   const AssignmentInput({
@@ -9,6 +10,7 @@ class AssignmentInput {
     required this.maxPoints,
     required this.published,
     required this.files,
+    this.searchMap,
   });
 
   final String title;
@@ -18,6 +20,7 @@ class AssignmentInput {
   final double? maxPoints;
   final bool published;
   final List<String> files;
+  final MapRules? searchMap;
 
   Map<String, Object?> toJson() => {
     'title': title,
@@ -27,5 +30,6 @@ class AssignmentInput {
     'maxPoints': grading == Grading.points ? maxPoints : null,
     'published': published,
     'files': files,
+    'searchMap': searchMap?.toJson(),
   };
 }

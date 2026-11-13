@@ -12,6 +12,7 @@ import 'class_work_section.dart';
 import 'course_role.dart';
 import 'loaded_list_view.dart';
 import 'my_work_section.dart';
+import 'search_map_tile.dart';
 import 'study_labels_context.dart';
 import 'study_providers.dart';
 import 'submit_form.dart';
@@ -75,6 +76,8 @@ class AssignmentScreen extends ConsumerWidget {
       if (details.role == CourseRole.student) ...[
         MyWorkSection(details: details),
         const SizedBox(height: Spacing.xl),
+        SearchMapTile(assignment: assignment),
+        const SizedBox(height: Spacing.l),
         SubmitForm(details: details),
       ] else
         ClassWorkSection(assignment: assignment),

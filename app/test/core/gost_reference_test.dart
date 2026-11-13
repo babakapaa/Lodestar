@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:lodestar/features/notes/gost_reference.dart';
-import 'package:lodestar/features/notes/source.dart';
-import 'package:lodestar/features/notes/source_kind.dart';
+import 'package:lodestar/core/sources/gost_reference.dart';
+import 'package:lodestar/core/sources/source.dart';
+import 'package:lodestar/core/sources/source_kind.dart';
 
 void main() {
   test('a book with one author', () {

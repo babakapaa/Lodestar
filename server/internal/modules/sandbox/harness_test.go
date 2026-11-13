@@ -87,7 +87,8 @@ func (f fakeWork) Brief(_ context.Context, _ pgx.Tx, p auth.Principal, id string
 	if id != "a1" || (p.UserID != f.teacher && p.UserID != f.student) {
 		return module.Brief{}, module.ErrBriefNotFound
 	}
-	return module.Brief{Kind: "assignment", ID: id, Title: "Нейросеть для МРТ", Teaches: p.UserID == f.teacher, Teachers: []string{f.teacher}}, nil
+	due := time.Now().Add(24 * time.Hour)
+	return module.Brief{Kind: "assignment", ID: id, Title: "Нейросеть для МРТ", Teaches: p.UserID == f.teacher, Teachers: []string{f.teacher}, DueAt: &due}, nil
 }
 
 type fakeTeams struct {
@@ -114,7 +115,7 @@ type fakeGPU map[string]float64
 
 func (f fakeGPU) GPUGrants(_ context.Context, _ pgx.Tx, userID string, _, _ time.Time) ([]module.GPUGrant, error) {
 	if h, ok := f[userID]; ok {
-		return []module.GPUGrant{{Source: "league.division", Title: "Серебро", Hours: h}}, nil
+		return []module.GPUGrant{{Source: "league.division", Title: "Серебро", Hours: h, Priority: true}}, nil
 	}
 	return nil, nil
 }
@@ -124,6 +125,7 @@ type world struct {
 	ctx      context.Context
 	tenant   string
 	users    identity.Store
+	tx       database.TenantTx
 	quotas   sandbox.Service
 	sent     *outbox
 	settings *fakeSettings
@@ -153,7 +155,7 @@ func newWorld(t *testing.T) *world {
 	if err != nil {
 		t.Fatalf("catalog: %v", err)
 	}
-	w := &world{t: t, ctx: ctx, tenant: created.ID, users: identity.NewStore(tx), sent: &outbox{}, settings: &fakeSettings{values: map[string]any{}}}
+	w := &world{t: t, ctx: ctx, tenant: created.ID, tx: tx, users: identity.NewStore(tx), sent: &outbox{}, settings: &fakeSettings{values: map[string]any{}}}
 	w.admin = w.user("admin", "Ректорат")
 	if _, err := access.NewBootstrap(tx).GrantTopRole(ctx, w.tenant, w.admin.UserID); err != nil {
 		t.Fatalf("grant: %v", err)
@@ -212,4 +214,58 @@ func (w *world) call(p auth.Principal, method, path, body string) *httptest.Resp
 	rec := httptest.NewRecorder()
 	mux.ServeHTTP(rec, req)
 	return rec
+}
+
+func (w *world) exec(sql string, args ...any) {
+	w.t.Helper()
+	err := w.tx.Run(w.ctx, w.tenant, func(tx pgx.Tx) error {
+		_, err := tx.Exec(w.ctx, sql, args...)
+		return err
+	})
+	if err != nil {
+		w.t.Fatalf("exec: %v", err)
+	}
+}
+
+func (w *world) sync(token string, reports ...sandbox.RunReport) sandbox.AgentPlan {
+	w.t.Helper()
+	plan, err := w.quotas.Sync(w.ctx, token, sandbox.AgentReport{Runs: reports})
+	if err != nil {
+		w.t.Fatalf("sync: %v", err)
+	}
+	return plan
+}
+
+func (w *world) open(method, path, token, body string) *httptest.ResponseRecorder {
+	w.t.Helper()
+	mux := http.NewServeMux()
+	sandbox.Routes{Quotas: w.quotas}.MountOpen(mux)
+	req := httptest.NewRequest(method, path, strings.NewReader(body))
+	req.Header.Set("Authorization", "Bearer "+token)
+	rec := httptest.NewRecorder()
+	mux.ServeHTTP(rec, req)
+	return rec
+}
+
+type fleet struct {
+	template sandbox.Template
+	t4       sandbox.GPUClass
+	node     sandbox.NodeCreated
+}
+
+func (w *world) fleet(gpus int) fleet {
+	w.t.Helper()
+	tpl, err := w.quotas.CreateTemplate(w.ctx, w.admin, sandbox.TemplateInput{Name: "PyTorch", Image: "pytorch/pytorch:2.5.1-cuda12.4-cudnn9-runtime"})
+	if err != nil {
+		w.t.Fatalf("template: %v", err)
+	}
+	t4, err := w.quotas.CreateClass(w.ctx, w.admin, sandbox.GPUClassInput{Name: "T4", MemoryGB: 16, Rate: 2})
+	if err != nil {
+		w.t.Fatalf("class: %v", err)
+	}
+	node, err := w.quotas.CreateNode(w.ctx, w.admin, sandbox.NodeInput{Name: "gpu-01", ClassID: t4.ID, GPUs: gpus})
+	if err != nil {
+		w.t.Fatalf("node: %v", err)
+	}
+	return fleet{template: tpl, t4: t4, node: node}
 }

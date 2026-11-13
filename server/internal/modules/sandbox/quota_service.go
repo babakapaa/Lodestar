@@ -37,7 +37,11 @@ func (s Service) quota(ctx context.Context, tx pgx.Tx, t Term, userID string) (Q
 	if err != nil {
 		return Quota{}, err
 	}
-	return Quota{Term: &t, Lines: lines, Hours: total(lines), Teams: teams}, nil
+	reserved, err := s.runs.Reserved(ctx, tx, t.ID, OwnerUser, userID)
+	if err != nil {
+		return Quota{}, err
+	}
+	return Quota{Term: &t, Lines: lines, Hours: total(lines), Reserved: reserved, Teams: teams}, nil
 }
 
 func (s Service) userLines(ctx context.Context, tx pgx.Tx, t Term, userID string) ([]QuotaLine, error) {
@@ -52,7 +56,7 @@ func (s Service) userLines(ctx context.Context, tx pgx.Tx, t Term, userID string
 		return nil, err
 	}
 	for _, g := range grants {
-		lines = append(lines, QuotaLine(g))
+		lines = append(lines, QuotaLine{Source: g.Source, Title: g.Title, Hours: g.Hours})
 	}
 	entries, err := s.ledger.Lines(ctx, tx, t.ID, OwnerUser, userID)
 	if err != nil {
@@ -75,7 +79,11 @@ func (s Service) pools(ctx context.Context, tx pgx.Tx, t Term, userID string) ([
 		if err != nil {
 			return nil, err
 		}
-		pools = append(pools, TeamPool{ID: ref.ID, Name: ref.Name, Hours: total(lines), Lines: lines})
+		reserved, err := s.runs.Reserved(ctx, tx, t.ID, OwnerTeam, ref.ID)
+		if err != nil {
+			return nil, err
+		}
+		pools = append(pools, TeamPool{ID: ref.ID, Name: ref.Name, Hours: total(lines), Reserved: reserved, Lines: lines})
 	}
 	return pools, nil
 }

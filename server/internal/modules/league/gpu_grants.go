@@ -32,7 +32,7 @@ func (GPUGrants) GPUGrants(ctx context.Context, tx pgx.Tx, userID string, from, 
 		ORDER BY (d->>'gpuHours')::int DESC LIMIT 1`, userID).Scan(&division, &hours)
 	switch {
 	case err == nil:
-		out = append(out, module.GPUGrant{Source: GPUSourceDivision, Title: division, Hours: float64(hours)})
+		out = append(out, module.GPUGrant{Source: GPUSourceDivision, Title: division, Hours: float64(hours), Priority: true})
 	case !errors.Is(err, pgx.ErrNoRows):
 		return nil, fmt.Errorf("division gpu hours: %w", err)
 	}

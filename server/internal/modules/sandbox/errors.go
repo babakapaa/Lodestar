@@ -29,3 +29,25 @@ var ErrWorkNotFound = errors.New("work not found")
 var ErrTopupNotFound = errors.New("top-up request not found or decided")
 
 var ErrTopupPending = errors.New("top-up request already waits")
+
+var ErrInvalidTemplate = errors.New("environment template is invalid")
+
+var ErrTemplateNotFound = errors.New("environment template not found")
+
+var ErrTemplateTaken = errors.New("environment template name is taken")
+
+var ErrInvalidNode = errors.New("gpu node is invalid")
+
+var ErrNodeNotFound = errors.New("gpu node not found")
+
+var ErrNodeTaken = errors.New("gpu node name is taken")
+
+var ErrNodeBusy = errors.New("gpu node still runs work")
+
+var ErrBadNodeToken = errors.New("gpu node token is wrong")
+
+var ErrInvalidRun = errors.New("run is invalid")
+
+var ErrRunNotFound = errors.New("run not found")
+
+var ErrRunEnded = errors.New("run has already ended")

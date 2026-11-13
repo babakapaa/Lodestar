@@ -67,6 +67,8 @@ class FakeStudy {
     });
   }
 
+  final List<String?> previews = [];
+
   http.Response handle(http.Request request) {
     final segments = request.url.pathSegments.skip(2).toList();
     return switch ((request.method, segments)) {
@@ -90,6 +92,8 @@ class FakeStudy {
           if (_teaches || a['publishedAt'] != null) _item(a),
       ]),
       ('POST', ['courses', 'c1', 'assignments']) => _create(request),
+      ('GET', ['courses', 'c1', 'students']) => _json(200, [_student]),
+      ('GET', ['courses', 'c1', 'preview']) => _preview(request),
       ('GET', ['courses', 'c1', 'gradebook']) => http.Response.bytes(
         utf8.encode('name;email\n${request.url.queryParameters['format']}'),
         200,
@@ -150,6 +154,26 @@ class FakeStudy {
     for (final s in submissions.reversed)
       if (s['assignmentId'] == id) s,
   ];
+
+  http.Response _preview(http.Request request) {
+    final student = request.url.queryParameters['student'];
+    previews.add(student);
+    return _json(200, [
+      for (final a in assignments)
+        if (a['publishedAt'] != null)
+          {
+            ...a,
+            'mine': {
+              'submittedAt':
+                  student == null || _mine(a['id']! as String).isEmpty
+                  ? null
+                  : _mine(a['id']! as String).first['submittedAt'],
+              'grade': null,
+            },
+            'counts': null,
+          },
+    ]);
+  }
 
   Map<String, Object?> _item(Map<String, Object?> a) {
     final mine = _mine(a['id']! as String);

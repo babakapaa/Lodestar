@@ -53,6 +53,7 @@ abstract final class AppRoutes {
   static String courseLms(String id) => '/study/courses/$id/lms';
 
   static String courseSchedule(String id) => '/study/courses/$id/schedule';
+  static String coursePreview(String id) => '/study/courses/$id/preview';
 
   static String personRoles(String id) => '/admin/people/$id';
 

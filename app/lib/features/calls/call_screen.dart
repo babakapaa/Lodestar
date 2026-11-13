@@ -15,6 +15,7 @@ import 'call_grid.dart';
 import 'call_ticket.dart';
 import 'calls_api.dart';
 import 'calls_providers.dart';
+import 'recording_banner.dart';
 
 class CallScreen extends ConsumerStatefulWidget {
   const CallScreen({required this.chatId, super.key});
@@ -30,6 +31,7 @@ class _CallScreenState extends ConsumerState<CallScreen> {
   late final CallsApi _api;
   CallTicket? _ticket;
   String? _error;
+  bool _recording = false;
   bool _left = false;
 
   @override
@@ -53,7 +55,10 @@ class _CallScreenState extends ConsumerState<CallScreen> {
       if (!mounted) {
         return;
       }
-      setState(() => _ticket = ticket);
+      setState(() {
+        _ticket = ticket;
+        _recording = ticket.call.recording;
+      });
       await _engine.connect(ticket.url, ticket.token);
       await _engine.setMicrophone(on: true);
     } on ApiException catch (error) {
@@ -79,6 +84,27 @@ class _CallScreenState extends ConsumerState<CallScreen> {
     }
   }
 
+  Future<void> _record() async {
+    final ticket = _ticket;
+    if (ticket == null) {
+      return;
+    }
+    final l10n = context.l10n;
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      final call = _recording
+          ? await _api.stopRecording(ticket.call.id)
+          : await _api.startRecording(ticket.call.id);
+      if (mounted) {
+        setState(() => _recording = call.recording);
+      }
+    } on ApiException catch (error) {
+      messenger.showSnackBar(
+        SnackBar(content: Text(ApiErrorText.of(l10n, error))),
+      );
+    }
+  }
+
   Future<void> _hangUp() async {
     await _leave();
     if (mounted) {
@@ -91,6 +117,12 @@ class _CallScreenState extends ConsumerState<CallScreen> {
     final l10n = context.l10n;
     final ticket = _ticket;
     final error = _error;
+    ref.listen(activeCallProvider(widget.chatId), (_, next) {
+      final call = next.value;
+      if (call != null && call.id == ticket?.call.id) {
+        setState(() => _recording = call.recording);
+      }
+    });
     return Scaffold(
       appBar: AppBar(title: Text(l10n.callTitle)),
       body: SafeArea(
@@ -108,12 +140,16 @@ class _CallScreenState extends ConsumerState<CallScreen> {
                 listenable: _engine,
                 builder: (context, _) => Column(
                   children: [
+                    if (_recording) const RecordingBanner(),
                     Expanded(child: CallGrid(engine: _engine)),
                     Padding(
                       padding: const EdgeInsets.all(Spacing.l),
                       child: CallControls(
                         engine: _engine,
                         screenShare: ticket.screenShare,
+                        record: ticket.record,
+                        recording: _recording,
+                        onRecord: _record,
                         onHangUp: _hangUp,
                       ),
                     ),

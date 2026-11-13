@@ -8,4 +8,5 @@ type Call struct {
 	StartedBy *string   `json:"startedBy"`
 	StartedAt time.Time `json:"startedAt"`
 	People    []string  `json:"people"`
+	Recording bool      `json:"recording"`
 }

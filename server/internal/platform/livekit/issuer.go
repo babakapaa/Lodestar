@@ -4,6 +4,7 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"fmt"
+	"net/http"
 	"time"
 
 	"github.com/go-jose/go-jose/v4"
@@ -11,11 +12,12 @@ import (
 )
 
 type Issuer struct {
-	cfg Config
+	cfg  Config
+	http *http.Client
 }
 
 func NewIssuer(cfg Config) *Issuer {
-	return &Issuer{cfg: cfg}
+	return &Issuer{cfg: cfg, http: &http.Client{Timeout: 15 * time.Second}}
 }
 
 func (i *Issuer) URL() string {
@@ -23,25 +25,28 @@ func (i *Issuer) URL() string {
 }
 
 func (i *Issuer) Token(identity, name string, g Grant, ttl time.Duration, now time.Time) (string, error) {
-	signer, err := jose.NewSigner(jose.SigningKey{Algorithm: jose.HS256, Key: []byte(i.cfg.APISecret)}, (&jose.SignerOptions{}).WithType("JWT"))
-	if err != nil {
-		return "", fmt.Errorf("livekit signer: %w", err)
-	}
 	sources := []string{"camera", "microphone"}
 	if g.ScreenShare {
 		sources = append(sources, "screen_share", "screen_share_audio")
 	}
-	std := jwt.Claims{
-		Issuer:    i.cfg.APIKey,
-		Subject:   identity,
-		NotBefore: jwt.NewNumericDate(now.Add(-time.Minute)),
-		Expiry:    jwt.NewNumericDate(now.Add(ttl)),
-	}
-	extra := map[string]any{
+	return i.sign(identity, map[string]any{
 		"name": name,
 		"video": videoClaims{
 			Room: g.Room, RoomJoin: true, CanPublish: true, CanSubscribe: true, CanPublishData: true, CanPublishSources: sources,
 		},
+	}, ttl, now)
+}
+
+func (i *Issuer) sign(subject string, extra map[string]any, ttl time.Duration, now time.Time) (string, error) {
+	signer, err := jose.NewSigner(jose.SigningKey{Algorithm: jose.HS256, Key: []byte(i.cfg.APISecret)}, (&jose.SignerOptions{}).WithType("JWT"))
+	if err != nil {
+		return "", fmt.Errorf("livekit signer: %w", err)
+	}
+	std := jwt.Claims{
+		Issuer:    i.cfg.APIKey,
+		Subject:   subject,
+		NotBefore: jwt.NewNumericDate(now.Add(-time.Minute)),
+		Expiry:    jwt.NewNumericDate(now.Add(ttl)),
 	}
 	token, err := jwt.Signed(signer).Claims(std).Claims(extra).Serialize()
 	if err != nil {

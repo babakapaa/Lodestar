@@ -9,4 +9,5 @@ type Event struct {
 	Event       string      `json:"event"`
 	Room        Room        `json:"room"`
 	Participant Participant `json:"participant"`
+	EgressInfo  *EgressInfo `json:"egressInfo"`
 }

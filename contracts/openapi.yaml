@@ -8411,6 +8411,63 @@ paths:
           $ref: "#/components/responses/Error"
         default:
           $ref: "#/components/responses/Error"
+  /v1/chat/calls/{id}/recording:
+    post:
+      tags: [chat]
+      operationId: startCallRecording
+      summary: Начать запись звонка
+      description: Записывать можно, только если вуз разрешил настройкой chat.call_recording. При значении admins записывают администраторы группового чата, при everyone любой участник звонка. Все участники видят, что идёт запись. Запись появится в чате файлом от того, кто её начал.
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Call"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        "503":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+    delete:
+      tags: [chat]
+      operationId: stopCallRecording
+      summary: Остановить запись звонка
+      description: Останавливает тот, кто начал, или администратор чата.
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Call"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        "503":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
 components:
   securitySchemes:
     bearer:
@@ -13137,7 +13194,7 @@ components:
           maxLength: 1000
     Call:
       type: object
-      required: [id, chatId, startedBy, startedAt, people]
+      required: [id, chatId, startedBy, startedAt, people, recording]
       properties:
         id:
           type: string
@@ -13153,9 +13210,12 @@ components:
           description: Кто сейчас в звонке
           items:
             type: string
+        recording:
+          type: boolean
+          description: Идёт ли запись
     CallTicket:
       type: object
-      required: [call, url, room, token, screenShare]
+      required: [call, url, room, token, screenShare, record]
       properties:
         call:
           $ref: "#/components/schemas/Call"
@@ -13170,3 +13230,6 @@ components:
         screenShare:
           type: boolean
           description: Можно ли этому участнику показывать экран
+        record:
+          type: boolean
+          description: Может ли этот участник начать запись по правилам вуза

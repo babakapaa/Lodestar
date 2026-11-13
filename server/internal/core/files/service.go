@@ -53,7 +53,7 @@ func (s Service) Create(ctx context.Context, p auth.Principal, in FileInput) (Cr
 		if err != nil {
 			return err
 		}
-		upload, err := s.storage.PresignPut(ctx, objectKey(p.TenantID, f.ID), f.ContentType, f.Size, uploadTTL)
+		upload, err := s.storage.PresignPut(ctx, ObjectKey(p.TenantID, f.ID), f.ContentType, f.Size, uploadTTL)
 		if err != nil {
 			return err
 		}
@@ -73,7 +73,7 @@ func (s Service) Complete(ctx context.Context, p auth.Principal, id string) (Fil
 		if f, err = s.owned(ctx, tx, p, id, true); err != nil || f.Status == StatusReady {
 			return err
 		}
-		size, err := s.storage.Size(ctx, objectKey(p.TenantID, f.ID))
+		size, err := s.storage.Size(ctx, ObjectKey(p.TenantID, f.ID))
 		if errors.Is(err, objectstore.ErrMissing) {
 			return ErrNotUploaded
 		}
@@ -110,7 +110,7 @@ func (s Service) Download(ctx context.Context, p auth.Principal, id string) (Dow
 	if f.Status != StatusReady {
 		return Download{}, ErrNotUploaded
 	}
-	link, err := s.storage.PresignGet(ctx, objectKey(p.TenantID, f.ID), f.Name, f.ContentType, downloadTTL)
+	link, err := s.storage.PresignGet(ctx, ObjectKey(p.TenantID, f.ID), f.Name, f.ContentType, downloadTTL)
 	if err != nil {
 		return Download{}, err
 	}
@@ -148,7 +148,7 @@ func (s Service) Delete(ctx context.Context, p auth.Principal, id string) error 
 		if err := s.store.Delete(ctx, tx, f.ID); err != nil {
 			return err
 		}
-		return s.storage.Delete(ctx, objectKey(p.TenantID, f.ID))
+		return s.storage.Delete(ctx, ObjectKey(p.TenantID, f.ID))
 	})
 }
 

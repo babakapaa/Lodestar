@@ -9,12 +9,18 @@ class CallControls extends StatelessWidget {
   const CallControls({
     required this.engine,
     required this.screenShare,
+    required this.record,
+    required this.recording,
+    required this.onRecord,
     required this.onHangUp,
     super.key,
   });
 
   final CallEngine engine;
   final bool screenShare;
+  final bool record;
+  final bool recording;
+  final VoidCallback onRecord;
   final VoidCallback onHangUp;
 
   @override
@@ -45,6 +51,18 @@ class CallControls extends StatelessWidget {
               engine.screen ? Icons.stop_screen_share : Icons.screen_share,
             ),
             onPressed: () => engine.setScreen(on: !engine.screen),
+          ),
+        if (record)
+          IconButton.filledTonal(
+            key: const ValueKey('call-record'),
+            tooltip: recording ? l10n.callRecordStop : l10n.callRecordStart,
+            icon: Icon(
+              recording
+                  ? Icons.stop_circle_outlined
+                  : Icons.fiber_manual_record,
+              color: recording ? palette.warn : null,
+            ),
+            onPressed: onRecord,
           ),
         IconButton.filled(
           key: const ValueKey('call-hang-up'),

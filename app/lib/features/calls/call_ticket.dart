@@ -6,6 +6,7 @@ class CallTicket {
     required this.url,
     required this.token,
     required this.screenShare,
+    required this.record,
   });
 
   factory CallTicket.fromJson(Map<String, Object?> json) => CallTicket(
@@ -13,10 +14,12 @@ class CallTicket {
     url: json['url']! as String,
     token: json['token']! as String,
     screenShare: json['screenShare']! as bool,
+    record: json['record'] as bool? ?? false,
   );
 
   final Call call;
   final String url;
   final String token;
   final bool screenShare;
+  final bool record;
 }

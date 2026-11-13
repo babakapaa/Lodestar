@@ -43,7 +43,7 @@ func (s PrivacySection) Blobs(ctx context.Context, tx pgx.Tx, tenantID, userID s
 		if f.Status != StatusReady {
 			continue
 		}
-		key := objectKey(tenantID, f.ID)
+		key := ObjectKey(tenantID, f.ID)
 		blobs = append(blobs, privacy.Blob{
 			Path: "files/" + f.ID + "/" + f.Name,
 			Open: func(ctx context.Context) (io.ReadCloser, error) { return s.storage.Open(ctx, key) },
@@ -61,7 +61,7 @@ func (s PrivacySection) Erase(ctx context.Context, tx pgx.Tx, tenantID, userID s
 		return ErrUnavailable
 	}
 	for _, f := range list {
-		if err := s.storage.Delete(ctx, objectKey(tenantID, f.ID)); err != nil {
+		if err := s.storage.Delete(ctx, ObjectKey(tenantID, f.ID)); err != nil {
 			return err
 		}
 	}

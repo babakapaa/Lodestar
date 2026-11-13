@@ -8,13 +8,16 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
+const callColumns = `c.id, c.chat_id, c.started_by::text, c.started_at,
+	EXISTS (SELECT 1 FROM chat.call_recordings r WHERE r.call_id = c.id AND r.ended_at IS NULL)`
+
 type CallStore struct{}
 
 func (CallStore) Active(ctx context.Context, tx pgx.Tx, chatID string) (Call, bool, error) {
 	var c Call
 	err := tx.QueryRow(ctx, `
-		SELECT id, chat_id, started_by::text, started_at FROM chat.calls WHERE chat_id = $1 AND ended_at IS NULL`, chatID).
-		Scan(&c.ID, &c.ChatID, &c.StartedBy, &c.StartedAt)
+		SELECT `+callColumns+` FROM chat.calls c WHERE c.chat_id = $1 AND c.ended_at IS NULL`, chatID).
+		Scan(&c.ID, &c.ChatID, &c.StartedBy, &c.StartedAt, &c.Recording)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return Call{}, false, nil
 	}
@@ -28,8 +31,8 @@ func (CallStore) Active(ctx context.Context, tx pgx.Tx, chatID string) (Call, bo
 func (CallStore) ByID(ctx context.Context, tx pgx.Tx, id string) (Call, bool, error) {
 	var c Call
 	err := tx.QueryRow(ctx, `
-		SELECT id, chat_id, started_by::text, started_at FROM chat.calls WHERE id = $1 AND ended_at IS NULL`, id).
-		Scan(&c.ID, &c.ChatID, &c.StartedBy, &c.StartedAt)
+		SELECT `+callColumns+` FROM chat.calls c WHERE c.id = $1 AND c.ended_at IS NULL`, id).
+		Scan(&c.ID, &c.ChatID, &c.StartedBy, &c.StartedAt, &c.Recording)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return Call{}, false, nil
 	}

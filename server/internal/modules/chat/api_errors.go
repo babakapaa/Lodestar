@@ -25,6 +25,9 @@ const (
 	CodeCallNotFound    = "call_not_found"
 	CodeCallFull        = "call_full"
 	CodeCallsDown       = "calls_unavailable"
+	CodeRecordingOff    = "recording_off"
+	CodeRecordingDown   = "recording_unavailable"
+	CodeRecordingState  = "recording_state"
 	CodeBadHook         = "bad_signature"
 )
 
@@ -49,6 +52,9 @@ var errorCodes = []struct {
 	{ErrCallsOff, http.StatusForbidden, CodeCallsOff},
 	{ErrCallNotFound, http.StatusNotFound, CodeCallNotFound},
 	{ErrCallFull, http.StatusConflict, CodeCallFull},
+	{ErrRecordingOff, http.StatusForbidden, CodeRecordingOff},
+	{ErrRecordingUnavailable, http.StatusServiceUnavailable, CodeRecordingDown},
+	{ErrRecordingState, http.StatusConflict, CodeRecordingState},
 }
 
 func writeError(w http.ResponseWriter, err error) {

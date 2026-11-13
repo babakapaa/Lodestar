@@ -75,10 +75,12 @@ func Load() (Config, error) {
 		},
 		LiveKit: livekit.Config{
 			URL:       stringEnv("LODESTAR_LIVEKIT_URL", ""),
+			APIURL:    stringEnv("LODESTAR_LIVEKIT_API_URL", ""),
 			APIKey:    stringEnv("LODESTAR_LIVEKIT_API_KEY", ""),
 			APISecret: stringEnv("LODESTAR_LIVEKIT_API_SECRET", ""),
 		},
 	}
+	cfg.LiveKit.Storage = cfg.Storage
 	cfg.AppURL = strings.TrimRight(stringEnv("LODESTAR_APP_URL", cfg.PublicURL), "/")
 	if cfg.DatabaseURL == "" {
 		return Config{}, errors.New("LODESTAR_DATABASE_URL is required")

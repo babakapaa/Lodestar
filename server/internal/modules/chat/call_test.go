@@ -32,7 +32,7 @@ func hook(t *testing.T, w *world, body string) int {
 		t.Fatalf("sign: %v", err)
 	}
 	mux := http.NewServeMux()
-	chat.Routes{Calls: w.calls}.MountOpen(mux)
+	chat.Routes{Calls: w.calls, Recordings: w.records}.MountOpen(mux)
 	req := httptest.NewRequest(http.MethodPost, "/v1/open/chat/livekit", strings.NewReader(body))
 	req.Header.Set("Authorization", auth)
 	rec := httptest.NewRecorder()
@@ -101,7 +101,7 @@ func TestGroupCallFromRingToEnd(t *testing.T) {
 func TestCallHookNeedsSignature(t *testing.T) {
 	w := newWorld(t)
 	mux := http.NewServeMux()
-	chat.Routes{Calls: w.calls}.MountOpen(mux)
+	chat.Routes{Calls: w.calls, Recordings: w.records}.MountOpen(mux)
 	req := httptest.NewRequest(http.MethodPost, "/v1/open/chat/livekit", strings.NewReader(`{}`))
 	req.Header.Set("Authorization", "nope")
 	rec := httptest.NewRecorder()

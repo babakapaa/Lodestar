@@ -2391,6 +2391,14 @@
   "errorRecordingOff": "Вуз не разрешил вам записывать звонки",
   "errorRecordingUnavailable": "Запись звонков не настроена на сервере",
   "errorRecordingState": "Запись уже включена или уже остановлена",
+  "statsOfUnit": "Статистика: {name}",
+  "@statsOfUnit": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "sandboxWhy": "Почему упало?",
   "sandboxWhyPrompt": "Мой запуск в песочнице завершился с ошибкой. Помоги понять почему, не исправляя код за меня.",
   "submitAttach": "Прикрепить файл",

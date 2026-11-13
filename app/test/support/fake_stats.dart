@@ -4,6 +4,13 @@ import 'package:http/http.dart' as http;
 
 class FakeStats {
   final List<Map<String, String>> queries = [];
+  final List<Map<String, String>> entries = [];
+
+  http.Response entriesResponse() => http.Response(
+    jsonEncode(entries),
+    200,
+    headers: {'content-type': 'application/json; charset=utf-8'},
+  );
 
   http.Response handle(http.Request request) {
     final query = request.url.queryParameters;

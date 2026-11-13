@@ -13,4 +13,5 @@ type Routes struct {
 
 func (r Routes) Mount(mux *http.ServeMux) {
 	mux.Handle("GET /v1/stats/units", r.Authenticator.Require(UnitsHandler{service: r.Service}))
+	mux.Handle("GET /v1/stats/entries", r.Authenticator.Require(EntriesHandler{service: r.Service}))
 }

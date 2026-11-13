@@ -226,6 +226,7 @@ class FakeServer {
       _ when path.startsWith('/v1/sandbox/') => sandbox.handle(request),
       _ when path.startsWith('/v1/attendance/') => attendance.handle(request),
       'GET /v1/stats/units' => stats.handle(request),
+      'GET /v1/stats/entries' => stats.entriesResponse(),
       _ when path == '/v1/setup' || path.startsWith('/v1/setup/') =>
         setup.handle(request),
       _ when path == '/v1/files' || path.startsWith('/v1/files/') =>

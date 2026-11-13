@@ -183,3 +183,24 @@ func TestUnitsRespectScope(t *testing.T) {
 		t.Fatalf("missing err = %v", err)
 	}
 }
+
+func TestEntriesListOwnUnits(t *testing.T) {
+	w := newWorld(t)
+	bio := w.unit(nil, "Биофак", 0)
+	w.unit(&bio, "Кафедра генетики", 5)
+	dean := w.user()
+	w.grant(dean, "unit:"+bio.ID, stats.View)
+
+	list, err := w.stats.Entries(w.ctx, dean)
+	if err != nil || len(list) != 1 || list[0].UnitID != bio.ID || list[0].Name != "Биофак" {
+		t.Fatalf("dean = %+v, %v", list, err)
+	}
+	if list, err := w.stats.Entries(w.ctx, w.user()); err != nil || len(list) != 0 {
+		t.Fatalf("stranger = %+v, %v", list, err)
+	}
+	rector := w.user()
+	w.grant(rector, "tenant", stats.View)
+	if list, err := w.stats.Entries(w.ctx, rector); err != nil || len(list) != 0 {
+		t.Fatalf("whole university = %+v, %v", list, err)
+	}
+}

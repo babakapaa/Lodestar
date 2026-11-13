@@ -64,6 +64,27 @@ func (s Service) Require(ctx context.Context, tx pgx.Tx, p auth.Principal, sc Sc
 	return nil
 }
 
+func (s Service) HeldScopes(ctx context.Context, tx pgx.Tx, p auth.Principal) ([]Scope, error) {
+	list, err := s.assignments.ByUser(ctx, tx, p.UserID)
+	if err != nil {
+		return nil, err
+	}
+	seen := map[string]bool{}
+	var out []Scope
+	for _, a := range list {
+		if seen[a.Scope] {
+			continue
+		}
+		seen[a.Scope] = true
+		sc, err := ParseScope(a.Scope, p.TenantID)
+		if err != nil {
+			return nil, err
+		}
+		out = append(out, sc)
+	}
+	return out, nil
+}
+
 func (s Service) AllowedInTenant(ctx context.Context, tx pgx.Tx, p auth.Principal, permission string) (bool, error) {
 	g, err := s.resolver.ForUser(ctx, tx, p.TenantID, p.UserID, TenantScope(p.TenantID))
 	if err != nil {

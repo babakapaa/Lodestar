@@ -111,3 +111,28 @@ func TestDirectCallsRecordOnlyWhenEveryoneMay(t *testing.T) {
 		t.Fatalf("not in call: %v", err)
 	}
 }
+
+func TestRecordingFailsCleanlyWithoutEgress(t *testing.T) {
+	w := newWorld(t)
+	owner, member := w.user("owner"), w.user("member")
+	g, _, err := w.chats.Create(w.ctx, owner, chat.ChatInput{Kind: chat.KindGroup, Title: "Команда", MemberIDs: []string{member.UserID, owner.UserID}})
+	if err != nil {
+		t.Fatalf("group: %v", err)
+	}
+	ticket, err := w.calls.Join(w.ctx, owner, g.ID)
+	if err != nil {
+		t.Fatalf("join: %v", err)
+	}
+	w.settings.values[chat.RecordingSetting] = chat.RecordEveryone
+	w.egress.broken = true
+	if _, err := w.records.Start(w.ctx, owner, ticket.Call.ID); !errors.Is(err, chat.ErrRecordingUnavailable) {
+		t.Fatalf("broken egress: %v", err)
+	}
+	if call, err := w.calls.Active(w.ctx, owner, g.ID); err != nil || call.Recording {
+		t.Fatalf("after failure = %+v, %v", call, err)
+	}
+	w.egress.broken = false
+	if call, err := w.records.Start(w.ctx, owner, ticket.Call.ID); err != nil || !call.Recording {
+		t.Fatalf("retry = %+v, %v", call, err)
+	}
+}

@@ -40,36 +40,70 @@ func (s RecordingService) Start(ctx context.Context, p auth.Principal, callID st
 	if s.k.Calls == nil || !s.k.Calls.Records() {
 		return Call{}, ErrRecordingUnavailable
 	}
-	return s.change(ctx, p, callID, func(tx pgx.Tx, call Call, c Chat) error {
-		if call.Recording {
-			return ErrRecordingState
-		}
-		allowed, err := s.calls.canRecord(ctx, tx, c)
+	if !validID(callID) {
+		return Call{}, ErrCallNotFound
+	}
+	var fileID string
+	err := s.k.Tenants.Run(ctx, p.TenantID, func(tx pgx.Tx) error {
+		call, c, err := s.member(ctx, tx, p, callID)
 		if err != nil {
 			return err
 		}
-		if !allowed {
-			return ErrRecordingOff
+		if err := s.startable(ctx, tx, call, c); err != nil {
+			return err
 		}
 		f, err := s.files.Create(ctx, tx, p.UserID, files.FileInput{
 			Name: "call-" + s.now().UTC().Format("2006-01-02-1504") + ".mp4", ContentType: recordingType, Size: 1,
 		})
-		if err != nil {
+		fileID = f.ID
+		return err
+	})
+	if err != nil {
+		return Call{}, err
+	}
+	egressID, err := s.k.Calls.StartRecording(ctx, RoomName(p.TenantID, callID), files.ObjectKey(p.TenantID, fileID), s.now())
+	if err != nil {
+		return Call{}, errors.Join(ErrRecordingUnavailable, err)
+	}
+	out, err := s.change(ctx, p, callID, func(tx pgx.Tx, call Call, c Chat) error {
+		if err := s.startable(ctx, tx, call, c); err != nil {
 			return err
 		}
-		egressID, err := s.k.Calls.StartRecording(ctx, RoomName(p.TenantID, call.ID), files.ObjectKey(p.TenantID, f.ID), s.now())
-		if err != nil {
-			return errors.Join(ErrRecordingUnavailable, err)
-		}
-		return s.recordings.Start(ctx, tx, Recording{EgressID: egressID, CallID: call.ID, FileID: &f.ID, StartedBy: &p.UserID})
+		return s.recordings.Start(ctx, tx, Recording{EgressID: egressID, CallID: call.ID, FileID: &fileID, StartedBy: &p.UserID})
 	})
+	if err != nil {
+		return Call{}, errors.Join(err, s.k.Calls.StopRecording(context.WithoutCancel(ctx), egressID, s.now()))
+	}
+	return out, nil
+}
+
+func (s RecordingService) startable(ctx context.Context, tx pgx.Tx, call Call, c Chat) error {
+	if call.Recording {
+		return ErrRecordingState
+	}
+	allowed, err := s.calls.canRecord(ctx, tx, c)
+	if err != nil {
+		return err
+	}
+	if !allowed {
+		return ErrRecordingOff
+	}
+	return nil
 }
 
 func (s RecordingService) Stop(ctx context.Context, p auth.Principal, callID string) (Call, error) {
 	if s.k.Calls == nil {
 		return Call{}, ErrRecordingUnavailable
 	}
-	return s.change(ctx, p, callID, func(tx pgx.Tx, call Call, c Chat) error {
+	if !validID(callID) {
+		return Call{}, ErrCallNotFound
+	}
+	var egressID string
+	err := s.k.Tenants.Run(ctx, p.TenantID, func(tx pgx.Tx) error {
+		call, c, err := s.member(ctx, tx, p, callID)
+		if err != nil {
+			return err
+		}
 		r, found, err := s.recordings.Active(ctx, tx, call.ID)
 		if err != nil {
 			return err
@@ -80,10 +114,17 @@ func (s RecordingService) Stop(ctx context.Context, p auth.Principal, callID str
 		if (r.StartedBy == nil || *r.StartedBy != p.UserID) && !manages(c.Role) {
 			return ErrRecordingOff
 		}
-		if err := s.k.Calls.StopRecording(ctx, r.EgressID, s.now()); err != nil {
-			return errors.Join(ErrRecordingUnavailable, err)
-		}
-		return s.recordings.End(ctx, tx, r.EgressID)
+		egressID = r.EgressID
+		return nil
+	})
+	if err != nil {
+		return Call{}, err
+	}
+	if err := s.k.Calls.StopRecording(ctx, egressID, s.now()); err != nil {
+		return Call{}, errors.Join(ErrRecordingUnavailable, err)
+	}
+	return s.change(ctx, p, callID, func(tx pgx.Tx, _ Call, _ Chat) error {
+		return s.recordings.End(ctx, tx, egressID)
 	})
 }
 
@@ -149,16 +190,9 @@ func (s RecordingService) change(ctx context.Context, p auth.Principal, callID s
 	}
 	var out Call
 	err := s.k.Tenants.Run(ctx, p.TenantID, func(tx pgx.Tx) error {
-		call, found, err := s.store.ByID(ctx, tx, callID)
+		call, c, err := s.member(ctx, tx, p, callID)
 		if err != nil {
 			return err
-		}
-		if !found || !slices.Contains(call.People, p.UserID) {
-			return ErrCallNotFound
-		}
-		c, err := s.chats.ForMember(ctx, tx, p.UserID, call.ChatID)
-		if err != nil {
-			return ErrCallNotFound
 		}
 		if err := fn(tx, call, c); err != nil {
 			return err
@@ -169,4 +203,19 @@ func (s RecordingService) change(ctx context.Context, p auth.Principal, callID s
 		return s.calls.announce(ctx, tx, p.TenantID, call.ChatID, call.ID, true)
 	})
 	return out, err
+}
+
+func (s RecordingService) member(ctx context.Context, tx pgx.Tx, p auth.Principal, callID string) (Call, Chat, error) {
+	call, found, err := s.store.ByID(ctx, tx, callID)
+	if err != nil {
+		return Call{}, Chat{}, err
+	}
+	if !found || !slices.Contains(call.People, p.UserID) {
+		return Call{}, Chat{}, ErrCallNotFound
+	}
+	c, err := s.chats.ForMember(ctx, tx, p.UserID, call.ChatID)
+	if err != nil {
+		return Call{}, Chat{}, ErrCallNotFound
+	}
+	return call, c, nil
 }

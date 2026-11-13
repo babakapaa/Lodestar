@@ -771,5 +771,46 @@
   "letterThanks": "Спасибо!",
   "supportTitle": "Мне тяжело",
   "supportBody": "Это нормально. Здесь люди, которые могут помочь прямо сейчас.",
-  "supportFallback": "Вуз пока не указал контакты. Если вам угрожает опасность, звоните в местную экстренную службу."
+  "supportFallback": "Вуз пока не указал контакты. Если вам угрожает опасность, звоните в местную экстренную службу.",
+  "chatsNew": "Новый чат",
+  "chatsNewDirect": "Написать человеку",
+  "chatsNewGroup": "Новая группа",
+  "chatsNewChannel": "Новый канал",
+  "chatsTitleField": "Название",
+  "chatsCreate": "Создать",
+  "chatsAll": "Все",
+  "chatsRequests": "Запросы",
+  "chatsOffline": "Нет сети. Показаны сохранённые сообщения, новые уйдут при подключении.",
+  "chatsMessageHint": "Сообщение",
+  "chatsSend": "Отправить",
+  "chatsReply": "Ответить",
+  "chatsEdit": "Изменить",
+  "chatsEditTitle": "Изменить сообщение",
+  "chatsDelete": "Удалить",
+  "chatsCopy": "Копировать",
+  "chatsCopied": "Скопировано",
+  "chatsEdited": "изменено",
+  "chatsDeleted": "Сообщение удалено",
+  "chatsFile": "Файл",
+  "chatsFailed": "Не отправлено",
+  "chatsDiscard": "Убрать",
+  "chatsOlder": "Показать раньше",
+  "chatsReadOnlyChannel": "В канале пишут только администраторы",
+  "chatsArchived": "Чат в архиве, писать в него нельзя",
+  "chatsRequestBanner": "У вас нет общих групп с этим человеком. Пока вы не примете запрос, его сообщения приходят без звука.",
+  "chatsAccept": "Принять",
+  "chatsMute": "Выключить звук",
+  "chatsUnmute": "Включить звук",
+  "chatsMembers": "Участников: {count}",
+  "@chatsMembers": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chatsChannel": "Канал",
+  "chatsReplyTo": "Ответ на сообщение",
+  "chatsUnknown": "Удалённый аккаунт",
+  "chatsEmpty": "Сообщений пока нет"
 }

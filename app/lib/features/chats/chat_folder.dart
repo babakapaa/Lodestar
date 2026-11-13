@@ -1,0 +1,1 @@
+enum ChatFolder { all, requests }

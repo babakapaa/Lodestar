@@ -8,6 +8,7 @@ import '../../design/tokens/motion.dart';
 import '../../features/admin/admin_screen.dart';
 import '../../features/admin/audit_screen.dart';
 import '../../features/admin/tenant_settings_screen.dart';
+import '../../features/chats/chat_screen.dart';
 import '../../features/chats/chats_screen.dart';
 import '../../features/connect/connect_screen.dart';
 import '../../features/login/login_screen.dart';
@@ -175,6 +176,7 @@ class AppRouter {
           ),
           _param(AppRoutes.dialog(':id'), (id) => DialogScreen(dialogId: id)),
           _route(AppRoutes.journal, const JournalScreen()),
+          _param(AppRoutes.chat(':id'), (id) => ChatScreen(chatId: id)),
           _param(
             AppRoutes.courseMaterials(':id'),
             (id) => MaterialsScreen(courseId: id),

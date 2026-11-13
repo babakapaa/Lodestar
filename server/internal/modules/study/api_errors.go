@@ -6,6 +6,7 @@ import (
 
 	"github.com/babakapaa/lodestar/server/internal/core/access"
 	"github.com/babakapaa/lodestar/server/internal/core/apierror"
+	"github.com/babakapaa/lodestar/server/internal/core/module"
 )
 
 const (
@@ -38,6 +39,7 @@ const (
 	CodeDefenseFinished    = "defense_finished"
 	CodeNotChosen          = "defense_not_chosen"
 	CodeNoWork             = "no_submitted_work"
+	CodeTeamWork           = "team_work"
 	CodeAIUnavailable      = "study_ai_unavailable"
 	CodeAIFailed           = "study_ai_failed"
 )
@@ -76,6 +78,7 @@ var errorCodes = []struct {
 	{ErrDefenseFinished, http.StatusConflict, CodeDefenseFinished},
 	{ErrNotChosen, http.StatusForbidden, CodeNotChosen},
 	{ErrNoWork, http.StatusConflict, CodeNoWork},
+	{ErrTeamWork, http.StatusConflict, CodeTeamWork},
 	{ErrAIUnavailable, http.StatusServiceUnavailable, CodeAIUnavailable},
 	{ErrAIFailed, http.StatusBadGateway, CodeAIFailed},
 }
@@ -92,4 +95,13 @@ func writeError(w http.ResponseWriter, err error) {
 
 func badRequest(w http.ResponseWriter) {
 	apierror.Write(w, http.StatusBadRequest, access.CodeInvalidRequest)
+}
+
+func problem(err error) error {
+	for _, e := range errorCodes {
+		if errors.Is(err, e.err) {
+			return module.TeamWorkProblem{Status: e.status, Code: e.code}
+		}
+	}
+	return err
 }

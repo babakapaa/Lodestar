@@ -26,3 +26,11 @@ func (Module) PrivacySections(module.Kernel) []privacy.Section {
 func (Module) RosterSources(k module.Kernel) []module.RosterSource {
 	return []module.RosterSource{TeamRosters{scopes: k.TeamScopes}}
 }
+
+func (Module) Workers(k module.Kernel) []module.Worker {
+	return []module.Worker{NewWorkSettler(k)}
+}
+
+func (Module) TeamDirectory(module.Kernel) module.TeamDirectory {
+	return Placements{}
+}

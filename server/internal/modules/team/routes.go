@@ -26,4 +26,9 @@ func (r Routes) Mount(mux *http.ServeMux) {
 	mux.Handle("GET /v1/team/codes/{code}", PreviewHandler{service: s})
 	mux.Handle("POST /v1/team/codes/{code}", JoinHandler{service: s})
 	mux.Handle("POST /v1/team/leave-requests/{id}", DecideHandler{service: s})
+	mux.Handle("POST /v1/team/teams/{id}/proposals", ProposeHandler{service: s})
+	mux.Handle("POST /v1/team/proposals/{id}/votes", VoteHandler{service: s})
+	mux.Handle("GET /v1/team/card", CardHandler{service: s})
+	mux.Handle("PUT /v1/team/card", SaveCardHandler{service: s})
+	mux.Handle("POST /v1/team/scopes/{kind}/{id}/suggestions", SuggestHandler{service: s})
 }

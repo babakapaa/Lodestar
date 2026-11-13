@@ -11,4 +11,5 @@ type TeamDetails struct {
 	History        []HistoryEntry    `json:"history"`
 	Request        *LeaveRequest     `json:"request"`
 	CanLeaveFreely bool              `json:"canLeaveFreely"`
+	Proposal       *Proposal         `json:"proposal"`
 }

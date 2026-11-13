@@ -26,4 +26,5 @@ type Kernel struct {
 	Briefs      Briefs
 	Rosters     Rosters
 	TeamScopes  TeamScopes
+	Teams       TeamDirectory
 }

@@ -14,8 +14,15 @@ type SubmissionInput struct {
 }
 
 func (in SubmissionInput) normalized() (SubmissionInput, error) {
+	if in.ClientID == "" {
+		return in, ErrInvalidSubmission
+	}
+	return in.content()
+}
+
+func (in SubmissionInput) content() (SubmissionInput, error) {
 	in.Body = strings.TrimSpace(in.Body)
-	if in.ClientID == "" || len(in.Files) > maxAttachments || (in.Body == "" && len(in.Files) == 0) {
+	if len(in.Files) > maxAttachments || (in.Body == "" && len(in.Files) == 0) {
 		return in, ErrInvalidSubmission
 	}
 	if in.SearchMap != nil {

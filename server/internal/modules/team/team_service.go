@@ -35,7 +35,11 @@ func (s Service) details(ctx context.Context, tx pgx.Tx, p auth.Principal, t Tea
 		}
 		d.CanLeaveFreely = freeLeave(ts, time.Now())
 	}
-	return d, nil
+	if d.Proposal, err = s.proposals.Latest(ctx, tx, t.ID); err != nil || d.Proposal == nil {
+		return d, err
+	}
+	d.Proposal.Votes, err = s.proposals.Votes(ctx, tx, d.Proposal.ID, t.Members)
+	return d, err
 }
 
 func (s Service) Get(ctx context.Context, p auth.Principal, id string) (TeamDetails, error) {

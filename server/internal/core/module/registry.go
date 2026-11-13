@@ -216,3 +216,12 @@ func (r *Registry) TeamScopes(k Kernel) TeamScopes {
 	}
 	return scopes
 }
+
+func (r *Registry) TeamDirectory(k Kernel) TeamDirectory {
+	for _, m := range r.modules {
+		if d, ok := m.(TeamDirecting); ok {
+			return d.TeamDirectory(k)
+		}
+	}
+	return nil
+}

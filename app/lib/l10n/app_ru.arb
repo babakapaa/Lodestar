@@ -933,5 +933,269 @@
   "defenseDraftProtocol": "Черновик по отметкам",
   "settingTeachersEditSchedule": "Преподаватели правят расписание",
   "settingDefenseRecording": "Записывать защиты",
-  "settingChatRetention": "Сколько дней хранить сообщения чатов, 0 без срока"
+  "settingChatRetention": "Сколько дней хранить сообщения чатов, 0 без срока",
+  "assignmentTeam": "Командная работа",
+  "assignmentTeamHint": "Работу сдаёт команда, когда все согласны",
+  "teamMinSize": "От, человек",
+  "teamMaxSize": "До, человек",
+  "teamSelfFormedSwitch": "Студенты собираются сами",
+  "teamPickFreeLeave": "Свободный выход до…",
+  "teamSizeExact": "команда из {count}",
+  "@teamSizeExact": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "teamSizeRange": "команда от {min} до {max}",
+  "@teamSizeRange": {
+    "placeholders": {
+      "min": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "teamSelfFormed": "собираются сами",
+  "teamByTeacher": "собирает преподаватель",
+  "teamFreeLeaveUntil": "свободный выход до {date}",
+  "@teamFreeLeaveUntil": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "teamSomeone": "Кто-то",
+  "teamEventCreated": "{actor} создаёт команду",
+  "@teamEventCreated": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      }
+    }
+  },
+  "teamEventJoined": "{who} вступает",
+  "@teamEventJoined": {
+    "placeholders": {
+      "who": {
+        "type": "String"
+      }
+    }
+  },
+  "teamEventAdded": "{actor} добавляет: {who}",
+  "@teamEventAdded": {
+    "placeholders": {
+      "who": {
+        "type": "String"
+      },
+      "actor": {
+        "type": "String"
+      }
+    }
+  },
+  "teamEventLeft": "{who} выходит",
+  "@teamEventLeft": {
+    "placeholders": {
+      "who": {
+        "type": "String"
+      }
+    }
+  },
+  "teamEventRemoved": "{actor} убирает: {who}",
+  "@teamEventRemoved": {
+    "placeholders": {
+      "who": {
+        "type": "String"
+      },
+      "actor": {
+        "type": "String"
+      }
+    }
+  },
+  "teamEventSeparated": "{actor} выводит на отдельную работу: {who}",
+  "@teamEventSeparated": {
+    "placeholders": {
+      "who": {
+        "type": "String"
+      },
+      "actor": {
+        "type": "String"
+      }
+    }
+  },
+  "teamEventMovedIn": "{actor} переводит в команду: {who}",
+  "@teamEventMovedIn": {
+    "placeholders": {
+      "who": {
+        "type": "String"
+      },
+      "actor": {
+        "type": "String"
+      }
+    }
+  },
+  "teamEventMovedOut": "{actor} переводит в другую команду: {who}",
+  "@teamEventMovedOut": {
+    "placeholders": {
+      "who": {
+        "type": "String"
+      },
+      "actor": {
+        "type": "String"
+      }
+    }
+  },
+  "voteWaiting": "ждём ответа",
+  "voteAgreed": "согласен",
+  "voteObjected": "возражает",
+  "voteSilent": "промолчал",
+  "teamsTitle": "Команды",
+  "teamsHint": "Мои команды, приглашения и карточка для подбора",
+  "teamJoinByCode": "Вступить по коду",
+  "teamCode": "Код команды",
+  "teamOpen": "Открыть",
+  "teamProfileTitle": "Карточка для подбора",
+  "teamProfileHint": "Интересы и навыки, по ним ИИ предлагает команды",
+  "teamInvitations": "Приглашения",
+  "teamAccept": "Принять",
+  "teamsEmpty": "Команд пока нет",
+  "teamsEmptyBody": "Команды появятся в командных заданиях и задачах лиги.",
+  "teamsMine": "Мои команды",
+  "teamJoin": "Вступить",
+  "teamJoinTitle": "Вступление в команду",
+  "teamProfileAbout": "Карточку видит только ИИ при подборе и преподаватель.",
+  "teamProfileInterests": "Интересы",
+  "teamProfileSkills": "Навыки",
+  "teamProfileHours": "Когда удобно работать",
+  "teamProfileRole": "Какую роль хочется взять",
+  "teamProfileSaved": "Карточка сохранена",
+  "teamSuggestTitle": "Подбор команды",
+  "teamSuggestHint": "ИИ предложит составы по карточкам. Решение остаётся за людьми.",
+  "teamSuggest": "Предложить составы",
+  "teamSuggestNone": "Подходящих составов нет.",
+  "teamCreate": "Создать команду",
+  "teamSuggestWithout": "Без команды остаются: {names}",
+  "@teamSuggestWithout": {
+    "placeholders": {
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "teamName": "Название",
+  "teamRename": "Переименовать",
+  "teamSeeking": "Ищу команду",
+  "teamSeekingNote": "Пара слов о себе",
+  "teamSeekingStart": "Ищу команду",
+  "teamSeekingStop": "Больше не ищу",
+  "teamSeekers": "Ищут команду",
+  "teamSolo": "Вы делаете эту работу отдельно.",
+  "teamSoloTitle": "Отдельная работа",
+  "teamNoneSelf": "Вы пока без команды. Создайте свою или отметьтесь в списке ищущих.",
+  "teamNoneByTeacher": "Вы пока без команды. Команды собирает преподаватель.",
+  "teamDistribute": "Распределить остальных",
+  "teamLeaveRequests": "Просьбы о выходе",
+  "teamLeaveRequestOf": "{name} просится выйти из «{team}»",
+  "@teamLeaveRequestOf": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "team": {
+        "type": "String"
+      }
+    }
+  },
+  "teamLeaveApprove": "Отпустить",
+  "teamLeaveKeep": "Оставить",
+  "teamsAll": "Команды: {count}",
+  "@teamsAll": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "teamsNone": "Команд пока нет.",
+  "teamUnplaced": "Без команды: {count}",
+  "@teamUnplaced": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "teamSolos": "Отдельная работа",
+  "teamMembers": "Состав: {count}",
+  "@teamMembers": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "teamMyLabel": "Моя роль",
+  "teamLabel": "Роль",
+  "teamLabelHint": "Метка до 40 знаков, ни на что не влияет.",
+  "teamAddMember": "Добавить студента",
+  "teamRemoveMember": "Убрать из команды",
+  "teamSeparateMember": "Вывести на отдельную работу",
+  "teamPickNobody": "Некого выбрать.",
+  "teamInvitationsSent": "Приглашения",
+  "teamCodeHint": "Поделитесь кодом с однокурсниками",
+  "teamCopyCode": "Скопировать код",
+  "teamCodeCopied": "Код скопирован",
+  "teamInvite": "Пригласить",
+  "teamUninvite": "Отозвать приглашение",
+  "teamLeave": "Выйти из команды",
+  "teamLeaveAsk": "Попросить о выходе",
+  "teamLeaveReason": "Причина",
+  "teamLeaveFreeHint": "Сейчас можно выйти сразу.",
+  "teamLeaveAskHint": "Срок свободного выхода прошёл. Решит преподаватель.",
+  "teamLeaveSend": "Отправить",
+  "teamLeavePending": "Просьба о выходе ждёт решения преподавателя.",
+  "teamHistory": "История состава",
+  "teamProposalOpen": "Вариант на согласовании",
+  "teamProposalSent": "Работа сдана",
+  "teamProposedBy": "Предложил(а): {name}",
+  "@teamProposedBy": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "teamProposalSilentAt": "Молчание считается согласием с {time}",
+  "@teamProposalSilentAt": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "teamAgree": "Согласен",
+  "teamObject": "Возразить",
+  "teamObjectReason": "Что не так",
+  "teamWork": "Командная работа",
+  "teamFind": "Найти команду",
+  "teamFindHint": "Работа сдаётся командой",
+  "teamProposeHint": "Работа уйдёт, когда все согласятся или промолчат сутки.",
+  "teamProposeNote": "Комментарий для команды",
+  "teamPropose": "Предложить команде",
+  "teamProposeAgain": "Предложить новый вариант",
+  "errorTeamNotFound": "Команда не найдена",
+  "errorInvalidTeam": "Проверьте состав и название команды",
+  "errorAlreadyInTeam": "Студент уже в команде",
+  "errorTeamFull": "Команда уже полная",
+  "errorTeamsByTeacher": "Команды собирает преподаватель",
+  "errorWorksAlone": "Студент делает работу отдельно",
+  "errorTeamsArchived": "Команды этой работы в архиве",
+  "errorNotInvited": "Приглашение не найдено",
+  "errorLeavePending": "Просьба о выходе уже отправлена",
+  "errorTeamWork": "Эту работу сдаёт команда",
+  "errorTeamAi": "Подбор сейчас недоступен"
 }

@@ -2,6 +2,7 @@ import 'defense_format.dart';
 import 'grading.dart';
 import 'map_rules.dart';
 import 'navigator_mode.dart';
+import 'team_rules.dart';
 
 class Assignment {
   const Assignment({
@@ -16,6 +17,7 @@ class Assignment {
     this.searchMap,
     this.navigatorMode = NavigatorMode.course,
     this.defense = DefenseFormat.none,
+    this.team,
   });
 
   factory Assignment.fromJson(Map<String, Object?> json) {
@@ -32,6 +34,7 @@ class Assignment {
       searchMap: MapRules.maybe(json['searchMap']),
       navigatorMode: NavigatorMode.parse(json['navigatorMode']),
       defense: DefenseFormat.parse(json['defense']),
+      team: TeamRules.maybe(json['team']),
     );
   }
 
@@ -46,4 +49,5 @@ class Assignment {
   final MapRules? searchMap;
   final NavigatorMode navigatorMode;
   final DefenseFormat defense;
+  final TeamRules? team;
 }

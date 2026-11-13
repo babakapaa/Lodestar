@@ -1,0 +1,1 @@
+enum TeamMemberAction { remove, separate }

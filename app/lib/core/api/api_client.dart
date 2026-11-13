@@ -35,7 +35,8 @@ class ApiClient {
   Future<Object?> patch(String path, Object? body) =>
       _send('PATCH', path, body: body);
 
-  Future<Object?> delete(String path) => _send('DELETE', path);
+  Future<Object?> delete(String path, [Map<String, String>? query]) =>
+      _send('DELETE', path, query: query);
 
   Future<Uint8List> download(String path) => _authorized(
     (token) => _transport.bytes(_address.resolve(path), accessToken: token),

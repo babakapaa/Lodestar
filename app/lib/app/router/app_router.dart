@@ -53,6 +53,11 @@ import '../../features/study/schedule_screen.dart';
 import '../../features/study/search_map_screen.dart';
 import '../../features/study/study_screen.dart';
 import '../../features/today/today_screen.dart';
+import '../../features/team/team_join_screen.dart';
+import '../../features/team/team_profile_screen.dart';
+import '../../features/team/team_scope_screen.dart';
+import '../../features/team/team_screen.dart';
+import '../../features/team/teams_screen.dart';
 import '../../features/units/units_screen.dart';
 import '../shell/adaptive_shell.dart';
 import 'app_tab.dart';
@@ -221,6 +226,23 @@ class AppRouter {
             AppRoutes.materialNew(':id'),
             (id) => MaterialFormScreen(courseId: id),
           ),
+          _route(AppRoutes.teams, const TeamsScreen()),
+          _route(AppRoutes.teamProfile, const TeamProfileScreen()),
+          _param(
+            AppRoutes.teamJoin(':id'),
+            (code) => TeamJoinScreen(code: code),
+          ),
+          GoRoute(
+            path: AppRoutes.teamScope(':kind', ':id'),
+            pageBuilder: (context, state) => _fade(
+              state,
+              TeamScopeScreen(
+                kind: state.pathParameters['kind']!,
+                scopeId: state.pathParameters['id']!,
+              ),
+            ),
+          ),
+          _param(AppRoutes.team(':id'), (id) => TeamScreen(teamId: id)),
           GoRoute(
             path: AppRoutes.schedulePath,
             pageBuilder: (context, state) => _fade(

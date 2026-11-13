@@ -57,6 +57,17 @@ abstract final class ApiErrorText {
       'invalid_message' => l10n.errorInvalidMessage,
       'invalid_material' => l10n.errorInvalidMaterial,
       'material_not_found' => l10n.errorMaterialNotFound,
+      'team_scope_not_found' || 'team_not_found' => l10n.errorTeamNotFound,
+      'invalid_team' => l10n.errorInvalidTeam,
+      'already_in_team' => l10n.errorAlreadyInTeam,
+      'team_full' => l10n.errorTeamFull,
+      'teams_by_teacher' => l10n.errorTeamsByTeacher,
+      'works_alone' => l10n.errorWorksAlone,
+      'teams_archived' => l10n.errorTeamsArchived,
+      'not_invited' => l10n.errorNotInvited,
+      'leave_request_pending' => l10n.errorLeavePending,
+      'team_work' => l10n.errorTeamWork,
+      'team_ai_unavailable' || 'team_ai_failed' => l10n.errorTeamAi,
       _ => l10n.errorGeneric,
     };
   }

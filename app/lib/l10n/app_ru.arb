@@ -2459,5 +2459,23 @@
   },
   "setupExpand": "Открыть для всех",
   "setupPilotBanner": "Lodestar пока работает пилотом на нескольких курсах. Ваших курсов среди них нет.",
-  "errorCallNotStarted": "Звонок в канале начинает администратор канала. Дождитесь начала."
+  "errorCallNotStarted": "Звонок в канале начинает администратор канала. Дождитесь начала.",
+  "callRecordTitle": "Что записать",
+  "callRecordVideo": "Видео и звук",
+  "callRecordAudio": "Только звук",
+  "callConsentAsk": "Участник просит записать звонок. Вы согласны?",
+  "callConsentAskAudio": "Участник просит записать звук звонка. Вы согласны?",
+  "callConsentWaiting": "{count, plural, one{Запись начнётся, когда согласится ещё {count} участник} few{Запись начнётся, когда согласятся ещё {count} участника} other{Запись начнётся, когда согласятся ещё {count} участников}}",
+  "@callConsentWaiting": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "callConsentAgree": "Согласен",
+  "callConsentDecline": "Против",
+  "callConsentJoin": "Звонок записывается. Войти можно, только если вы согласны на запись.",
+  "settingChatRecordingConsent": "Запись звонка только с согласия всех участников",
+  "errorRecordingConsent": "Звонок записывается, нужно согласие на запись"
 }

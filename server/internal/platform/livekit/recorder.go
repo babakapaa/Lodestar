@@ -16,17 +16,18 @@ func (i *Issuer) Records() bool {
 	return i.cfg.Storage.Endpoint != "" && i.cfg.Storage.AccessKey != ""
 }
 
-func (i *Issuer) StartRecording(ctx context.Context, room, key string, now time.Time) (string, error) {
+func (i *Issuer) StartRecording(ctx context.Context, room, key string, audioOnly bool, now time.Time) (string, error) {
 	if !i.Records() {
 		return "", ErrNoRecording
 	}
 	st := i.cfg.Storage
 	var out EgressInfo
 	err := i.call(ctx, "StartRoomCompositeEgress", map[string]any{
-		"room_name": room,
-		"layout":    "grid",
+		"room_name":  room,
+		"layout":     "grid",
+		"audio_only": audioOnly,
 		"file_outputs": []map[string]any{{
-			"file_type": "MP4",
+			"file_type": fileType(audioOnly),
 			"filepath":  key,
 			"s3": map[string]any{
 				"access_key":       st.AccessKey,

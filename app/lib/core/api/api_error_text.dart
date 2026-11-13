@@ -108,6 +108,7 @@ abstract final class ApiErrorText {
       'calls_unavailable' => l10n.errorCallsUnavailable,
       'call_full' => l10n.errorCallFull,
       'call_not_started' => l10n.errorCallNotStarted,
+      'recording_consent_required' => l10n.errorRecordingConsent,
       'call_not_found' => l10n.errorCallNotFound,
       'recording_off' => l10n.errorRecordingOff,
       'recording_unavailable' => l10n.errorRecordingUnavailable,

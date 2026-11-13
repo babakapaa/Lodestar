@@ -13,6 +13,7 @@ enum SettingGroup {
     'core.deletion_grace_days',
     'chat.retention_days',
     'chat.call_recording',
+    'chat.recording_consent',
     'study.defense_recording',
   };
 

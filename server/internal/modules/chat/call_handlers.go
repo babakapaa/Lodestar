@@ -27,7 +27,11 @@ func (h CallHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 type JoinCallHandler struct{ service CallService }
 
 func (h JoinCallHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	t, err := h.service.Join(r.Context(), principal(r), r.PathValue("id"))
+	var in JoinInput
+	if !readOptional(w, r, &in) {
+		return
+	}
+	t, err := h.service.Join(r.Context(), principal(r), r.PathValue("id"), in)
 	if err != nil {
 		writeError(w, err)
 		return
@@ -95,7 +99,11 @@ func (h CallHookHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 type StartRecordingHandler struct{ service RecordingService }
 
 func (h StartRecordingHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	c, err := h.service.Start(r.Context(), principal(r), r.PathValue("id"))
+	var in RecordingInput
+	if !readOptional(w, r, &in) {
+		return
+	}
+	c, err := h.service.Start(r.Context(), principal(r), r.PathValue("id"), in)
 	if err != nil {
 		writeError(w, err)
 		return
@@ -107,6 +115,22 @@ type StopRecordingHandler struct{ service RecordingService }
 
 func (h StopRecordingHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	c, err := h.service.Stop(r.Context(), principal(r), r.PathValue("id"))
+	if err != nil {
+		writeError(w, err)
+		return
+	}
+	jsonhttp.Write(w, http.StatusOK, c)
+}
+
+type ConsentHandler struct{ service RecordingService }
+
+func (h ConsentHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	var in ConsentInput
+	if err := jsonhttp.Read(w, r, &in); err != nil {
+		badRequest(w)
+		return
+	}
+	c, err := h.service.Consent(r.Context(), principal(r), r.PathValue("id"), in)
 	if err != nil {
 		writeError(w, err)
 		return

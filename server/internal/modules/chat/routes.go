@@ -37,6 +37,7 @@ func (r Routes) Mount(mux *http.ServeMux) {
 	mux.Handle("POST /v1/chat/chats/{id}/call", JoinCallHandler{service: r.Calls})
 	mux.Handle("POST /v1/chat/calls/{id}/leave", LeaveCallHandler{service: r.Calls})
 	mux.Handle("POST /v1/chat/calls/{id}/recording", StartRecordingHandler{service: r.Recordings})
+	mux.Handle("POST /v1/chat/calls/{id}/consent", ConsentHandler{service: r.Recordings})
 	mux.Handle("DELETE /v1/chat/calls/{id}/recording", StopRecordingHandler{service: r.Recordings})
 }
 

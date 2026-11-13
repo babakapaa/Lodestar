@@ -36,6 +36,8 @@ var ErrCallFull = errors.New("call already has the most people allowed")
 
 var ErrCallNotStarted = errors.New("only channel admins start a call")
 
+var ErrConsentRequired = errors.New("joining a recorded call needs consent")
+
 var ErrRecordingOff = errors.New("call recording is not allowed")
 
 var ErrRecordingUnavailable = errors.New("call recording is not configured on this server")

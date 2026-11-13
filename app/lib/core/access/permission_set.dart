@@ -11,6 +11,7 @@ class PermissionSet {
   static const reviewChatReports = 'chat.reports.review';
   static const manageAwards = 'league.awards.manage';
   static const manageIntegrations = 'core.integrations.manage';
+  static const manageSandbox = 'sandbox.manage';
 
   final Set<String> _granted;
 
@@ -25,5 +26,6 @@ class PermissionSet {
       has(manageMembers) ||
       has(reviewChatReports) ||
       has(manageAwards) ||
-      has(manageIntegrations);
+      has(manageIntegrations) ||
+      has(manageSandbox);
 }

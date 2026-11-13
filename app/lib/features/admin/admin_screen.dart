@@ -102,6 +102,16 @@ class AdminScreen extends ConsumerWidget {
                     trailing: const Icon(Icons.chevron_right),
                     onTap: () => context.push(AppRoutes.ltiPlatforms),
                   ),
+                if (permissions.has(PermissionSet.manageSandbox))
+                  ListTile(
+                    key: const ValueKey('admin-sandbox'),
+                    contentPadding: EdgeInsets.zero,
+                    leading: const Icon(Icons.memory),
+                    title: Text(l10n.sandboxAdminTitle),
+                    subtitle: Text(l10n.sandboxAdminTile),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => context.push(AppRoutes.sandboxAdmin),
+                  ),
               ],
             ),
           ),

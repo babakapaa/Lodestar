@@ -7,6 +7,7 @@ import '../../design/components/empty_state.dart';
 import '../../design/components/section.dart';
 import '../../design/tokens/spacing.dart';
 import '../../l10n/l10n_context.dart';
+import '../admin/admin_providers.dart';
 import 'course_tile.dart';
 import 'loaded_list_view.dart';
 import 'navigator_tile.dart';
@@ -19,6 +20,12 @@ class StudyScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
+    final sandbox =
+        ref
+            .watch(modulesProvider)
+            .value
+            ?.any((m) => m.name == 'sandbox' && m.enabled) ??
+        false;
     return TabPage(
       title: l10n.tabStudy,
       child: LoadedListView(
@@ -50,6 +57,14 @@ class StudyScreen extends ConsumerWidget {
             subtitle: l10n.teamsHint,
             route: AppRoutes.teams,
           ),
+          if (sandbox)
+            NavigatorTile(
+              key: const ValueKey('my-sandbox'),
+              icon: Icons.memory,
+              title: l10n.sandboxTitle,
+              subtitle: l10n.sandboxHint,
+              route: AppRoutes.sandbox,
+            ),
         ],
       ),
     );

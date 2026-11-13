@@ -23,6 +23,8 @@ func (Module) Mount(mux *http.ServeMux, k module.Kernel) {
 		Assignments: NewAssignmentService(k.Tenants, k.Access, k.Notifier).WithTeams(k.Teams),
 		Schedule:    NewScheduleService(k),
 		Defenses:    NewDefenseService(k),
+		Gradebook:   NewGradebookService(k.Tenants, k.Access),
+		Imports:     NewStudentImportService(k.Tenants, k.Access),
 	}.Mount(mux)
 }
 

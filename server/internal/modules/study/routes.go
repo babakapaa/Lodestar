@@ -7,6 +7,8 @@ type Routes struct {
 	Assignments AssignmentService
 	Schedule    ScheduleService
 	Defenses    DefenseService
+	Gradebook   GradebookService
+	Imports     StudentImportService
 }
 
 func (r Routes) Mount(mux *http.ServeMux) {
@@ -19,6 +21,8 @@ func (r Routes) Mount(mux *http.ServeMux) {
 	mux.Handle("POST /v1/study/courses/{id}/archive", ArchiveCourseHandler{service: s, archived: true})
 	mux.Handle("POST /v1/study/courses/{id}/restore", ArchiveCourseHandler{service: s})
 	mux.Handle("GET /v1/study/courses/{id}/students", StudentsHandler{service: s})
+	mux.Handle("POST /v1/study/courses/{id}/students/import", StudentImportHandler{service: r.Imports})
+	mux.Handle("GET /v1/study/courses/{id}/gradebook", GradebookHandler{service: r.Gradebook})
 	a := r.Assignments
 	mux.Handle("GET /v1/study/courses/{id}/assignments", AssignmentsHandler{service: a})
 	mux.Handle("POST /v1/study/courses/{id}/assignments", CreateAssignmentHandler{service: a})

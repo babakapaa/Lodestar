@@ -7,6 +7,7 @@ import (
 
 	"github.com/babakapaa/lodestar/server/internal/core/access"
 	"github.com/babakapaa/lodestar/server/internal/core/auth"
+	"github.com/babakapaa/lodestar/server/internal/core/identity"
 	"github.com/babakapaa/lodestar/server/internal/platform/database"
 )
 
@@ -18,6 +19,7 @@ type Service struct {
 	units   UnitStore
 	members MemberStore
 	events  EventStore
+	people  identity.People
 }
 
 func NewService(tenants database.TenantTx, acc access.Service) Service {

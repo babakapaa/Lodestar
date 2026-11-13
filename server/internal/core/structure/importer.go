@@ -21,7 +21,7 @@ func (e rowFailed) Error() string {
 	return "import row failed: " + e.code
 }
 
-func eachRow(ctx context.Context, tx pgx.Tx, rows []csvRow, report *ImportReport, fn func(pgx.Tx, csvRow) (string, error)) error {
+func eachRow(ctx context.Context, tx pgx.Tx, rows []importRow, report *ImportReport, fn func(pgx.Tx, importRow) (string, error)) error {
 	for _, row := range rows {
 		err := pgx.BeginFunc(ctx, tx, func(sp pgx.Tx) error {
 			code, err := fn(sp, row)
@@ -45,14 +45,6 @@ func eachRow(ctx context.Context, tx pgx.Tx, rows []csvRow, report *ImportReport
 	return nil
 }
 
-func userIDsByEmail(ctx context.Context, tx pgx.Tx, email string) ([]string, error) {
-	rows, err := tx.Query(ctx, `SELECT id::text FROM core.users WHERE lower(email) = lower($1)`, email)
-	if err != nil {
-		return nil, err
-	}
-	return pgx.CollectRows(rows, pgx.RowTo[string])
-}
-
 func (s Service) ImportUnits(ctx context.Context, p auth.Principal, r io.Reader) (ImportReport, error) {
 	rows, err := readTable(r, "code", "parent_code", "kind", "name")
 	if err != nil {
@@ -63,7 +55,7 @@ func (s Service) ImportUnits(ctx context.Context, p auth.Principal, r io.Reader)
 		if err := s.access.Require(ctx, tx, p, access.TenantScope(p.TenantID), ManageStructure); err != nil {
 			return err
 		}
-		return eachRow(ctx, tx, rows, &report, func(sp pgx.Tx, row csvRow) (string, error) {
+		return eachRow(ctx, tx, rows, &report, func(sp pgx.Tx, row importRow) (string, error) {
 			return s.importUnit(ctx, sp, p, row, &report), nil
 		})
 	})
@@ -80,14 +72,14 @@ func (s Service) ImportMembers(ctx context.Context, p auth.Principal, r io.Reade
 		if err := s.access.Require(ctx, tx, p, access.TenantScope(p.TenantID), ManageMembers); err != nil {
 			return err
 		}
-		return eachRow(ctx, tx, rows, &report, func(sp pgx.Tx, row csvRow) (string, error) {
+		return eachRow(ctx, tx, rows, &report, func(sp pgx.Tx, row importRow) (string, error) {
 			return s.importMember(ctx, sp, p, row, &report)
 		})
 	})
 	return finishImport(report, err)
 }
 
-func (s Service) importUnit(ctx context.Context, tx pgx.Tx, p auth.Principal, row csvRow, report *ImportReport) string {
+func (s Service) importUnit(ctx context.Context, tx pgx.Tx, p auth.Principal, row importRow, report *ImportReport) string {
 	code := row.values["code"]
 	in := UnitInput{Kind: row.values["kind"], Name: row.values["name"], Code: &code}
 	if code == "" {
@@ -131,7 +123,7 @@ func (s Service) importUnit(ctx context.Context, tx pgx.Tx, p auth.Principal, ro
 	return ""
 }
 
-func (s Service) importMember(ctx context.Context, tx pgx.Tx, p auth.Principal, row csvRow, report *ImportReport) (string, error) {
+func (s Service) importMember(ctx context.Context, tx pgx.Tx, p auth.Principal, row importRow, report *ImportReport) (string, error) {
 	unit, err := s.units.ByCode(ctx, tx, row.values["unit_code"])
 	if errors.Is(err, ErrUnitNotFound) {
 		return ImportMissingUnit, nil
@@ -139,7 +131,7 @@ func (s Service) importMember(ctx context.Context, tx pgx.Tx, p auth.Principal, 
 	if err != nil {
 		return "", err
 	}
-	ids, err := userIDsByEmail(ctx, tx, row.values["email"])
+	ids, err := s.people.IDsByEmail(ctx, tx, row.values["email"])
 	if err != nil {
 		return "", err
 	}

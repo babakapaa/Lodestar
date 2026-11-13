@@ -94,6 +94,9 @@ func TestTeamsEarnTaskPointsAfterDefense(t *testing.T) {
 	if err != nil || len(details.Solutions) != 1 || details.Role != league.RoleLead || details.Solutions[0].Work.Text != "Бот на базе навигатора" {
 		t.Fatalf("teacher task = %+v, %v", details, err)
 	}
+	if len(details.People) != 2 || details.Kind != "study.course" {
+		t.Fatalf("task people = %+v, kind %q", details.People, details.Kind)
+	}
 	if mine, _ := w.leagues.Task(w.ctx, w.dana, task.ID); len(mine.Solutions) != 0 {
 		t.Fatalf("other student sees solution: %+v", mine.Solutions)
 	}

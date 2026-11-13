@@ -82,6 +82,14 @@ class CourseScreen extends ConsumerWidget {
                 teach: details.course.role.teaches,
               ),
             ),
+            const SizedBox(height: Spacing.m),
+            NavigatorTile(
+              key: const ValueKey('course-league'),
+              icon: Icons.leaderboard_outlined,
+              title: l10n.leagueTitle,
+              subtitle: l10n.leagueHint,
+              route: AppRoutes.league('study.course', courseId),
+            ),
             if (details.course.role.teaches) ...[
               const SizedBox(height: Spacing.m),
               NavigatorTile(

@@ -9,6 +9,7 @@ class PermissionSet {
   static const manageMembers = 'core.structure.members';
   static const viewAudit = 'core.audit.view';
   static const reviewChatReports = 'chat.reports.review';
+  static const manageAwards = 'league.awards.manage';
 
   final Set<String> _granted;
 
@@ -21,5 +22,6 @@ class PermissionSet {
       has(manageRoles) ||
       has(manageStructure) ||
       has(manageMembers) ||
-      has(reviewChatReports);
+      has(reviewChatReports) ||
+      has(manageAwards);
 }

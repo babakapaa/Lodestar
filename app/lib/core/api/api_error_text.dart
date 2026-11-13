@@ -68,6 +68,24 @@ abstract final class ApiErrorText {
       'leave_request_pending' => l10n.errorLeavePending,
       'team_work' => l10n.errorTeamWork,
       'team_ai_unavailable' || 'team_ai_failed' => l10n.errorTeamAi,
+      'league_not_found' ||
+      'league_player_not_found' ||
+      'league_move_not_found' ||
+      'league_dispute_not_found' ||
+      'league_task_not_found' ||
+      'league_solution_not_found' ||
+      'league_award_not_found' ||
+      'league_grant_not_found' => l10n.errorLeagueNotFound,
+      'invalid_league_rules' => l10n.errorLeagueRules,
+      'invalid_league_input' ||
+      'league_dispute_target' ||
+      'invalid_league_award' => l10n.errorLeagueInput,
+      'league_dispute_open' => l10n.errorLeagueDisputeOpen,
+      'league_archived' => l10n.errorLeagueArchived,
+      'invalid_league_task' => l10n.errorLeagueTask,
+      'league_task_closed' => l10n.errorLeagueTaskClosed,
+      'invalid_league_solution' => l10n.errorLeagueSolution,
+      'league_award_gone' => l10n.errorAwardGone,
       _ => l10n.errorGeneric,
     };
   }

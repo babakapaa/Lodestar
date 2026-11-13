@@ -2392,5 +2392,47 @@
   "errorRecordingUnavailable": "Запись звонков не настроена на сервере",
   "errorRecordingState": "Запись уже включена или уже остановлена",
   "sandboxWhy": "Почему упало?",
-  "sandboxWhyPrompt": "Мой запуск в песочнице завершился с ошибкой. Помоги понять почему, не исправляя код за меня."
+  "sandboxWhyPrompt": "Мой запуск в песочнице завершился с ошибкой. Помоги понять почему, не исправляя код за меня.",
+  "submitAttach": "Прикрепить файл",
+  "scheduleEditTitle": "Расписание курса",
+  "scheduleEditHint": "Повторяющиеся занятия, переносы и отмены",
+  "seriesTitle": "Повторяющиеся занятия",
+  "seriesEmpty": "Занятий пока нет. Добавьте первое.",
+  "seriesAdd": "Добавить занятие",
+  "seriesEdit": "Изменить занятие",
+  "seriesDelete": "Удалить занятие",
+  "seriesKind": "Тип",
+  "seriesWeekday": "День недели",
+  "seriesTime": "Начало, ЧЧ:ММ",
+  "seriesMinutes": "Минут",
+  "seriesRoom": "Аудитория",
+  "seriesEvery": "Повтор",
+  "seriesEveryWeeks": "{count, plural, =1{каждую неделю} one{раз в {count} неделю} few{раз в {count} недели} other{раз в {count} недель}}",
+  "@seriesEveryWeeks": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "seriesLength": "{count} мин",
+  "@seriesLength": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "seriesFrom": "С",
+  "seriesTo": "По",
+  "lessonsUpcoming": "Ближайшие две недели",
+  "lessonsNone": "В ближайшие две недели занятий нет",
+  "lessonCancel": "Отменить занятие",
+  "lessonMove": "Перенести",
+  "lessonRoom": "Сменить аудиторию",
+  "lessonRevert": "Вернуть как было",
+  "lessonNote": "Комментарий для студентов",
+  "errorInvalidSeries": "Проверьте время, длительность и даты",
+  "errorInvalidChange": "Изменение занятия заполнено неверно",
+  "errorSeriesNotFound": "Занятие не найдено"
 }

@@ -8,6 +8,7 @@ import '../../design/tokens/spacing.dart';
 import '../../design/tokens/tokens_context.dart';
 import '../../l10n/l10n_context.dart';
 import 'assignment_details.dart';
+import 'attached_file_tile.dart';
 import 'search_map_view.dart';
 import 'study_labels_context.dart';
 import 'study_providers.dart';
@@ -62,12 +63,7 @@ class MyWorkSection extends ConsumerWidget {
                     const SizedBox(height: Spacing.s),
                     SelectableText(latest.body),
                   ],
-                  for (final file in latest.files)
-                    ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      leading: const Icon(Icons.attach_file),
-                      title: Text(file.name),
-                    ),
+                  for (final file in latest.files) AttachedFileTile(file: file),
                   if (latest.searchMap case final map?) ...[
                     const SizedBox(height: Spacing.m),
                     SearchMapView(map: map),

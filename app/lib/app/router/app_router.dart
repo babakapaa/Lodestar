@@ -60,6 +60,7 @@ import '../../features/settings/settings_screen.dart';
 import '../../features/setup/setup_screen.dart';
 import '../../features/setup/setup_section_screen.dart';
 import '../../features/stats/unit_stats_screen.dart';
+import '../../features/study/course_schedule_screen.dart';
 import '../../features/study/assignment_edit_screen.dart';
 import '../../features/study/assignment_screen.dart';
 import '../../features/study/course_screen.dart';
@@ -367,6 +368,10 @@ class AppRouter {
           _param(
             AppRoutes.courseLms(':id'),
             (id) => CourseLmsScreen(courseId: id),
+          ),
+          _param(
+            AppRoutes.courseSchedule(':id'),
+            (id) => CourseScheduleScreen(courseId: id),
           ),
           GoRoute(
             path: AppRoutes.schedulePath,

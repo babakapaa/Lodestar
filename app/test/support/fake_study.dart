@@ -5,6 +5,8 @@ import 'package:http/http.dart' as http;
 import 'fake_defense.dart';
 
 class FakeStudy {
+  Map<String, Map<String, Object?>> files = {};
+
   String role = 'student';
   String? submitError;
   final List<Map<String, Object?>> assignments = [
@@ -21,6 +23,8 @@ class FakeStudy {
   ];
   final List<Map<String, Object?>> submissions = [];
   final List<Map<String, Object?>> lessons = [];
+  final List<Map<String, Object?>> series = [];
+  final List<Map<String, Object?>> courseLessons = [];
   final List<Map<String, Object?>> deadlines = [];
   final Map<String, Map<String, Object?>> grades = {};
   final Map<String, Map<String, Object?>> maps = {};
@@ -91,6 +95,20 @@ class FakeStudy {
         200,
       ),
       ('POST', ['courses', 'c1', 'students', 'import']) => _import(request),
+      ('GET', ['courses', 'c1', 'series']) => _json(200, series),
+      ('POST', ['courses', 'c1', 'series']) => _addSeries(request),
+      ('PUT', ['series', final id]) => _putSeries(request, id),
+      ('DELETE', ['series', final id]) => _deleteSeries(id),
+      ('PUT', ['series', final id, 'changes', final date]) => _change(
+        request,
+        id,
+        date,
+      ),
+      ('DELETE', ['series', final id, 'changes', final date]) => _revert(
+        id,
+        date,
+      ),
+      ('GET', ['courses', 'c1', 'schedule']) => _json(200, courseLessons),
       ('GET', ['assignments', final id]) => _details(id),
       ('PUT', ['assignments', final id]) => _update(request, id),
       ('POST', ['assignments', final id, 'submissions']) => _submit(
@@ -217,10 +235,64 @@ class FakeStudy {
       'body': body['body'],
       'searchMap': body['searchMap'],
       'submittedAt': '2026-11-12T10:00:00Z',
-      'files': <Object?>[],
+      'files': [
+        for (final id in body['files'] as List<Object?>? ?? const [])
+          files[id]!,
+      ],
     };
     submissions.add(submission);
     return _json(201, submission);
+  }
+
+  http.Response _addSeries(http.Request request) {
+    final item = {..._body(request), 'id': 'sr${++_next}', 'courseId': 'c1'};
+    series.add(item);
+    courseLessons.add({
+      'seriesId': item['id'],
+      'courseId': 'c1',
+      'courseTitle': 'Биология',
+      'kind': item['kind'],
+      'date': '2026-11-16',
+      'startsAt': '2026-11-16T04:00:00Z',
+      'endsAt': '2026-11-16T05:30:00Z',
+      'room': item['room'],
+      'status': 'planned',
+      'note': '',
+    });
+    return _json(201, item);
+  }
+
+  http.Response _putSeries(http.Request request, String id) {
+    final i = series.indexWhere((s) => s['id'] == id);
+    series[i] = {..._body(request), 'id': id, 'courseId': 'c1'};
+    return _json(200, series[i]);
+  }
+
+  http.Response _deleteSeries(String id) {
+    series.removeWhere((s) => s['id'] == id);
+    courseLessons.removeWhere((l) => l['seriesId'] == id);
+    return http.Response('', 204);
+  }
+
+  Map<String, Object?> _lessonOf(String id, String date) =>
+      courseLessons.firstWhere((l) => l['seriesId'] == id && l['date'] == date);
+
+  http.Response _change(http.Request request, String id, String date) {
+    final body = _body(request);
+    final lesson = _lessonOf(id, date);
+    lesson['status'] = body['status'];
+    lesson['note'] = body['note'] ?? '';
+    if (body['room'] != null) {
+      lesson['room'] = body['room'];
+    }
+    return _json(200, body);
+  }
+
+  http.Response _revert(String id, String date) {
+    final lesson = _lessonOf(id, date);
+    lesson['status'] = 'planned';
+    lesson['note'] = '';
+    return http.Response('', 204);
   }
 
   http.Response _saveMap(http.Request request, String id) {

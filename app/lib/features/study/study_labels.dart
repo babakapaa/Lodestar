@@ -63,6 +63,14 @@ class StudyLabels {
 
   String shortDay(DateTime day) => DateFormat.MMMd(_locale).format(day);
 
+  String date(DateTime day) => DateFormat.yMMMd(_locale).format(day);
+
+  String weekday(int day) =>
+      DateFormat.EEEE(_locale).format(DateTime(2024, 1, day));
+
+  String shortWeekday(int day) =>
+      DateFormat.E(_locale).format(DateTime(2024, 1, day));
+
   String points(double value) => _number(value);
 
   String time(DateTime at) =>

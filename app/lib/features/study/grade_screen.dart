@@ -9,6 +9,7 @@ import '../../design/tokens/spacing.dart';
 import '../../design/tokens/tokens_context.dart';
 import '../../l10n/l10n_context.dart';
 import 'assignment.dart';
+import 'attached_file_tile.dart';
 import 'grade_form.dart';
 import 'search_map_view.dart';
 import 'student_work.dart';
@@ -48,12 +49,7 @@ class GradeScreen extends ConsumerWidget {
                 const SizedBox(height: Spacing.s),
                 SelectableText(attempt.body),
               ],
-              for (final file in attempt.files)
-                ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  leading: const Icon(Icons.attach_file),
-                  title: Text(file.name),
-                ),
+              for (final file in attempt.files) AttachedFileTile(file: file),
               if (attempt.searchMap case final map?) ...[
                 const SizedBox(height: Spacing.m),
                 SearchMapView(map: map),

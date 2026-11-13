@@ -1,3 +1,4 @@
+import 'attached_file.dart';
 import 'search_map.dart';
 
 class SubmissionDraft {
@@ -7,6 +8,7 @@ class SubmissionDraft {
     required this.assignmentTitle,
     required this.body,
     required this.composedAt,
+    this.files = const [],
     this.searchMap,
     this.error,
   });
@@ -18,6 +20,7 @@ class SubmissionDraft {
       assignmentTitle: json['assignmentTitle'] as String? ?? '',
       body: json['body'] as String? ?? '',
       composedAt: DateTime.parse(json['composedAt']! as String),
+      files: AttachedFile.list(json['files']),
       searchMap: SearchMap.maybe(json['searchMap']),
       error: json['error'] as String?,
     );
@@ -28,6 +31,7 @@ class SubmissionDraft {
   final String assignmentTitle;
   final String body;
   final DateTime composedAt;
+  final List<AttachedFile> files;
   final SearchMap? searchMap;
   final String? error;
 
@@ -39,6 +43,7 @@ class SubmissionDraft {
     assignmentTitle: assignmentTitle,
     body: body,
     composedAt: composedAt,
+    files: files,
     searchMap: searchMap,
     error: code,
   );
@@ -49,6 +54,7 @@ class SubmissionDraft {
     'assignmentTitle': assignmentTitle,
     'body': body,
     'composedAt': composedAt.toUtc().toIso8601String(),
+    'files': [for (final file in files) file.toJson()],
     'searchMap': searchMap?.toJson(),
     'error': ?error,
   };
@@ -57,6 +63,7 @@ class SubmissionDraft {
     'clientId': clientId,
     'body': body,
     'composedAt': composedAt.toUtc().toIso8601String(),
+    'files': [for (final file in files) file.id],
     'searchMap': searchMap?.toJson(),
   };
 }

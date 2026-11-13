@@ -8,9 +8,10 @@ import 'lesson_status.dart';
 import 'study_labels_context.dart';
 
 class LessonTile extends StatelessWidget {
-  const LessonTile({required this.lesson, super.key});
+  const LessonTile({required this.lesson, this.onTap, super.key});
 
   final Lesson lesson;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -41,7 +42,7 @@ class LessonTile extends StatelessWidget {
         ].join(', '),
         style: status == null ? null : TextStyle(color: palette.warn),
       ),
-      onTap: () => context.push(AppRoutes.course(lesson.courseId)),
+      onTap: onTap ?? () => context.push(AppRoutes.course(lesson.courseId)),
     );
   }
 }

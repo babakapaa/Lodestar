@@ -63,3 +63,5 @@ var ErrAIUnavailable = errors.New("language model is not configured")
 var ErrAIFailed = errors.New("language model did not give a usable answer")
 
 var ErrSearchMapIncomplete = errors.New("search map does not meet the assignment rules")
+
+var ErrTeamWork = errors.New("this work is handed in by the team")

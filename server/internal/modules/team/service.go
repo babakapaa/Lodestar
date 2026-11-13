@@ -13,6 +13,7 @@ import (
 	"github.com/babakapaa/lodestar/server/internal/core/identity"
 	"github.com/babakapaa/lodestar/server/internal/core/module"
 	"github.com/babakapaa/lodestar/server/internal/platform/database"
+	"github.com/babakapaa/lodestar/server/internal/platform/llm"
 )
 
 type Service struct {
@@ -26,12 +27,15 @@ type Service struct {
 	seekers     SeekerStore
 	solos       SoloStore
 	leaves      LeaveStore
+	proposals   ProposalStore
+	cards       CardStore
+	model       llm.Model
 	people      identity.People
 	log         audit.Log
 }
 
 func NewService(k module.Kernel) Service {
-	return Service{tenants: k.Tenants, scopes: k.TeamScopes, notifier: k.Notifier}
+	return Service{tenants: k.Tenants, scopes: k.TeamScopes, notifier: k.Notifier, model: k.Model}
 }
 
 func (s Service) scope(ctx context.Context, tx pgx.Tx, p auth.Principal, kind, id string) (module.TeamScope, ScopeRole, error) {

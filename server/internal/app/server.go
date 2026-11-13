@@ -72,6 +72,7 @@ func NewServer(version string, cfg config.Config, box secretbox.Box, pool *pgxpo
 	kernel.Preferences = profileService
 	kernel.Briefs = registry.Briefs(kernel)
 	kernel.TeamScopes = registry.TeamScopes(kernel)
+	kernel.Teams = registry.TeamDirectory(kernel)
 	kernel.Rosters = registry.Rosters(kernel)
 	sources := append([]search.Source{profile.PeopleSource{}, structure.UnitsSource{}}, registry.SearchSources()...)
 	searchService, err := search.NewService(tx, settingsService, sources...)

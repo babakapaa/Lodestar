@@ -26,10 +26,16 @@ type AssignmentService struct {
 	attachments Attachments
 	people      identity.People
 	log         audit.Log
+	teams       module.TeamDirectory
 }
 
 func NewAssignmentService(tenants database.TenantTx, acc access.Service, notifier module.Notifier) AssignmentService {
 	return AssignmentService{tenants: tenants, gate: CourseGate{access: acc}, notifier: notifier}
+}
+
+func (s AssignmentService) WithTeams(teams module.TeamDirectory) AssignmentService {
+	s.teams = teams
+	return s
 }
 
 func (s AssignmentService) List(ctx context.Context, p auth.Principal, courseID string) ([]AssignmentItem, error) {
@@ -271,16 +277,13 @@ func (s AssignmentService) Submit(ctx context.Context, p auth.Principal, id stri
 		if !errors.Is(err, ErrAssignmentNotFound) {
 			return err
 		}
-		if c.ArchivedAt != nil {
-			return ErrArchived
-		}
-		if a.SearchMap != nil && (in.SearchMap == nil || len(in.SearchMap.Missing(*a.SearchMap)) > 0) {
-			return ErrSearchMapIncomplete
-		}
-		if err := s.attachments.Check(ctx, tx, p.UserID, in.Files); err != nil {
+		if err := s.teamless(ctx, tx, a, p.UserID); err != nil {
 			return err
 		}
-		if sub, err = s.submissions.Insert(ctx, tx, id, p.UserID, in); err != nil {
+		if err := s.acceptable(ctx, tx, p, a, c, in); err != nil {
+			return err
+		}
+		if sub, err = s.submissions.Insert(ctx, tx, id, p.UserID, in, nil); err != nil {
 			return err
 		}
 		if err := s.submissions.SetFiles(ctx, tx, sub.ID, in.Files); err != nil {
@@ -290,7 +293,11 @@ func (s AssignmentService) Submit(ctx context.Context, p auth.Principal, id stri
 			return err
 		}
 		created = true
-		return s.tellTeachers(ctx, tx, p, c, a)
+		name, err := s.displayName(ctx, tx, p.UserID)
+		if err != nil {
+			return err
+		}
+		return s.tellTeachers(ctx, tx, p.TenantID, c, a, name)
 	})
 	return sub, created, err
 }
@@ -495,20 +502,24 @@ func (s AssignmentService) announce(ctx context.Context, tx pgx.Tx, p auth.Princ
 	})
 }
 
-func (s AssignmentService) tellTeachers(ctx context.Context, tx pgx.Tx, p auth.Principal, c Course, a Assignment) error {
+func (s AssignmentService) tellTeachers(ctx context.Context, tx pgx.Tx, tenantID string, c Course, a Assignment, who string) error {
 	teachers, err := s.gate.roster.Teachers(ctx, tx, c.ID)
 	if err != nil {
 		return err
 	}
-	people, err := s.people.ByIDs(ctx, tx, []string{p.UserID})
-	if err != nil || len(people) == 0 {
-		return err
-	}
-	return s.notifier.Notify(ctx, tx, p.TenantID, module.Notification{
+	return s.notifier.Notify(ctx, tx, tenantID, module.Notification{
 		Type: NotifySubmitted, UserIDs: teachers,
-		Params: map[string]any{"assignment": a.Title, "course": c.Title, "student": people[0].DisplayName},
+		Params: map[string]any{"assignment": a.Title, "course": c.Title, "student": who},
 		Link:   assignmentLink(a.ID),
 	})
+}
+
+func (s AssignmentService) displayName(ctx context.Context, tx pgx.Tx, userID string) (string, error) {
+	people, err := s.people.ByIDs(ctx, tx, []string{userID})
+	if err != nil || len(people) == 0 {
+		return "", err
+	}
+	return people[0].DisplayName, nil
 }
 
 func (s AssignmentService) record(ctx context.Context, tx pgx.Tx, p auth.Principal, action string, a Assignment) error {

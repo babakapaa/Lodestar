@@ -6,6 +6,7 @@ import (
 
 	"github.com/babakapaa/lodestar/server/internal/core/access"
 	"github.com/babakapaa/lodestar/server/internal/core/apierror"
+	"github.com/babakapaa/lodestar/server/internal/core/module"
 	"github.com/babakapaa/lodestar/server/internal/platform/jsonhttp"
 )
 
@@ -21,6 +22,9 @@ const (
 	CodeNotInvited      = "not_invited"
 	CodeRequestNotFound = "leave_request_not_found"
 	CodeRequestPending  = "leave_request_pending"
+	CodeProposalGone    = "proposal_not_found"
+	CodeAIUnavailable   = "team_ai_unavailable"
+	CodeAIFailed        = "team_ai_failed"
 )
 
 var errorCodes = []struct {
@@ -39,9 +43,17 @@ var errorCodes = []struct {
 	{ErrNotInvited, http.StatusNotFound, CodeNotInvited},
 	{ErrRequestNotFound, http.StatusNotFound, CodeRequestNotFound},
 	{ErrRequestPending, http.StatusConflict, CodeRequestPending},
+	{ErrProposalNotFound, http.StatusNotFound, CodeProposalGone},
+	{ErrAIUnavailable, http.StatusServiceUnavailable, CodeAIUnavailable},
+	{ErrAIFailed, http.StatusBadGateway, CodeAIFailed},
 }
 
 func writeError(w http.ResponseWriter, err error) {
+	var problem module.TeamWorkProblem
+	if errors.As(err, &problem) {
+		apierror.Write(w, problem.Status, problem.Code)
+		return
+	}
 	for _, e := range errorCodes {
 		if errors.Is(err, e.err) {
 			apierror.Write(w, e.status, e.code)

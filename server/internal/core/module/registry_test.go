@@ -2,6 +2,7 @@ package module
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"net/http"
 	"net/http/httptest"
@@ -222,6 +223,14 @@ func (k teamScopeKind) Kind() string {
 
 func (teamScopeKind) TeamScope(context.Context, pgx.Tx, string) (TeamScope, error) {
 	return TeamScope{}, ErrTeamScopeNotFound
+}
+
+func (teamScopeKind) PrepareTeamWork(context.Context, pgx.Tx, string, auth.Principal, json.RawMessage) (json.RawMessage, error) {
+	return nil, ErrTeamScopeNotFound
+}
+
+func (teamScopeKind) DeliverTeamWork(context.Context, pgx.Tx, TeamDelivery) error {
+	return ErrTeamScopeNotFound
 }
 
 func TestRegistryRequiresOwnTeamScopeKinds(t *testing.T) {

@@ -16,4 +16,5 @@ type Submission struct {
 	SearchMap    *SearchMap   `json:"searchMap"`
 	SubmittedAt  time.Time    `json:"submittedAt"`
 	Files        []files.File `json:"files"`
+	Team         *TeamReceipt `json:"team"`
 }

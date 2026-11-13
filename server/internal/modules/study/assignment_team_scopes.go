@@ -2,16 +2,19 @@ package study
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 
 	"github.com/jackc/pgx/v5"
 
+	"github.com/babakapaa/lodestar/server/internal/core/auth"
 	"github.com/babakapaa/lodestar/server/internal/core/module"
 )
 
 const TeamScopeAssignment = "study.assignment"
 
 type AssignmentTeamScopes struct {
+	work        AssignmentService
 	assignments AssignmentStore
 	courses     CourseStore
 	rosters     CourseRosters
@@ -46,4 +49,12 @@ func (s AssignmentTeamScopes) TeamScope(ctx context.Context, tx pgx.Tx, id strin
 		MinSize: a.Team.MinSize, MaxSize: a.Team.MaxSize, SelfFormed: a.Team.SelfFormed,
 		FreeLeaveUntil: a.Team.FreeLeaveUntil, DueAt: a.DueAt, Archived: c.ArchivedAt != nil,
 	}, nil
+}
+
+func (s AssignmentTeamScopes) PrepareTeamWork(ctx context.Context, tx pgx.Tx, id string, p auth.Principal, work json.RawMessage) (json.RawMessage, error) {
+	return s.work.PrepareTeamWork(ctx, tx, id, p, work)
+}
+
+func (s AssignmentTeamScopes) DeliverTeamWork(ctx context.Context, tx pgx.Tx, d module.TeamDelivery) error {
+	return s.work.DeliverTeamWork(ctx, tx, d)
 }

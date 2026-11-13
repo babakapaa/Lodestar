@@ -8,6 +8,9 @@ const (
 	NotifyLeaveApproved  = "team.leave_approved"
 	NotifyLeaveRejected  = "team.leave_rejected"
 	NotifyChanged        = "team.changed"
+	NotifyProposed       = "team.proposed"
+	NotifyObjected       = "team.objected"
+	NotifySubmitted      = "team.submitted"
 )
 
 func (Module) NotificationTypes() []module.NotificationType {
@@ -55,6 +58,33 @@ func (Module) NotificationTypes() []module.NotificationType {
 				"ru": {Title: "{scope}", Body: "Преподаватель изменил ваш состав: «{team}»"},
 				"kk": {Title: "{scope}", Body: "Оқытушы құрамыңызды өзгертті: «{team}»"},
 				"en": {Title: "{scope}", Body: "Your teacher changed your team: “{team}”"},
+			},
+		},
+		{
+			Key: NotifyProposed, InApp: true, Push: true,
+			Names: map[string]string{"ru": "Предложения сдать работу", "kk": "Жұмысты тапсыру ұсыныстары", "en": "Proposals to hand in"},
+			Texts: map[string]module.NotificationText{
+				"ru": {Title: "{scope}", Body: "{author} предлагает сдать работу команды «{team}». Молчание через 24 часа считается согласием"},
+				"kk": {Title: "{scope}", Body: "{author} «{team}» командасының жұмысын тапсыруды ұсынады. 24 сағат үнсіздік келісім саналады"},
+				"en": {Title: "{scope}", Body: "{author} proposes to hand in the work of “{team}”. Silence for 24 hours counts as agreement"},
+			},
+		},
+		{
+			Key: NotifyObjected, InApp: true, Push: true,
+			Names: map[string]string{"ru": "Возражения в команде", "kk": "Командадағы қарсылықтар", "en": "Objections in a team"},
+			Texts: map[string]module.NotificationText{
+				"ru": {Title: "{scope}", Body: "{author} возражает против сдачи «{team}»"},
+				"kk": {Title: "{scope}", Body: "{author} «{team}» тапсыруына қарсы"},
+				"en": {Title: "{scope}", Body: "{author} objects to handing in “{team}”"},
+			},
+		},
+		{
+			Key: NotifySubmitted, InApp: true, Push: true,
+			Names: map[string]string{"ru": "Сдачи команды", "kk": "Команда тапсырулары", "en": "Team hand-ins"},
+			Texts: map[string]module.NotificationText{
+				"ru": {Title: "{scope}", Body: "Команда «{team}» сдала работу"},
+				"kk": {Title: "{scope}", Body: "«{team}» командасы жұмысты тапсырды"},
+				"en": {Title: "{scope}", Body: "Team “{team}” handed in the work"},
 			},
 		},
 	}

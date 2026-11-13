@@ -5496,6 +5496,159 @@ paths:
           $ref: "#/components/responses/Error"
         default:
           $ref: "#/components/responses/Error"
+  /v1/team/teams/{id}/proposals:
+    post:
+      tags: [team]
+      operationId: proposeTeamWork
+      summary: Предложить сдать версию
+      description: Работа проверяется по правилам задания. Предложивший сразу согласен, остальным приходит запрос. Молчание 24 часа (или до срока, если он раньше) считается согласием.
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProposalInput"
+      responses:
+        "201":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TeamDetails"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        "422":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/team/proposals/{id}/votes:
+    post:
+      tags: [team]
+      operationId: voteTeamWork
+      summary: Согласиться или возразить
+      description: Возражение требует комментария и останавливает сдачу до срока. В срок сдаётся последняя предложенная версия, возражение прикладывается.
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VoteInput"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TeamDetails"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/team/card:
+    get:
+      tags: [team]
+      operationId: getTeamProfile
+      summary: Что я рассказал о себе для подбора команды
+      security:
+        - bearer: []
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TeamProfile"
+        "401":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+    put:
+      tags: [team]
+      operationId: saveTeamProfile
+      summary: Сохранить рассказ о себе
+      security:
+        - bearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TeamProfile"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TeamProfile"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/team/scopes/{kind}/{id}/suggestions:
+    post:
+      tags: [team]
+      operationId: suggestTeams
+      summary: ИИ предлагает составы
+      description: Только по тому, что студенты сами написали о себе. Преподавателю для нераспределённых, студенту одна команда из ищущих.
+      security:
+        - bearer: []
+      parameters:
+        - name: kind
+          in: path
+          required: true
+          description: Вид области команд, например study.assignment
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          description: Задание или задача, внутри которых собираются команды
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TeamSuggestion"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        "502":
+          $ref: "#/components/responses/Error"
+        "503":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
 components:
   securitySchemes:
     bearer:
@@ -6456,7 +6609,7 @@ components:
                 - type: "null"
     Submission:
       type: object
-      required: [id, assignmentId, studentId, clientId, body, composedAt, searchMap, submittedAt, files]
+      required: [id, assignmentId, studentId, clientId, body, composedAt, searchMap, submittedAt, files, team]
       properties:
         id:
           type: string
@@ -6486,6 +6639,11 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/File"
+        team:
+          oneOf:
+            - $ref: "#/components/schemas/TeamReceipt"
+            - type: "null"
+          description: Квитанция командной сдачи, кто согласился и кто возразил
     SubmissionInput:
       type: object
       required: [clientId]
@@ -6956,7 +7114,7 @@ components:
       allOf:
         - $ref: "#/components/schemas/Team"
         - type: object
-          required: [scope, manage, inviteCode, invited, history, request, canLeaveFreely]
+          required: [scope, manage, inviteCode, invited, history, request, canLeaveFreely, proposal]
           properties:
             scope:
               $ref: "#/components/schemas/TeamScope"
@@ -6981,6 +7139,11 @@ components:
               description: Моя ждущая просьба о выходе
             canLeaveFreely:
               type: boolean
+            proposal:
+              oneOf:
+                - $ref: "#/components/schemas/Proposal"
+                - type: "null"
+              description: Открытое предложение или последняя сдача
     TeamCard:
       type: object
       required: [team, scope]
@@ -7104,6 +7267,150 @@ components:
       properties:
         approve:
           type: boolean
+    TeamVote:
+      allOf:
+        - $ref: "#/components/schemas/Person"
+        - type: object
+          required: [decision, comment, at]
+          properties:
+            decision:
+              type: string
+              enum: [agreed, objected, waiting]
+            comment:
+              type: string
+            at:
+              type: [string, "null"]
+              format: date-time
+    Proposal:
+      type: object
+      required: [id, teamId, proposedBy, work, note, status, silentAt, dueAt, createdAt, sentAt, votes]
+      properties:
+        id:
+          type: string
+          format: uuid
+        teamId:
+          type: string
+          format: uuid
+        proposedBy:
+          oneOf:
+            - $ref: "#/components/schemas/Person"
+            - type: "null"
+        work:
+          type: object
+          description: Снимок работы в формате области, для задания это SubmissionInput без clientId
+        note:
+          type: string
+        status:
+          type: string
+          enum: [open, sent]
+        silentAt:
+          type: string
+          format: date-time
+          description: Когда молчание станет согласием
+        dueAt:
+          type: [string, "null"]
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        sentAt:
+          type: [string, "null"]
+          format: date-time
+        votes:
+          type: array
+          items:
+            $ref: "#/components/schemas/TeamVote"
+    ProposalInput:
+      type: object
+      required: [work]
+      properties:
+        work:
+          type: object
+          description: Для задания это SubmissionInput, clientId не нужен
+        note:
+          type: string
+          maxLength: 1000
+    VoteInput:
+      type: object
+      required: [agree]
+      properties:
+        agree:
+          type: boolean
+        comment:
+          type: string
+          maxLength: 1000
+          description: Обязателен при возражении
+    TeamProfile:
+      type: object
+      properties:
+        interests:
+          type: string
+          maxLength: 500
+        skills:
+          type: string
+          maxLength: 500
+        hours:
+          type: string
+          maxLength: 200
+        role:
+          type: string
+          maxLength: 100
+        updatedAt:
+          type: [string, "null"]
+          format: date-time
+          readOnly: true
+    SuggestedTeam:
+      type: object
+      required: [members, why]
+      properties:
+        members:
+          type: array
+          items:
+            $ref: "#/components/schemas/Person"
+        why:
+          type: string
+    TeamSuggestion:
+      type: object
+      required: [teams, without]
+      properties:
+        teams:
+          type: array
+          items:
+            $ref: "#/components/schemas/SuggestedTeam"
+        without:
+          type: array
+          description: Кто ничего не написал о себе, их ИИ не подбирает
+          items:
+            $ref: "#/components/schemas/Person"
+    TeamReceipt:
+      type: object
+      required: [teamId, teamName, proposalId, proposedBy, votes]
+      properties:
+        teamId:
+          type: string
+          format: uuid
+        teamName:
+          type: string
+        proposalId:
+          type: string
+          format: uuid
+        proposedBy:
+          oneOf:
+            - $ref: "#/components/schemas/Person"
+            - type: "null"
+        votes:
+          type: array
+          items:
+            allOf:
+              - $ref: "#/components/schemas/Person"
+              - type: object
+                required: [decision, comment]
+                properties:
+                  decision:
+                    type: string
+                    enum: [agreed, objected, silent]
+                  comment:
+                    type: string
     StudentWork:
       type: object
       required: [student, latest, attempts, grade]

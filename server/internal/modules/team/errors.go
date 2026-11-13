@@ -23,3 +23,9 @@ var ErrNotInvited = errors.New("no invitation to this team")
 var ErrRequestNotFound = errors.New("leave request not found")
 
 var ErrRequestPending = errors.New("leave request is already waiting")
+
+var ErrProposalNotFound = errors.New("proposal not found or already decided")
+
+var ErrAIUnavailable = errors.New("university has not connected an AI model")
+
+var ErrAIFailed = errors.New("AI answer could not be read")

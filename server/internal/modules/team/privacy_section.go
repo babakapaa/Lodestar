@@ -75,5 +75,28 @@ func (PrivacySection) Export(ctx context.Context, tx pgx.Tx, userID string) (any
 	if err != nil {
 		return nil, fmt.Errorf("export seeking: %w", err)
 	}
-	return map[string]any{"teams": memberships, "history": history, "leaveRequests": leaves, "seeking": seeking}, nil
+	card, err := CardStore{}.Get(ctx, tx, userID)
+	if err != nil {
+		return nil, err
+	}
+	cast, err := tx.Query(ctx, `
+		SELECT t.name, v.agreed, v.comment, v.at FROM team.votes v
+		JOIN team.proposals p ON p.id = v.proposal_id JOIN team.teams t ON t.id = p.team_id
+		WHERE v.user_id::text = $1 ORDER BY v.at`, userID)
+	if err != nil {
+		return nil, fmt.Errorf("export votes: %w", err)
+	}
+	votes, err := pgx.CollectRows(cast, func(row pgx.CollectableRow) (map[string]any, error) {
+		var name, comment string
+		var agreed bool
+		var at time.Time
+		err := row.Scan(&name, &agreed, &comment, &at)
+		return map[string]any{"team": name, "agreed": agreed, "comment": comment, "at": at}, err
+	})
+	if err != nil {
+		return nil, fmt.Errorf("export votes: %w", err)
+	}
+	return map[string]any{
+		"teams": memberships, "history": history, "leaveRequests": leaves, "seeking": seeking, "card": card, "votes": votes,
+	}, nil
 }

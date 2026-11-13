@@ -9,7 +9,6 @@ import (
 	"github.com/jackc/pgx/v5"
 
 	"github.com/babakapaa/lodestar/server/internal/core/auth"
-	"github.com/babakapaa/lodestar/server/internal/core/identity"
 	"github.com/babakapaa/lodestar/server/internal/core/module"
 	"github.com/babakapaa/lodestar/server/internal/core/tenant"
 	"github.com/babakapaa/lodestar/server/internal/platform/database"
@@ -18,19 +17,18 @@ import (
 const appLaunchPath = "/lti"
 
 type LaunchService struct {
-	tenants    tenant.Store
-	tx         database.TenantTx
-	users      identity.Store
-	tickets    auth.TicketStore
-	keySets    *KeySets
-	links      module.LinkSources
-	platforms  PlatformStore
-	attempts   AttemptStore
-	identities IdentityStore
-	contexts   ContextStore
-	members    MemberStore
-	publicURL  string
-	appURL     string
+	tenants   tenant.Store
+	tx        database.TenantTx
+	accounts  Accounts
+	tickets   auth.TicketStore
+	keySets   *KeySets
+	links     module.LinkSources
+	platforms PlatformStore
+	attempts  AttemptStore
+	contexts  ContextStore
+	members   MemberStore
+	publicURL string
+	appURL    string
 }
 
 func (s LaunchService) Begin(ctx context.Context, in LoginInit) (string, error) {
@@ -127,7 +125,7 @@ func (s LaunchService) complete(ctx context.Context, t tenant.Tenant, in Launch)
 	if !claims.Valid() || !p.Deploys(claims.DeploymentID) {
 		return "", fmt.Errorf("unsupported launch %q for deployment %q", claims.MessageType, claims.DeploymentID)
 	}
-	userID, err := s.resolve(ctx, t.ID, p, token.Subject, claims)
+	userID, err := s.accounts.Resolve(ctx, t.ID, p, Person{Subject: token.Subject, Email: claims.Email, Name: claims.DisplayName()})
 	if err != nil {
 		return "", err
 	}
@@ -151,46 +149,6 @@ func (s LaunchService) complete(ctx context.Context, t tenant.Tenant, in Launch)
 		return "", err
 	}
 	return s.appLink("ticket", ticket, "next", path), nil
-}
-
-func (s LaunchService) resolve(ctx context.Context, tenantID string, p Platform, subject string, c LaunchClaims) (string, error) {
-	var userID string
-	var found bool
-	err := s.tx.Run(ctx, tenantID, func(tx pgx.Tx) error {
-		var err error
-		userID, found, err = s.identities.User(ctx, tx, p.ID, subject)
-		return err
-	})
-	if err != nil || found {
-		return userID, err
-	}
-	if p.MatchEmail && c.Email != "" {
-		matches, err := s.users.ByEmail(ctx, tenantID, c.Email)
-		if err != nil {
-			return "", err
-		}
-		if len(matches) == 1 {
-			userID = matches[0].ID
-		}
-	}
-	if userID == "" {
-		u, err := s.users.UpsertExternal(ctx, tenantID, identity.ExternalIdentity{
-			Issuer:      p.Issuer,
-			Subject:     subject,
-			Email:       c.Email,
-			DisplayName: c.DisplayName(),
-		})
-		if err != nil {
-			return "", err
-		}
-		userID = u.ID
-	}
-	err = s.tx.Run(ctx, tenantID, func(tx pgx.Tx) error {
-		var err error
-		userID, err = s.identities.Bind(ctx, tx, p.ID, subject, userID)
-		return err
-	})
-	return userID, err
 }
 
 func (s LaunchService) path(ctx context.Context, tx pgx.Tx, c Context) (string, error) {

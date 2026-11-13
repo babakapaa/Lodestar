@@ -23,6 +23,8 @@ type Service struct {
 	platforms PlatformStore
 	contexts  ContextStore
 	members   MemberStore
+	values    Values
+	sync      SyncService
 	audit     audit.Log
 	publicURL string
 }
@@ -115,31 +117,164 @@ func (s Service) DeletePlatform(ctx context.Context, p auth.Principal, id string
 func (s Service) Context(ctx context.Context, p auth.Principal, id string) (ContextView, error) {
 	var v ContextView
 	err := s.tx.Run(ctx, p.TenantID, func(tx pgx.Tx) error {
-		c, m, err := s.member(ctx, tx, p, id)
+		c, err := s.contexts.ByID(ctx, tx, id)
 		if err != nil {
 			return err
 		}
-		platform, err := s.platforms.ByID(ctx, tx, c.PlatformID)
+		v, err = s.view(ctx, tx, p, c)
+		return err
+	})
+	return v, err
+}
+
+func (s Service) ByOrigin(ctx context.Context, p auth.Principal, kind, originID string) ([]ContextView, error) {
+	source, ok := s.links.Find(kind)
+	if !ok {
+		return nil, ErrUnknownLinkKind
+	}
+	list := []ContextView{}
+	err := s.tx.Run(ctx, p.TenantID, func(tx pgx.Tx) error {
+		if err := source.CanLink(ctx, tx, p, originID); err != nil {
+			if !errors.Is(err, access.ErrForbidden) {
+				return err
+			}
+			if err := source.CanManage(ctx, tx, p, originID); err != nil {
+				return err
+			}
+		}
+		contexts, err := s.contexts.ByOrigin(ctx, tx, kind, originID)
 		if err != nil {
 			return err
 		}
-		v = ContextView{ID: c.ID, Title: c.Title, Label: c.Label, Platform: platform.Name, Instructor: m.Instructor, Options: []module.LinkTarget{}}
-		if v.Link, err = s.describe(ctx, tx, c); err != nil {
-			return err
-		}
-		if !m.Instructor {
-			return nil
-		}
-		for _, source := range s.links {
-			options, err := source.Linkable(ctx, tx, p)
+		for _, c := range contexts {
+			v, err := s.view(ctx, tx, p, c)
 			if err != nil {
 				return err
 			}
-			v.Options = append(v.Options, options...)
+			list = append(list, v)
 		}
 		return nil
 	})
-	return v, err
+	return list, err
+}
+
+func (s Service) SetSource(ctx context.Context, p auth.Principal, id string, in SourceInput) (ContextView, error) {
+	if !in.valid() {
+		return ContextView{}, ErrInvalidSource
+	}
+	err := s.tx.Run(ctx, p.TenantID, func(tx pgx.Tx) error {
+		c, err := s.contexts.ByID(ctx, tx, id)
+		if err != nil {
+			return err
+		}
+		tenant, err := tenantSource(ctx, tx, s.values)
+		if err != nil {
+			return err
+		}
+		if tenant != SourceUnits {
+			return ErrSourceFixed
+		}
+		manages, err := s.manages(ctx, tx, p, c)
+		if err != nil {
+			return err
+		}
+		if !manages {
+			return access.ErrForbidden
+		}
+		if err := s.contexts.SetSource(ctx, tx, c.ID, in.Source); err != nil {
+			return err
+		}
+		return s.audit.Record(ctx, tx, p.UserID, audit.Change{Action: ActionSourceChanged, TargetKind: "lti.context", TargetID: c.ID, Details: in})
+	})
+	if err != nil {
+		return ContextView{}, err
+	}
+	return s.Context(ctx, p, id)
+}
+
+func (s Service) Sync(ctx context.Context, p auth.Principal, id string) (SyncReport, error) {
+	err := s.tx.Run(ctx, p.TenantID, func(tx pgx.Tx) error {
+		c, err := s.contexts.ByID(ctx, tx, id)
+		if err != nil {
+			return err
+		}
+		v, err := s.view(ctx, tx, p, c)
+		if err != nil {
+			return err
+		}
+		if !v.CanSync {
+			return access.ErrForbidden
+		}
+		return nil
+	})
+	if err != nil {
+		return SyncReport{}, err
+	}
+	return s.sync.Sync(ctx, p.TenantID, id)
+}
+
+func (s Service) view(ctx context.Context, tx pgx.Tx, p auth.Principal, c Context) (ContextView, error) {
+	m, err := s.members.Find(ctx, tx, c.ID, p.UserID)
+	member := err == nil
+	if err != nil && !errors.Is(err, ErrContextNotFound) {
+		return ContextView{}, err
+	}
+	manages, err := s.manages(ctx, tx, p, c)
+	if err != nil {
+		return ContextView{}, err
+	}
+	if !member && !manages {
+		return ContextView{}, ErrContextNotFound
+	}
+	platform, err := s.platforms.ByID(ctx, tx, c.PlatformID)
+	if err != nil {
+		return ContextView{}, err
+	}
+	tenant, err := tenantSource(ctx, tx, s.values)
+	if err != nil {
+		return ContextView{}, err
+	}
+	v := ContextView{
+		ID: c.ID, Title: c.Title, Label: c.Label, Platform: platform.Name, Instructor: m.Instructor,
+		Options: []module.LinkTarget{}, Source: effectiveSource(tenant, c),
+		SyncedAt: c.SyncedAt, SyncError: c.SyncError,
+	}
+	if v.Link, err = s.describe(ctx, tx, c); err != nil {
+		return ContextView{}, err
+	}
+	linked := v.Link != nil
+	v.CanChoose = linked && manages && tenant == SourceUnits
+	v.CanSync = linked && (m.Instructor || manages)
+	if !m.Instructor {
+		return v, nil
+	}
+	for _, source := range s.links {
+		options, err := source.Linkable(ctx, tx, p)
+		if err != nil {
+			return ContextView{}, err
+		}
+		v.Options = append(v.Options, options...)
+	}
+	return v, nil
+}
+
+func (s Service) manages(ctx context.Context, tx pgx.Tx, p auth.Principal, c Context) (bool, error) {
+	if c.OriginKind == nil {
+		return false, nil
+	}
+	source, ok := s.links.Find(*c.OriginKind)
+	if !ok {
+		return false, nil
+	}
+	err := source.CanManage(ctx, tx, p, *c.OriginID)
+	switch {
+	case err == nil:
+		return true, nil
+	case errors.Is(err, access.ErrForbidden), errors.Is(err, module.ErrLinkTargetNotFound):
+		return false, nil
+	default:
+		return false, err
+	}
 }
 
 func (s Service) Link(ctx context.Context, p auth.Principal, id string, in LinkInput) (ContextView, error) {
@@ -189,17 +324,12 @@ func (s Service) Unlink(ctx context.Context, p auth.Principal, id string) (Conte
 	return s.Context(ctx, p, id)
 }
 
-func (s Service) member(ctx context.Context, tx pgx.Tx, p auth.Principal, id string) (Context, Member, error) {
+func (s Service) instructor(ctx context.Context, tx pgx.Tx, p auth.Principal, id string) (Context, error) {
 	c, err := s.contexts.ByID(ctx, tx, id)
 	if err != nil {
-		return Context{}, Member{}, err
+		return Context{}, err
 	}
 	m, err := s.members.Find(ctx, tx, c.ID, p.UserID)
-	return c, m, err
-}
-
-func (s Service) instructor(ctx context.Context, tx pgx.Tx, p auth.Principal, id string) (Context, error) {
-	c, m, err := s.member(ctx, tx, p, id)
 	if err != nil {
 		return Context{}, err
 	}

@@ -35,3 +35,12 @@ func (MemberStore) Find(ctx context.Context, tx pgx.Tx, contextID, userID string
 	}
 	return m, nil
 }
+
+func (MemberStore) Keep(ctx context.Context, tx pgx.Tx, contextID string, userIDs []string) error {
+	_, err := tx.Exec(ctx, `
+		DELETE FROM lti.members WHERE context_id::text = $1 AND NOT (user_id::text = ANY($2))`, contextID, userIDs)
+	if err != nil {
+		return fmt.Errorf("prune lti members: %w", err)
+	}
+	return nil
+}

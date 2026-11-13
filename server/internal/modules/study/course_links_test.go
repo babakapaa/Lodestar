@@ -46,6 +46,27 @@ func TestCourseLinks(t *testing.T) {
 		if err != nil || target.Title != "Биология" {
 			t.Errorf("describe = %+v, %v", target, err)
 		}
+		lead, learner := w.user("lead", "lead@kaznu.kz"), w.user("learner", "learner@kaznu.kz")
+		added, err := source.Enroll(w.ctx, tx, teacher.UserID, bio.ID, []string{lead.UserID}, []string{learner.UserID, student.UserID})
+		if err != nil || added != 2 {
+			t.Errorf("enroll = %d, %v", added, err)
+		}
+		if added, _ := source.Enroll(w.ctx, tx, teacher.UserID, bio.ID, []string{lead.UserID}, []string{learner.UserID}); added != 0 {
+			t.Errorf("second enroll = %d", added)
+		}
+		ref, err := source.PutWork(w.ctx, tx, teacher.UserID, bio.ID, "", module.ExternalWork{Title: "Эссе", Max: 20})
+		if err != nil || ref.Kind != study.TeamScopeAssignment {
+			t.Fatalf("put work = %+v, %v", ref, err)
+		}
+		again, err := source.PutWork(w.ctx, tx, teacher.UserID, bio.ID, ref.ID, module.ExternalWork{Title: "Эссе 2", Max: 25})
+		if err != nil || again.ID != ref.ID {
+			t.Errorf("update work = %+v, %v", again, err)
+		}
+		var title string
+		var max float64
+		if err := tx.QueryRow(w.ctx, `SELECT title, max_points::float8 FROM study.assignments WHERE id::text = $1`, ref.ID).Scan(&title, &max); err != nil || title != "Эссе 2" || max != 25 {
+			t.Errorf("assignment = %s %v %v", title, max, err)
+		}
 		return nil
 	})
 	if err != nil {

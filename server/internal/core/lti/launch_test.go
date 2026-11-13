@@ -27,11 +27,11 @@ func TestLoginRedirectsToPlatform(t *testing.T) {
 }
 
 func TestLaunchSignsInAndLinksContext(t *testing.T) {
-	var owner string
-	h := newHarness(t, fakeLinks{owner: &owner})
+	h := newHarness(t)
 
 	teacher, next := h.enter("t-1", "teacher@kaznu.kz", instructorRole)
-	owner = h.me(teacher).ID
+	owner := h.me(teacher).ID
+	h.links.people(owner, "")
 	if !strings.HasPrefix(next, "/lti/contexts/") {
 		t.Fatalf("next = %s", next)
 	}

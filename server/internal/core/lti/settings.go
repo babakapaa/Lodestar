@@ -16,8 +16,11 @@ type Settings struct {
 	Tickets       auth.TicketStore
 	Authenticator auth.Authenticator
 	Links         module.LinkSources
+	Scores        module.ScoreSources
+	Values        Values
 	HTTPClient    *http.Client
 	AttemptTTL    time.Duration
+	SyncEvery     time.Duration
 	PublicURL     string
 	AppURL        string
 }

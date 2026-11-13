@@ -1,5 +1,7 @@
 package lti
 
+import "time"
+
 type Context struct {
 	ID           string
 	PlatformID   string
@@ -12,4 +14,8 @@ type Context struct {
 	Scopes       []string
 	OriginKind   *string
 	OriginID     *string
+	LinkedBy     *string
+	Source       *string
+	SyncedAt     *time.Time
+	SyncError    *string
 }

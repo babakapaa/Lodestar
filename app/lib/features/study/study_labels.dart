@@ -6,6 +6,7 @@ import 'course_role.dart';
 import 'grade.dart';
 import 'grading.dart';
 import 'lesson_status.dart';
+import 'navigator_mode.dart';
 
 class StudyLabels {
   const StudyLabels(this._l10n, this._locale);
@@ -17,6 +18,12 @@ class StudyLabels {
     CourseRole.teacher => _l10n.studyRoleTeacher,
     CourseRole.student => _l10n.studyRoleStudent,
     CourseRole.manager => _l10n.studyRoleManager,
+  };
+
+  String navigatorMode(NavigatorMode mode) => switch (mode) {
+    NavigatorMode.course => _l10n.navigatorModeCourse,
+    NavigatorMode.study => _l10n.navigatorModeStudyShort,
+    NavigatorMode.project => _l10n.navigatorModeProjectShort,
   };
 
   String grading(Grading grading) => switch (grading) {

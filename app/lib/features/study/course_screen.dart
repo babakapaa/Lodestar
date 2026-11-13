@@ -8,6 +8,7 @@ import '../../design/tokens/spacing.dart';
 import '../../l10n/l10n_context.dart';
 import 'assignments_section.dart';
 import 'loaded_list_view.dart';
+import 'navigator_tile.dart';
 import 'study_providers.dart';
 
 class CourseScreen extends ConsumerWidget {
@@ -64,6 +65,24 @@ class CourseScreen extends ConsumerWidget {
               ),
               const SizedBox(height: Spacing.xl),
             ],
+            NavigatorTile(
+              icon: Icons.explore_outlined,
+              title: l10n.navigatorAsk,
+              route: AppRoutes.newDialog(
+                scopeKind: 'course',
+                scopeId: courseId,
+              ),
+            ),
+            if (details.course.role.teaches) ...[
+              const SizedBox(height: Spacing.m),
+              NavigatorTile(
+                icon: Icons.library_books_outlined,
+                title: l10n.materialsTitle,
+                subtitle: l10n.materialsHint,
+                route: AppRoutes.courseMaterials(courseId),
+              ),
+            ],
+            const SizedBox(height: Spacing.xl),
             AssignmentsSection(
               courseId: courseId,
               teaches: details.course.role.teaches,

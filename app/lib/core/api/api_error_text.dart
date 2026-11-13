@@ -50,6 +50,13 @@ abstract final class ApiErrorText {
       'source_lookup_failed' => l10n.errorSourceLookup,
       'invalid_search_map' => l10n.errorInvalidSearchMap,
       'search_map_incomplete' => l10n.errorMapIncomplete,
+      'navigator_unavailable' => l10n.errorNavigatorUnavailable,
+      'navigator_failed' => l10n.errorNavigatorFailed,
+      'dialog_not_found' => l10n.errorDialogNotFound,
+      'scope_not_found' => l10n.errorScopeNotFound,
+      'invalid_message' => l10n.errorInvalidMessage,
+      'invalid_material' => l10n.errorInvalidMaterial,
+      'material_not_found' => l10n.errorMaterialNotFound,
       _ => l10n.errorGeneric,
     };
   }

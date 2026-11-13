@@ -12,6 +12,7 @@ import 'class_work_section.dart';
 import 'course_role.dart';
 import 'loaded_list_view.dart';
 import 'my_work_section.dart';
+import 'navigator_tile.dart';
 import 'search_map_tile.dart';
 import 'study_labels_context.dart';
 import 'study_providers.dart';
@@ -76,6 +77,15 @@ class AssignmentScreen extends ConsumerWidget {
       if (details.role == CourseRole.student) ...[
         MyWorkSection(details: details),
         const SizedBox(height: Spacing.xl),
+        NavigatorTile(
+          icon: Icons.explore_outlined,
+          title: l10n.navigatorAsk,
+          route: AppRoutes.newDialog(
+            scopeKind: 'assignment',
+            scopeId: assignment.id,
+          ),
+        ),
+        const SizedBox(height: Spacing.l),
         SearchMapTile(assignment: assignment),
         const SizedBox(height: Spacing.l),
         SubmitForm(details: details),

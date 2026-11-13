@@ -11,6 +11,10 @@ import '../../features/admin/tenant_settings_screen.dart';
 import '../../features/chats/chats_screen.dart';
 import '../../features/connect/connect_screen.dart';
 import '../../features/login/login_screen.dart';
+import '../../features/navigator/dialog_scope.dart';
+import '../../features/navigator/dialog_screen.dart';
+import '../../features/navigator/material_form_screen.dart';
+import '../../features/navigator/materials_screen.dart';
 import '../../features/navigator/navigator_screen.dart';
 import '../../features/notes/note_members_screen.dart';
 import '../../features/notes/note_screen.dart';
@@ -151,6 +155,31 @@ class AppRouter {
                 versionId: state.pathParameters['version']!,
               ),
             ),
+          ),
+          GoRoute(
+            path: AppRoutes.dialogNew,
+            pageBuilder: (context, state) {
+              final query = state.uri.queryParameters;
+              final kind = query['scopeKind'];
+              final id = query['scopeId'];
+              return _fade(
+                state,
+                DialogScreen(
+                  scope: kind == null || id == null
+                      ? null
+                      : DialogScope(kind: kind, id: id),
+                ),
+              );
+            },
+          ),
+          _param(AppRoutes.dialog(':id'), (id) => DialogScreen(dialogId: id)),
+          _param(
+            AppRoutes.courseMaterials(':id'),
+            (id) => MaterialsScreen(courseId: id),
+          ),
+          _param(
+            AppRoutes.materialNew(':id'),
+            (id) => MaterialFormScreen(courseId: id),
           ),
           GoRoute(
             path: AppRoutes.schedulePath,

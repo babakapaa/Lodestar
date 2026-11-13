@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 
 import 'fake_directory.dart';
+import 'fake_navigator.dart';
 import 'fake_notes.dart';
 import 'fake_sources.dart';
 import 'fake_study.dart';
@@ -14,6 +15,7 @@ class FakeServer {
   final FakeStudy study = FakeStudy();
   final FakeNotes notes = FakeNotes();
   final FakeSources sources = FakeSources();
+  final FakeNavigator navigator = FakeNavigator();
   bool offline = false;
   final Map<String, Object?> profile = {
     'userId': 'u1',
@@ -194,6 +196,7 @@ class FakeServer {
         request,
       ),
       _ when path.startsWith('/v1/study/') => study.handle(request),
+      _ when path.startsWith('/v1/navigator/') => navigator.handle(request),
       _
           when path.startsWith('/v1/notes/sources') ||
               path == '/v1/notes/lookup' =>

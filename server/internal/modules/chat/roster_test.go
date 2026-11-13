@@ -68,3 +68,20 @@ func TestCourseChatsFollowTheCourseList(t *testing.T) {
 		t.Fatalf("archived group = %+v, %v", archived, err)
 	}
 }
+
+func TestGroupRostersBecomeGroupChats(t *testing.T) {
+	w := newWorld(t)
+	first, second := w.user("aigerim"), w.user("erlan")
+	w.rosters.set(module.Roster{ID: courseID, Title: "Альфа", Leads: []string{}, Members: []string{first.UserID, second.UserID}, Group: true})
+	w.sync()
+	list, err := w.chats.List(w.ctx, second)
+	if err != nil || len(list) != 1 || list[0].Kind != chat.KindGroup || list[0].Title != "Альфа" {
+		t.Fatalf("team chats = %+v, %v", list, err)
+	}
+	w.send(second, list[0].ID, "s1", "Созвон в 18:00?")
+	w.rosters.set(module.Roster{ID: courseID, Title: "Бета", Leads: []string{}, Members: []string{first.UserID, second.UserID}, Group: true})
+	w.sync()
+	if c, err := w.chats.Get(w.ctx, first, list[0].ID); err != nil || c.Title != "Бета" {
+		t.Fatalf("renamed team chat = %+v, %v", c, err)
+	}
+}

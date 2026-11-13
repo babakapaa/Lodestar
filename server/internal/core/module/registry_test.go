@@ -204,3 +204,39 @@ func TestRegistryRequiresOwnRosterKinds(t *testing.T) {
 		t.Fatal("roster source is not collected")
 	}
 }
+
+type teamingModule struct {
+	stubModule
+	kind string
+}
+
+func (m teamingModule) TeamScopeSources(Kernel) []TeamScopeSource {
+	return []TeamScopeSource{teamScopeKind(m.kind)}
+}
+
+type teamScopeKind string
+
+func (k teamScopeKind) Kind() string {
+	return string(k)
+}
+
+func (teamScopeKind) TeamScope(context.Context, pgx.Tx, string) (TeamScope, error) {
+	return TeamScope{}, ErrTeamScopeNotFound
+}
+
+func TestRegistryRequiresOwnTeamScopeKinds(t *testing.T) {
+	if _, err := NewRegistry(teamingModule{stubModule{name: "team"}, "study.assignment"}); !errors.Is(err, ErrForeignTeamScope) {
+		t.Fatalf("err = %v, want ErrForeignTeamScope", err)
+	}
+	registry, err := NewRegistry(teamingModule{stubModule{name: "study"}, "study.assignment"})
+	if err != nil {
+		t.Fatalf("registry: %v", err)
+	}
+	scopes := registry.TeamScopes(Kernel{})
+	if _, err := scopes.Load(context.Background(), nil, "study.assignment", "x"); !errors.Is(err, ErrTeamScopeNotFound) {
+		t.Fatalf("load = %v", err)
+	}
+	if _, err := scopes.Load(context.Background(), nil, "league.task", "x"); !errors.Is(err, ErrTeamScopeNotFound) {
+		t.Fatalf("unknown kind = %v", err)
+	}
+}

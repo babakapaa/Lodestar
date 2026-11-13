@@ -56,3 +56,7 @@ func (Module) Briefers(k module.Kernel) []module.Briefer {
 func (Module) RosterSources(module.Kernel) []module.RosterSource {
 	return []module.RosterSource{CourseRosters{}}
 }
+
+func (Module) TeamScopeSources(module.Kernel) []module.TeamScopeSource {
+	return []module.TeamScopeSource{AssignmentTeamScopes{}}
+}

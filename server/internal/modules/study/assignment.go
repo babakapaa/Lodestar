@@ -13,6 +13,7 @@ type Assignment struct {
 	SearchMap     *MapRules      `json:"searchMap"`
 	NavigatorMode *string        `json:"navigatorMode"`
 	Defense       *DefenseFormat `json:"defense"`
+	Team          *TeamRules     `json:"team"`
 	PublishedAt   *time.Time     `json:"publishedAt"`
 	CreatedAt     time.Time      `json:"createdAt"`
 }

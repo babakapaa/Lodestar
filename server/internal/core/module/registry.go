@@ -26,6 +26,8 @@ var ErrForeignSection = errors.New("module privacy section must start with the m
 
 var ErrForeignRoster = errors.New("module roster kind must start with the module name")
 
+var ErrForeignTeamScope = errors.New("module team scope kind must start with the module name")
+
 var namePattern = regexp.MustCompile(`^[a-z][a-z0-9]{1,29}$`)
 
 var reservedNames = []string{
@@ -58,6 +60,9 @@ func NewRegistry(modules ...Module) (*Registry, error) {
 			return nil, err
 		}
 		if err := checkRosterKinds(m); err != nil {
+			return nil, err
+		}
+		if err := checkTeamScopeKinds(m); err != nil {
 			return nil, err
 		}
 	}
@@ -200,4 +205,14 @@ func (r *Registry) Rosters(k Kernel) Rosters {
 		}
 	}
 	return rosters
+}
+
+func (r *Registry) TeamScopes(k Kernel) TeamScopes {
+	var scopes TeamScopes
+	for _, m := range r.modules {
+		if s, ok := m.(Teaming); ok {
+			scopes = append(scopes, s.TeamScopeSources(k)...)
+		}
+	}
+	return scopes
 }

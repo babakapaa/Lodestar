@@ -39,6 +39,8 @@ tags:
     description: ИИ-навигатор, диалоги и лестница подсказок
   - name: chat
     description: Чаты, группы и каналы
+  - name: team
+    description: Команды для заданий и задач
 paths:
   /healthz:
     get:
@@ -4938,6 +4940,562 @@ paths:
           $ref: "#/components/responses/Error"
         default:
           $ref: "#/components/responses/Error"
+  /v1/team/teams:
+    get:
+      tags: [team]
+      operationId: listMyTeams
+      summary: Мои команды, включая архив
+      security:
+        - bearer: []
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TeamCard"
+        "401":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/team/invitations:
+    get:
+      tags: [team]
+      operationId: listTeamInvitations
+      summary: Приглашения в команды
+      security:
+        - bearer: []
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TeamCard"
+        "401":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/team/scopes/{kind}/{id}:
+    get:
+      tags: [team]
+      operationId: getTeamScope
+      summary: Команды по заданию
+      description: Студент видит свою команду и тех, кто ищет команду. Преподаватель видит все команды, нераспределённых и просьбы о выходе.
+      security:
+        - bearer: []
+      parameters:
+        - name: kind
+          in: path
+          required: true
+          description: Вид области команд, например study.assignment
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          description: Задание или задача, внутри которых собираются команды
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TeamScopeView"
+        "401":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/team/scopes/{kind}/{id}/teams:
+    post:
+      tags: [team]
+      operationId: createTeam
+      summary: Создать команду
+      description: Студент создаёт команду из себя, если студенты собираются сами. Преподаватель сразу указывает состав.
+      security:
+        - bearer: []
+      parameters:
+        - name: kind
+          in: path
+          required: true
+          description: Вид области команд, например study.assignment
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          description: Задание или задача, внутри которых собираются команды
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TeamInput"
+      responses:
+        "201":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TeamDetails"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/team/scopes/{kind}/{id}/seeking:
+    put:
+      tags: [team]
+      operationId: setTeamSeeking
+      summary: Ищу команду
+      security:
+        - bearer: []
+      parameters:
+        - name: kind
+          in: path
+          required: true
+          description: Вид области команд, например study.assignment
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          description: Задание или задача, внутри которых собираются команды
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SeekingInput"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TeamScopeView"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/team/scopes/{kind}/{id}/distribution:
+    post:
+      tags: [team]
+      operationId: distributeTeams
+      summary: Распределить оставшихся студентов
+      description: Сначала добирает маленькие команды до минимума, потом собирает новые в пределах размера.
+      security:
+        - bearer: []
+      parameters:
+        - name: kind
+          in: path
+          required: true
+          description: Вид области команд, например study.assignment
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          description: Задание или задача, внутри которых собираются команды
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TeamScopeView"
+        "401":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/team/teams/{id}:
+    get:
+      tags: [team]
+      operationId: getTeam
+      summary: Команда
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TeamDetails"
+        "401":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+    patch:
+      tags: [team]
+      operationId: renameTeam
+      summary: Переименовать команду
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TeamNameInput"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TeamDetails"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/team/teams/{id}/label:
+    put:
+      tags: [team]
+      operationId: setTeamLabel
+      summary: Своя метка роли в команде
+      description: Метка ни на что не влияет, капитана с особыми правами нет.
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TeamLabelInput"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TeamDetails"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/team/teams/{id}/invitations:
+    post:
+      tags: [team]
+      operationId: inviteToTeam
+      summary: Пригласить в команду
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TeamInviteInput"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TeamDetails"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/team/teams/{id}/invitations/{userId}:
+    delete:
+      tags: [team]
+      operationId: cancelTeamInvitation
+      summary: Отменить или отклонить приглашение
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: Готово
+        "401":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/team/teams/{id}/accept:
+    post:
+      tags: [team]
+      operationId: acceptTeamInvitation
+      summary: Принять приглашение
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TeamDetails"
+        "401":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/team/teams/{id}/leave:
+    post:
+      tags: [team]
+      operationId: leaveTeam
+      summary: Выйти из команды
+      description: До даты свободного выхода выход сразу. После неё создаётся просьба к преподавателю.
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LeaveInput"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LeaveResult"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/team/teams/{id}/members/{userId}:
+    put:
+      tags: [team]
+      operationId: addTeamMember
+      summary: Добавить или перевести студента
+      description: Только преподаватель.
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TeamDetails"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+    delete:
+      tags: [team]
+      operationId: removeTeamMember
+      summary: Убрать студента из команды
+      description: Только преподаватель.
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: solo
+          in: query
+          description: true — вывести студента на отдельную работу
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TeamDetails"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/team/codes/{code}:
+    get:
+      tags: [team]
+      operationId: previewTeamInvite
+      summary: Команда по ссылке-приглашению
+      description: Правила выхода и размер команды видны до того, как студент вступит.
+      security:
+        - bearer: []
+      parameters:
+        - name: code
+          in: path
+          required: true
+          description: Код приглашения из ссылки
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TeamCard"
+        "401":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+    post:
+      tags: [team]
+      operationId: joinTeamByCode
+      summary: Вступить по ссылке
+      security:
+        - bearer: []
+      parameters:
+        - name: code
+          in: path
+          required: true
+          description: Код приглашения из ссылки
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TeamDetails"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/team/leave-requests/{id}:
+    post:
+      tags: [team]
+      operationId: decideTeamLeave
+      summary: Решить просьбу о выходе
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LeaveDecision"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TeamDetails"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
 components:
   securitySchemes:
     bearer:
@@ -5750,7 +6308,7 @@ components:
       description: points баллы до maxPoints, pass зачёт или незачёт, none только отзыв
     Assignment:
       type: object
-      required: [id, courseId, title, description, dueAt, grading, maxPoints, searchMap, navigatorMode, defense, publishedAt, createdAt]
+      required: [id, courseId, title, description, dueAt, grading, maxPoints, searchMap, navigatorMode, defense, team, publishedAt, createdAt]
       properties:
         id:
           type: string
@@ -5784,6 +6342,11 @@ components:
             - $ref: "#/components/schemas/DefenseFormat"
             - type: "null"
           description: Формат защиты. Пусто, если защиты нет
+        team:
+          oneOf:
+            - $ref: "#/components/schemas/TeamRules"
+            - type: "null"
+          description: Правила командной работы. Пусто у личной работы
         publishedAt:
           type: [string, "null"]
           format: date-time
@@ -5821,6 +6384,10 @@ components:
         defense:
           oneOf:
             - $ref: "#/components/schemas/DefenseFormat"
+            - type: "null"
+        team:
+          oneOf:
+            - $ref: "#/components/schemas/TeamRules"
             - type: "null"
         files:
           type: array
@@ -6265,6 +6832,278 @@ components:
       properties:
         summary:
           type: string
+    TeamRules:
+      type: object
+      required: [minSize, maxSize]
+      properties:
+        minSize:
+          type: integer
+          minimum: 2
+        maxSize:
+          type: integer
+          maximum: 12
+        selfFormed:
+          type: boolean
+          description: Студенты собираются сами. Преподаватель распределяет всегда
+        freeLeaveUntil:
+          type: [string, "null"]
+          format: date-time
+          description: До этой даты из команды выходят свободно. Пусто — до срока задания
+    TeamScope:
+      type: object
+      required: [kind, id, title, context, link, minSize, maxSize, selfFormed, freeLeaveUntil, dueAt, archived]
+      properties:
+        kind:
+          type: string
+        id:
+          type: string
+        title:
+          type: string
+        context:
+          type: string
+          description: Например, название курса
+        link:
+          type: string
+        minSize:
+          type: integer
+        maxSize:
+          type: integer
+        selfFormed:
+          type: boolean
+        freeLeaveUntil:
+          type: [string, "null"]
+          format: date-time
+        dueAt:
+          type: [string, "null"]
+          format: date-time
+        archived:
+          type: boolean
+    TeamMember:
+      allOf:
+        - $ref: "#/components/schemas/Person"
+        - type: object
+          required: [label, joinedAt]
+          properties:
+            label:
+              type: string
+            joinedAt:
+              type: string
+              format: date-time
+    Team:
+      type: object
+      required: [id, scopeKind, scopeId, name, members, createdAt, archivedAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        scopeKind:
+          type: string
+        scopeId:
+          type: string
+        name:
+          type: string
+        members:
+          type: array
+          items:
+            $ref: "#/components/schemas/TeamMember"
+        createdAt:
+          type: string
+          format: date-time
+        archivedAt:
+          type: [string, "null"]
+          format: date-time
+    TeamHistoryEntry:
+      type: object
+      required: [person, event, actor, at]
+      properties:
+        person:
+          oneOf:
+            - $ref: "#/components/schemas/Person"
+            - type: "null"
+        event:
+          type: string
+          enum: [created, joined, added, left, removed, separated, moved_in, moved_out]
+        actor:
+          oneOf:
+            - $ref: "#/components/schemas/Person"
+            - type: "null"
+        at:
+          type: string
+          format: date-time
+    LeaveRequest:
+      type: object
+      required: [id, teamId, teamName, student, reason, status, createdAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        teamId:
+          type: string
+          format: uuid
+        teamName:
+          type: string
+        student:
+          $ref: "#/components/schemas/Person"
+        reason:
+          type: string
+        status:
+          type: string
+          enum: [pending, approved, rejected]
+        createdAt:
+          type: string
+          format: date-time
+    TeamDetails:
+      allOf:
+        - $ref: "#/components/schemas/Team"
+        - type: object
+          required: [scope, manage, inviteCode, invited, history, request, canLeaveFreely]
+          properties:
+            scope:
+              $ref: "#/components/schemas/TeamScope"
+            manage:
+              type: boolean
+              description: Смотрит преподаватель
+            inviteCode:
+              type: [string, "null"]
+              description: Код для ссылки-приглашения, если студенты собираются сами
+            invited:
+              type: array
+              items:
+                $ref: "#/components/schemas/Person"
+            history:
+              type: array
+              items:
+                $ref: "#/components/schemas/TeamHistoryEntry"
+            request:
+              oneOf:
+                - $ref: "#/components/schemas/LeaveRequest"
+                - type: "null"
+              description: Моя ждущая просьба о выходе
+            canLeaveFreely:
+              type: boolean
+    TeamCard:
+      type: object
+      required: [team, scope]
+      properties:
+        team:
+          $ref: "#/components/schemas/Team"
+        scope:
+          $ref: "#/components/schemas/TeamScope"
+        invitedBy:
+          $ref: "#/components/schemas/Person"
+    TeamSeeker:
+      allOf:
+        - $ref: "#/components/schemas/Person"
+        - type: object
+          required: [note]
+          properties:
+            note:
+              type: string
+    TeamScopeView:
+      type: object
+      required: [scope, role, myTeam, solo, seeking, seekers, teams, unplaced, solos, requests]
+      properties:
+        scope:
+          $ref: "#/components/schemas/TeamScope"
+        role:
+          type: string
+          enum: [lead, student]
+        myTeam:
+          oneOf:
+            - $ref: "#/components/schemas/Team"
+            - type: "null"
+        solo:
+          type: boolean
+          description: Преподаватель вывел студента на отдельную работу
+        seeking:
+          type: boolean
+        seekers:
+          type: array
+          items:
+            $ref: "#/components/schemas/TeamSeeker"
+        teams:
+          type: [array, "null"]
+          items:
+            $ref: "#/components/schemas/Team"
+        unplaced:
+          type: [array, "null"]
+          items:
+            $ref: "#/components/schemas/Person"
+        solos:
+          type: [array, "null"]
+          items:
+            $ref: "#/components/schemas/Person"
+        requests:
+          type: [array, "null"]
+          items:
+            $ref: "#/components/schemas/LeaveRequest"
+    TeamInput:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        members:
+          type: array
+          description: Состав, если команду создаёт преподаватель
+          items:
+            type: string
+            format: uuid
+    TeamNameInput:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+    TeamLabelInput:
+      type: object
+      required: [label]
+      properties:
+        label:
+          type: string
+          maxLength: 40
+    TeamInviteInput:
+      type: object
+      required: [userId]
+      properties:
+        userId:
+          type: string
+          format: uuid
+    SeekingInput:
+      type: object
+      required: [seeking]
+      properties:
+        seeking:
+          type: boolean
+        note:
+          type: string
+          maxLength: 500
+    LeaveInput:
+      type: object
+      properties:
+        reason:
+          type: string
+          maxLength: 1000
+    LeaveResult:
+      type: object
+      required: [left, request]
+      properties:
+        left:
+          type: boolean
+        request:
+          oneOf:
+            - $ref: "#/components/schemas/LeaveRequest"
+            - type: "null"
+    LeaveDecision:
+      type: object
+      required: [approve]
+      properties:
+        approve:
+          type: boolean
     StudentWork:
       type: object
       required: [student, latest, attempts, grade]

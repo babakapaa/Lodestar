@@ -22,6 +22,7 @@ import (
 	"github.com/babakapaa/lodestar/server/internal/core/schema"
 	"github.com/babakapaa/lodestar/server/internal/core/search"
 	"github.com/babakapaa/lodestar/server/internal/core/settings"
+	"github.com/babakapaa/lodestar/server/internal/core/stats"
 	"github.com/babakapaa/lodestar/server/internal/core/structure"
 	"github.com/babakapaa/lodestar/server/internal/platform/clientip"
 	"github.com/babakapaa/lodestar/server/internal/platform/config"
@@ -120,6 +121,7 @@ func NewServer(version string, cfg config.Config, box secretbox.Box, pool *pgxpo
 		delivery.Routes{Service: delivery.NewService(tx), Authenticator: authn},
 		search.Routes{Service: searchService, Authenticator: authn},
 		audit.Routes{Service: audit.NewService(tx, accessService), Authenticator: authn},
+		stats.Routes{Service: stats.NewService(tx, accessService, registry.StatsSources(kernel)...), Authenticator: authn},
 		lti.NewRoutes(pool, integrations),
 		privacy.Routes{
 			Service:       privacy.NewService(tx, settingsService),

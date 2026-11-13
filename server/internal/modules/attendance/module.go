@@ -22,3 +22,7 @@ func (Module) Mount(mux *http.ServeMux, k module.Kernel) {
 func (Module) PrivacySections(module.Kernel) []privacy.Section {
 	return []privacy.Section{PrivacySection{}}
 }
+
+func (Module) StatsSources(module.Kernel) []module.StatsSource {
+	return []module.StatsSource{AttendanceStats{}}
+}

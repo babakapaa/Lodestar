@@ -260,6 +260,16 @@ func (r *Registry) LessonSource(k Kernel) LessonSource {
 	return nil
 }
 
+func (r *Registry) StatsSources(k Kernel) []StatsSource {
+	var sources []StatsSource
+	for _, m := range r.modules {
+		if s, ok := m.(StatsProviding); ok {
+			sources = append(sources, s.StatsSources(k)...)
+		}
+	}
+	return sources
+}
+
 func (r *Registry) ScoreSources(k Kernel) ScoreSources {
 	var sources ScoreSources
 	for _, m := range r.modules {

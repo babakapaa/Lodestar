@@ -7,6 +7,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/jackc/pgx/v5"
+
+	"github.com/babakapaa/lodestar/server/internal/core/module"
 	"github.com/babakapaa/lodestar/server/internal/modules/attendance"
 )
 
@@ -76,5 +79,14 @@ func TestTeacherKeepsJournalAndSeesLongAbsence(t *testing.T) {
 	mine, err := w.service.Mine(w.ctx, w.aigerim)
 	if err != nil || len(mine) != 3 || mine[0].Status != attendance.Excused || mine[2].Method != attendance.ByCode {
 		t.Fatalf("mine = %+v, %v", mine, err)
+	}
+	var metrics []module.Metric
+	err = w.tx.Run(w.ctx, w.tenant, func(tx pgx.Tx) error {
+		var err error
+		metrics, err = attendance.AttendanceStats{}.Stats(w.ctx, tx, []string{w.aigerim.UserID, w.erlan.UserID}, start, start.AddDate(0, 1, 0))
+		return err
+	})
+	if err != nil || len(metrics) != 1 || metrics[0].Key != attendance.MetricRate || metrics[0].Value != 0.4 {
+		t.Fatalf("stats = %+v, %v", metrics, err)
 	}
 }

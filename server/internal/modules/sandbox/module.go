@@ -25,3 +25,7 @@ func (Module) MountOpen(mux *http.ServeMux, k module.Kernel) {
 func (Module) Workers(k module.Kernel) []module.Worker {
 	return []module.Worker{NewRunWorker(k)}
 }
+
+func (Module) StatsSources(module.Kernel) []module.StatsSource {
+	return []module.StatsSource{SandboxStats{}}
+}

@@ -31,6 +31,8 @@ tags:
     description: Общий поиск по людям, подразделениям и модулям
   - name: audit
     description: Журнал изменений ролей, прав и настроек вуза
+  - name: stats
+    description: Сводная статистика вуза по подразделениям
   - name: privacy
     description: Мои данные, их выгрузка и удаление аккаунта
   - name: study
@@ -7927,6 +7929,45 @@ paths:
           $ref: "#/components/responses/Error"
         default:
           $ref: "#/components/responses/Error"
+  /v1/stats/units:
+    get:
+      tags: [stats]
+      operationId: unitStats
+      summary: Сводка по подразделениям за период
+      description: Нужно право core.stats.view на вуз или на подразделение parent. Подразделение меньше чем из 5 человек приходит с hidden true и без чисел, если у смотрящего нет core.stats.full. Данные отдельных людей не отдаются.
+      security:
+        - bearer: []
+      parameters:
+        - name: parent
+          in: query
+          description: Подразделение, чьи дочерние показать. Без него верхний уровень вуза
+          schema:
+            type: string
+            format: uuid
+        - name: days
+          in: query
+          description: Период в днях, по умолчанию 30
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 400
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StatsReport"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
 components:
   securitySchemes:
     bearer:
@@ -12443,3 +12484,51 @@ components:
             - $ref: "#/components/schemas/TopicCount"
             - type: "null"
           description: Тема, о которой больше всего спрашивали за 2 недели. Её можно разобрать на следующем занятии
+    StatsReport:
+      type: object
+      required: [parentId, days, threshold, full, units]
+      properties:
+        parentId:
+          type: [string, "null"]
+          format: uuid
+        days:
+          type: integer
+        threshold:
+          type: integer
+          description: Меньше скольких человек подразделение скрыто
+        full:
+          type: boolean
+          description: У смотрящего есть core.stats.full, скрытых подразделений нет
+        units:
+          type: array
+          items:
+            $ref: "#/components/schemas/UnitStats"
+    UnitStats:
+      type: object
+      required: [unitId, kind, name, people, hidden, metrics]
+      properties:
+        unitId:
+          type: string
+          format: uuid
+        kind:
+          type: string
+        name:
+          type: string
+        people:
+          type: [integer, "null"]
+          description: Сколько человек внутри, включая вложенные подразделения
+        hidden:
+          type: boolean
+        metrics:
+          type: array
+          items:
+            $ref: "#/components/schemas/Metric"
+    Metric:
+      type: object
+      required: [key, value]
+      description: Показатель модуля. study.submitted и navigator.users доля людей от 0 до 1, study.on_time доля работ в срок, attendance.rate доля посещённых занятий, sandbox.hours сумма часов GPU
+      properties:
+        key:
+          type: string
+        value:
+          type: number

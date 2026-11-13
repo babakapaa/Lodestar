@@ -5,10 +5,12 @@ import (
 	"net/http"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/jackc/pgx/v5"
 
 	"github.com/babakapaa/lodestar/server/internal/core/access"
+	"github.com/babakapaa/lodestar/server/internal/core/module"
 	"github.com/babakapaa/lodestar/server/internal/modules/sandbox"
 )
 
@@ -78,6 +80,15 @@ func TestRunGoesThroughQueueNodeAndQuota(t *testing.T) {
 	}
 	if nodes, err := w.quotas.Nodes(w.ctx, w.admin); err != nil || !nodes[0].Online || nodes[0].Busy != 0 {
 		t.Fatalf("nodes = %+v, %v", nodes, err)
+	}
+	var metrics []module.Metric
+	err = w.tx.Run(w.ctx, w.tenant, func(tx pgx.Tx) error {
+		var err error
+		metrics, err = sandbox.SandboxStats{}.Stats(w.ctx, tx, []string{w.aigerim.UserID, w.erlan.UserID}, time.Now().Add(-time.Hour), time.Now().Add(time.Hour))
+		return err
+	})
+	if err != nil || len(metrics) != 1 || metrics[0].Key != sandbox.MetricHours || metrics[0].Value != 3 {
+		t.Fatalf("stats = %+v, %v", metrics, err)
 	}
 }
 

@@ -6,6 +6,9 @@ import (
 	"net/http"
 	"strings"
 	"testing"
+	"time"
+
+	"github.com/jackc/pgx/v5"
 
 	"github.com/babakapaa/lodestar/server/internal/core/access"
 	"github.com/babakapaa/lodestar/server/internal/core/module"
@@ -71,5 +74,15 @@ func TestTopicsShowOnlyFromFiveStudents(t *testing.T) {
 	}
 	if rec := w.get(teacher, "/v1/navigator/courses/"+courseID+"/topics?weeks=x"); rec.Code != http.StatusBadRequest {
 		t.Fatalf("bad weeks = %d", rec.Code)
+	}
+	members := append([]string{teacher.UserID}, w.course.students...)
+	var metrics []module.Metric
+	err = w.kernel.Tenants.Run(w.ctx, w.tenant, func(tx pgx.Tx) error {
+		var err error
+		metrics, err = navigator.NavigatorStats{}.Stats(w.ctx, tx, members, time.Now().Add(-time.Hour), time.Now().Add(time.Hour))
+		return err
+	})
+	if err != nil || len(metrics) != 1 || metrics[0].Key != navigator.MetricUsers || metrics[0].Value != 6.0/7 {
+		t.Fatalf("stats = %+v, %v", metrics, err)
 	}
 }

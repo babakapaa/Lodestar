@@ -35,6 +35,8 @@ tags:
     description: Учёба, курсы, задания и расписание
   - name: notes
     description: Заметки, совместная правка и версии
+  - name: navigator
+    description: ИИ-навигатор, диалоги и лестница подсказок
 paths:
   /healthz:
     get:
@@ -3578,6 +3580,156 @@ paths:
           $ref: "#/components/responses/Error"
         default:
           $ref: "#/components/responses/Error"
+  /v1/navigator/dialogs:
+    get:
+      tags: [navigator]
+      operationId: listDialogs
+      summary: Мои диалоги с навигатором
+      description: Без параметров возвращает все диалоги, с scopeKind и scopeId только диалоги этого задания.
+      security:
+        - bearer: []
+      parameters:
+        - name: scopeKind
+          in: query
+          schema:
+            type: string
+        - name: scopeId
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Dialog"
+        "401":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+    post:
+      tags: [navigator]
+      operationId: createDialog
+      summary: Начать диалог
+      description: id создаёт приложение, повтор с тем же id возвращает тот же диалог. Диалог видит только его владелец.
+      security:
+        - bearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DialogInput"
+      responses:
+        "200":
+          description: Диалог уже был создан
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DialogDetails"
+        "201":
+          description: Создан
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DialogDetails"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/navigator/dialogs/{id}:
+    get:
+      tags: [navigator]
+      operationId: getDialog
+      summary: Диалог с сообщениями
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DialogDetails"
+        "401":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+    delete:
+      tags: [navigator]
+      operationId: deleteDialog
+      summary: Удалить диалог
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "204":
+          description: Удалён
+        "401":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/navigator/dialogs/{id}/messages:
+    post:
+      tags: [navigator]
+      operationId: askNavigator
+      summary: Задать вопрос или попросить ещё подсказку
+      description: |
+        key защищает от повторной отправки: повтор с тем же key возвращает прежний ответ без нового запроса к модели.
+        С заголовком Accept text/event-stream ответ приходит потоком событий delta с полем text, затем answer с Answer или error с кодом.
+        Тип запроса определяет классификатор. Если он ошибся, студент передаёт intent сам, кроме closed.
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MessageInput"
+      responses:
+        "200":
+          description: Ответ на этот key уже был или пришёл потоком
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Answer"
+            text/event-stream:
+              schema:
+                type: string
+        "201":
+          description: Ответ готов
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Answer"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "502":
+          $ref: "#/components/responses/Error"
+        "503":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
 components:
   securitySchemes:
     bearer:
@@ -4309,7 +4461,7 @@ components:
           format: date-time
     Course:
       type: object
-      required: [id, unitId, title, code, description, archivedAt, createdAt]
+      required: [id, unitId, title, code, description, archivedAt, navigatorMode, createdAt]
       properties:
         id:
           type: string
@@ -4327,6 +4479,8 @@ components:
         archivedAt:
           type: [string, "null"]
           format: date-time
+        navigatorMode:
+          $ref: "#/components/schemas/NavigatorMode"
         createdAt:
           type: string
           format: date-time
@@ -4376,13 +4530,19 @@ components:
         description:
           type: string
           maxLength: 20000
+        navigatorMode:
+          $ref: "#/components/schemas/NavigatorMode"
+    NavigatorMode:
+      type: string
+      enum: [study, project]
+      description: study полная лестница подсказок, project прямая помощь с кодом, которая попадает в ИИ-декларацию
     Grading:
       type: string
       enum: [points, pass, none]
       description: points баллы до maxPoints, pass зачёт или незачёт, none только отзыв
     Assignment:
       type: object
-      required: [id, courseId, title, description, dueAt, grading, maxPoints, searchMap, publishedAt, createdAt]
+      required: [id, courseId, title, description, dueAt, grading, maxPoints, searchMap, navigatorMode, publishedAt, createdAt]
       properties:
         id:
           type: string
@@ -4406,6 +4566,11 @@ components:
             - $ref: "#/components/schemas/MapRules"
             - type: "null"
           description: Требования к карте поиска. Пусто, если карта не нужна
+        navigatorMode:
+          oneOf:
+            - $ref: "#/components/schemas/NavigatorMode"
+            - type: "null"
+          description: Пусто, если действует режим курса
         publishedAt:
           type: [string, "null"]
           format: date-time
@@ -4435,6 +4600,10 @@ components:
         searchMap:
           oneOf:
             - $ref: "#/components/schemas/MapRules"
+            - type: "null"
+        navigatorMode:
+          oneOf:
+            - $ref: "#/components/schemas/NavigatorMode"
             - type: "null"
         files:
           type: array
@@ -5176,3 +5345,123 @@ components:
           type: string
           description: Машинный код ошибки. Текст для человека подставляет приложение.
           examples: [not_found]
+    Intent:
+      type: string
+      enum: [understand, find, check, do_for_me, organize, state, closed]
+    Step:
+      type: string
+      enum: ["", question, direction, source, fragment, example]
+      description: Ступень лестницы подсказок. Пусто для организационных вопросов и состояния
+    Brief:
+      type: object
+      required: [kind, id, title, description, course, dueAt, mode]
+      properties:
+        kind:
+          type: string
+        id:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        course:
+          type: string
+        dueAt:
+          type: [string, "null"]
+          format: date-time
+        mode:
+          $ref: "#/components/schemas/NavigatorMode"
+    Dialog:
+      type: object
+      required: [id, scopeKind, scopeId, title, createdAt, changedAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        scopeKind:
+          type: string
+          description: assignment или пусто
+        scopeId:
+          type: string
+        title:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        changedAt:
+          type: string
+          format: date-time
+    DialogInput:
+      type: object
+      required: [id]
+      properties:
+        id:
+          type: string
+          format: uuid
+        scopeKind:
+          type: string
+          maxLength: 30
+        scopeId:
+          type: string
+          maxLength: 100
+    DialogDetails:
+      allOf:
+        - $ref: "#/components/schemas/Dialog"
+        - type: object
+          required: [brief, messages]
+          properties:
+            brief:
+              oneOf:
+                - $ref: "#/components/schemas/Brief"
+                - type: "null"
+            messages:
+              type: array
+              items:
+                $ref: "#/components/schemas/NavigatorMessage"
+    NavigatorMessage:
+      type: object
+      required: [seq, role, text, intent, step, lastStep, support, createdAt]
+      properties:
+        seq:
+          type: integer
+        role:
+          type: string
+          enum: [student, navigator]
+        text:
+          type: string
+        intent:
+          $ref: "#/components/schemas/Intent"
+        step:
+          $ref: "#/components/schemas/Step"
+        lastStep:
+          type: boolean
+        support:
+          type: string
+          description: Контакты поддержки вуза. Заполнено, только если в вопросе были тревожные слова
+        createdAt:
+          type: string
+          format: date-time
+    MessageInput:
+      type: object
+      required: [key]
+      properties:
+        key:
+          type: string
+          minLength: 1
+          maxLength: 100
+        text:
+          type: string
+          maxLength: 8000
+        intent:
+          $ref: "#/components/schemas/Intent"
+        more:
+          type: boolean
+          description: Ещё подсказку, следующая ступень лестницы
+    Answer:
+      type: object
+      required: [question, reply]
+      properties:
+        question:
+          $ref: "#/components/schemas/NavigatorMessage"
+        reply:
+          $ref: "#/components/schemas/NavigatorMessage"

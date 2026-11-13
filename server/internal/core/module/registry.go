@@ -176,3 +176,13 @@ func (r *Registry) Mount(mux *http.ServeMux, gate Gate, k Kernel) {
 		mux.Handle("/v1/"+name+"/", gated)
 	}
 }
+
+func (r *Registry) Briefs(k Kernel) Briefs {
+	var briefs Briefs
+	for _, m := range r.modules {
+		if b, ok := m.(Briefing); ok {
+			briefs = append(briefs, b.Briefers(k)...)
+		}
+	}
+	return briefs
+}

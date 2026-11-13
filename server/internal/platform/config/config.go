@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/babakapaa/lodestar/server/internal/platform/llm"
 	"github.com/babakapaa/lodestar/server/internal/platform/mail"
 	"github.com/babakapaa/lodestar/server/internal/platform/objectstore"
 )
@@ -22,6 +23,7 @@ type Config struct {
 	Storage         objectstore.Config
 	Mail            mail.Config
 	FCMCredentials  string
+	LLM             llm.Config
 	AccessTTL       time.Duration
 	RefreshTTL      time.Duration
 	ShutdownTimeout time.Duration
@@ -50,6 +52,11 @@ func Load() (Config, error) {
 			From:     stringEnv("LODESTAR_MAIL_FROM", ""),
 		},
 		FCMCredentials: stringEnv("LODESTAR_FCM_CREDENTIALS_FILE", ""),
+		LLM: llm.Config{
+			URL:   stringEnv("LODESTAR_LLM_URL", ""),
+			Model: stringEnv("LODESTAR_LLM_MODEL", ""),
+			Key:   stringEnv("LODESTAR_LLM_KEY", ""),
+		},
 	}
 	cfg.AppURL = strings.TrimRight(stringEnv("LODESTAR_APP_URL", cfg.PublicURL), "/")
 	if cfg.DatabaseURL == "" {
@@ -66,6 +73,9 @@ func Load() (Config, error) {
 		return Config{}, err
 	}
 	if cfg.ShutdownTimeout, err = durationEnv("LODESTAR_SHUTDOWN_TIMEOUT", 15*time.Second); err != nil {
+		return Config{}, err
+	}
+	if cfg.LLM.Timeout, err = durationEnv("LODESTAR_LLM_TIMEOUT", 2*time.Minute); err != nil {
 		return Config{}, err
 	}
 	return cfg, nil

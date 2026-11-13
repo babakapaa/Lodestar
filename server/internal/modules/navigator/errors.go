@@ -1,0 +1,13 @@
+package navigator
+
+import "errors"
+
+var ErrUnavailable = errors.New("navigator model is not configured")
+
+var ErrDialogNotFound = errors.New("dialog not found")
+
+var ErrInvalidDialog = errors.New("dialog id or scope is invalid")
+
+var ErrInvalidMessage = errors.New("message is empty, too long or asks for a closed type")
+
+var ErrModelFailed = errors.New("navigator could not get an answer from the model")

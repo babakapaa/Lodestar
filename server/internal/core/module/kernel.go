@@ -7,6 +7,7 @@ import (
 
 	"github.com/babakapaa/lodestar/server/internal/core/access"
 	"github.com/babakapaa/lodestar/server/internal/platform/database"
+	"github.com/babakapaa/lodestar/server/internal/platform/llm"
 	"github.com/babakapaa/lodestar/server/internal/platform/secretbox"
 )
 
@@ -18,4 +19,6 @@ type Kernel struct {
 	Settings Settings
 	Secrets  secretbox.Box
 	Outbound *http.Client
+	Model    llm.Model
+	Briefs   Briefs
 }

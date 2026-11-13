@@ -11,6 +11,9 @@ class FakeChats {
   final Set<String> blocked = {};
   final List<Map<String, Object?>> reports = [];
   final Map<String, Map<String, String>> roles = {};
+  final Map<String, Map<String, Object?>> calls = {};
+  String callError = '';
+  bool screenShare = true;
 
   final Map<String, Map<String, Object?>> chats = {};
   final Map<String, List<Map<String, Object?>>> messages = {};
@@ -89,6 +92,12 @@ class FakeChats {
         id,
         userId,
       ),
+      ('GET', ['chats', final id, 'call']) =>
+        calls[id] == null
+            ? _json(404, {'code': 'call_not_found'})
+            : _json(200, calls[id]),
+      ('POST', ['chats', final id, 'call']) => _joinCall(id),
+      ('POST', ['calls', final id, 'leave']) => _leaveCall(id),
       ('GET', ['blocks']) => _json(200, [
         for (final id in blocked) {'userId': id, 'displayName': id},
       ]),
@@ -102,6 +111,38 @@ class FakeChats {
       ('POST', ['reports', final id, 'resolve']) => _resolve(id),
       _ => _json(404, {'code': 'not_found'}),
     };
+  }
+
+  Map<String, Object?> startCall(String chatId, List<String> people) {
+    final call = <String, Object?>{
+      'id': 'call-$chatId',
+      'chatId': chatId,
+      'startedBy': people.isEmpty ? null : people.first,
+      'startedAt': '2026-11-13T10:00:00Z',
+      'people': people,
+    };
+    calls[chatId] = call;
+    return call;
+  }
+
+  http.Response _joinCall(String chatId) {
+    if (callError.isNotEmpty) {
+      return _json(403, {'code': callError});
+    }
+    final call = calls[chatId] ?? startCall(chatId, const []);
+    call['people'] = {...call['people']! as List<String>, me}.toList();
+    return _json(200, {
+      'call': call,
+      'url': 'wss://calls.example.edu',
+      'room': 'kaznu_${call['id']}',
+      'token': 'room-token',
+      'screenShare': screenShare,
+    });
+  }
+
+  http.Response _leaveCall(String callId) {
+    calls.removeWhere((_, call) => call['id'] == callId);
+    return http.Response('', 204);
   }
 
   http.Response _create(Map<String, Object?> body) {

@@ -9,6 +9,7 @@ import '../../design/components/notice_banner.dart';
 import '../../design/tokens/spacing.dart';
 import '../../design/tokens/tokens_context.dart';
 import '../../l10n/l10n_context.dart';
+import '../calls/active_call_banner.dart';
 import 'chat.dart';
 import 'chat_bubble.dart';
 import 'chat_composer.dart';
@@ -222,6 +223,15 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           ],
         ),
         actions: [
+          if (chat.kind != ChatKind.channel &&
+              !chat.request &&
+              chat.archivedAt == null)
+            IconButton(
+              key: const ValueKey('chat-call'),
+              tooltip: l10n.callStart,
+              icon: const Icon(Icons.call_outlined),
+              onPressed: () => context.push(AppRoutes.chatCall(_id)),
+            ),
           IconButton(
             key: const ValueKey('chat-info'),
             tooltip: l10n.chatsInfo,
@@ -238,6 +248,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             constraints: const BoxConstraints(maxWidth: 760),
             child: Column(
               children: [
+                ActiveCallBanner(chatId: _id),
                 if (chat.request)
                   Padding(
                     padding: const EdgeInsets.all(Spacing.m),

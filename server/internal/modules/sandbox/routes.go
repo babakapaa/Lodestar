@@ -27,6 +27,8 @@ func (r Routes) Mount(mux *http.ServeMux) {
 	mux.Handle("POST /v1/sandbox/nodes", CreateNodeHandler{service: s})
 	mux.Handle("DELETE /v1/sandbox/nodes/{id}", DeleteNodeHandler{service: s})
 	mux.Handle("GET /v1/sandbox/runs", RunsHandler{service: s})
+	mux.Handle("GET /v1/sandbox/runs/held", HeldRunsHandler{service: s})
+	mux.Handle("POST /v1/sandbox/runs/{id}/hold-decision", DecideHoldHandler{service: s})
 	mux.Handle("POST /v1/sandbox/runs", StartRunHandler{service: s})
 	mux.Handle("GET /v1/sandbox/runs/{id}", RunHandler{service: s})
 	mux.Handle("POST /v1/sandbox/runs/{id}/stop", StopRunHandler{service: s})

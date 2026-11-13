@@ -19,20 +19,23 @@ import (
 
 var workspacePattern = regexp.MustCompile(`^(user|team)-[A-Za-z0-9-]{1,100}$`)
 
+const logLines = 100
+
 type Agent struct {
 	cfg    Config
 	docker Docker
+	meter  GPUMeter
 	client *http.Client
 }
 
-func New(cfg Config, docker Docker) Agent {
+func New(cfg Config, docker Docker, meter GPUMeter) Agent {
 	if cfg.Scheme == "" {
 		cfg.Scheme = "http"
 	}
 	if cfg.Every == 0 {
 		cfg.Every = 10 * time.Second
 	}
-	return Agent{cfg: cfg, docker: docker, client: &http.Client{Timeout: 30 * time.Second}}
+	return Agent{cfg: cfg, docker: docker, meter: meter, client: &http.Client{Timeout: 30 * time.Second}}
 }
 
 func (a Agent) Run(ctx context.Context) {
@@ -55,24 +58,63 @@ func (a Agent) Tick(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	plan, err := a.sync(ctx, a.report(containers))
+	plan, err := a.sync(ctx, a.report(ctx, containers))
 	if err != nil {
 		return err
 	}
 	return a.apply(ctx, containers, plan)
 }
 
-func (a Agent) report(containers []Container) sandbox.AgentReport {
+func (a Agent) report(ctx context.Context, containers []Container) sandbox.AgentReport {
 	report := sandbox.AgentReport{Runs: []sandbox.RunReport{}}
+	load := a.load(ctx)
 	for _, c := range containers {
 		switch {
 		case c.running():
+			report.Runs = append(report.Runs, sandbox.RunReport{
+				RunID: c.RunID, Phase: sandbox.PhaseRunning, URL: link(a.cfg.Scheme, a.cfg.Host, c), Usage: a.usage(ctx, c, load),
+			})
+		case c.paused():
 			report.Runs = append(report.Runs, sandbox.RunReport{RunID: c.RunID, Phase: sandbox.PhaseRunning, URL: link(a.cfg.Scheme, a.cfg.Host, c)})
 		case c.exited():
-			report.Runs = append(report.Runs, sandbox.RunReport{RunID: c.RunID, Phase: sandbox.PhaseExited, ExitCode: c.ExitCode})
+			logs, err := a.docker.Logs(ctx, c.ID, logLines)
+			if err != nil {
+				slog.Warn("read run log", "run", c.RunID, "error", err)
+			}
+			report.Runs = append(report.Runs, sandbox.RunReport{RunID: c.RunID, Phase: sandbox.PhaseExited, ExitCode: c.ExitCode, Log: logs})
 		}
 	}
 	return report
+}
+
+func (a Agent) load(ctx context.Context) map[int]float64 {
+	if a.meter == nil {
+		return nil
+	}
+	load, err := a.meter.Load(ctx)
+	if err != nil {
+		slog.Warn("read gpu load", "error", err)
+		return nil
+	}
+	return load
+}
+
+func (a Agent) usage(ctx context.Context, c Container, load map[int]float64) *sandbox.RunUsage {
+	s, err := a.docker.Stats(ctx, c.ID)
+	if err != nil {
+		slog.Warn("read run stats", "run", c.RunID, "error", err)
+		return nil
+	}
+	processes, err := a.docker.Processes(ctx, c.ID)
+	if err != nil {
+		slog.Warn("read run processes", "run", c.RunID, "error", err)
+		return nil
+	}
+	u := &sandbox.RunUsage{CPU: s.CPU, NetBytes: s.NetBytes, Processes: processes}
+	if v, ok := load[c.GPU]; ok {
+		u.GPU = &v
+	}
+	return u
 }
 
 func (a Agent) sync(ctx context.Context, report sandbox.AgentReport) (sandbox.AgentPlan, error) {
@@ -116,8 +158,23 @@ func (a Agent) apply(ctx context.Context, containers []Container, plan sandbox.A
 				return err
 			}
 			continue
+		case spec.Stop && c.paused():
+			if err := a.docker.Unpause(ctx, c.ID); err != nil {
+				return err
+			}
+			if err := a.docker.Stop(ctx, c.ID); err != nil {
+				return err
+			}
 		case spec.Stop && c.running():
 			if err := a.docker.Stop(ctx, c.ID); err != nil {
+				return err
+			}
+		case spec.Hold && c.running():
+			if err := a.docker.Pause(ctx, c.ID); err != nil {
+				return err
+			}
+		case !spec.Hold && c.paused():
+			if err := a.docker.Unpause(ctx, c.ID); err != nil {
 				return err
 			}
 		case !spec.Stop && c.State == "created":
@@ -131,7 +188,7 @@ func (a Agent) apply(ctx context.Context, containers []Container, plan sandbox.A
 		}
 	}
 	for _, spec := range plan.Runs {
-		if have[spec.RunID] || spec.Stop {
+		if have[spec.RunID] || spec.Stop || spec.Hold {
 			continue
 		}
 		gpu := a.freeGPU(used)

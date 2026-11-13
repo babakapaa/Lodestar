@@ -51,3 +51,5 @@ var ErrInvalidRun = errors.New("run is invalid")
 var ErrRunNotFound = errors.New("run not found")
 
 var ErrRunEnded = errors.New("run has already ended")
+
+var ErrRunNotHeld = errors.New("run is not held")

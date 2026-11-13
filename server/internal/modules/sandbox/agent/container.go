@@ -24,6 +24,10 @@ func (c Container) running() bool {
 	return c.State == "running"
 }
 
+func (c Container) paused() bool {
+	return c.State == "paused"
+}
+
 func (c Container) exited() bool {
 	return c.State == "exited" || c.State == "dead"
 }

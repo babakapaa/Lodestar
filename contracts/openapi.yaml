@@ -7387,6 +7387,64 @@ paths:
           $ref: "#/components/responses/Error"
         default:
           $ref: "#/components/responses/Error"
+  /v1/sandbox/runs/held:
+    get:
+      tags: [sandbox]
+      operationId: listHeldSandboxRuns
+      summary: Запуски на паузе у сторожа
+      description: Нужно право sandbox.manage. Решает администратор, а не ИИ и не преподаватель.
+      security:
+        - bearer: []
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SandboxRun"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/sandbox/runs/{id}/hold-decision:
+    post:
+      tags: [sandbox]
+      operationId: decideSandboxHold
+      summary: Решение по запуску на паузе
+      description: release true продолжает запуск, false останавливает его. Время паузы не списывается.
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SandboxHoldDecision"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SandboxRun"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
 components:
   securitySchemes:
     bearer:
@@ -11359,7 +11417,7 @@ components:
           description: Платить из запаса команды
     SandboxRun:
       type: object
-      required: [id, userId, displayName, teamId, teamName, kind, title, command, templateId, templateName, classId, className, rate, maxHours, workKind, workId, workTitle, dueAt, status, position, url, exitCode, reason, charged, queuedAt, startedAt, endedAt]
+      required: [id, userId, displayName, teamId, teamName, kind, title, command, templateId, templateName, classId, className, rate, maxHours, workKind, workId, workTitle, dueAt, status, position, url, exitCode, reason, charged, queuedAt, startedAt, endedAt, heldAt, holdNote, refunded, gpuLoad]
       properties:
         id:
           type: string
@@ -11405,7 +11463,7 @@ components:
           format: date-time
         status:
           type: string
-          enum: [queued, starting, running, stopping, finished, failed, stopped]
+          enum: [queued, starting, running, held, stopping, finished, failed, stopped]
         position:
           type: [integer, "null"]
           description: Место в очереди своего класса карт
@@ -11415,7 +11473,7 @@ components:
           type: [integer, "null"]
         reason:
           type: string
-          description: time_limit, node_lost, vanished или пусто
+          description: time_limit, node_lost, vanished, idle, watchdog или пусто
         charged:
           type: [number, "null"]
         queuedAt:
@@ -11427,6 +11485,22 @@ components:
         endedAt:
           type: [string, "null"]
           format: date-time
+        heldAt:
+          type: [string, "null"]
+          format: date-time
+          description: Когда сторож поставил запуск на паузу. Время паузы не списывается
+        holdNote:
+          type: string
+          description: Технический признак, по которому сторож остановил запуск, например имя процесса
+        refunded:
+          type: boolean
+          description: Запуск упал в первые 5 минут, часы вернулись
+        gpuLoad:
+          type: [number, "null"]
+          description: Средняя загрузка видеокарты в процентах, если узел её измеряет
+        log:
+          type: string
+          description: Последние строки вывода после завершения. Только в ответе на один запуск
     SandboxRunReport:
       type: object
       required: [runId, phase]
@@ -11441,6 +11515,31 @@ components:
           type: string
         exitCode:
           type: integer
+        usage:
+          oneOf:
+            - type: "null"
+            - $ref: "#/components/schemas/SandboxRunUsage"
+        log:
+          type: string
+          description: Хвост вывода контейнера после завершения
+    SandboxRunUsage:
+      type: object
+      required: [cpu, gpu, netBytes, processes]
+      properties:
+        cpu:
+          type: number
+          description: Загрузка процессора в процентах одного ядра
+        gpu:
+          type: [number, "null"]
+          description: Загрузка видеокарты в процентах, если есть nvidia-smi
+        netBytes:
+          type: integer
+          format: int64
+          description: Всего байт по сети с начала запуска
+        processes:
+          type: array
+          items:
+            type: string
     SandboxAgentReport:
       type: object
       required: [runs]
@@ -11451,7 +11550,7 @@ components:
             $ref: "#/components/schemas/SandboxRunReport"
     SandboxRunSpec:
       type: object
-      required: [runId, kind, title, image, command, maxHours, workspace, stop]
+      required: [runId, kind, title, image, command, maxHours, workspace, hold, stop]
       properties:
         runId:
           type: string
@@ -11470,6 +11569,9 @@ components:
         workspace:
           type: string
           description: Папка владельца на узле, user-<id> или team-<id>
+        hold:
+          type: boolean
+          description: Приостановить контейнер, файлы и процессы не трогать
         stop:
           type: boolean
     SandboxAgentPlan:
@@ -11483,3 +11585,9 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/SandboxRunSpec"
+    SandboxHoldDecision:
+      type: object
+      required: [release]
+      properties:
+        release:
+          type: boolean

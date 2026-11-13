@@ -8,5 +8,6 @@ type RunSpec struct {
 	Command   string  `json:"command"`
 	MaxHours  float64 `json:"maxHours"`
 	Workspace string  `json:"workspace"`
+	Hold      bool    `json:"hold"`
 	Stop      bool    `json:"stop"`
 }

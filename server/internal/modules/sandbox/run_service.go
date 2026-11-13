@@ -148,6 +148,7 @@ func (s Service) Runs(ctx context.Context, p auth.Principal) ([]Run, error) {
 		}
 		for i := range out {
 			out[i] = out[i].seenBy(p.UserID)
+			out[i].Log = ""
 		}
 		return nil
 	})
@@ -180,9 +181,11 @@ func (s Service) StopRun(ctx context.Context, p auth.Principal, id string) (Run,
 		}
 		switch current.Status {
 		case RunQueued:
-			err = s.runs.End(ctx, tx, id, RunStopped, nil, "", 0, time.Now())
+			err = s.runs.End(ctx, tx, id, runEnd{status: RunStopped, at: time.Now()})
 		case RunStarting, RunRunning:
 			err = s.runs.Stopping(ctx, tx, id, "")
+		case RunHeld:
+			err = s.runs.Stopping(ctx, tx, id, ReasonWatchdog)
 		default:
 			return ErrRunEnded
 		}

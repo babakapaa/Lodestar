@@ -35,6 +35,7 @@ const (
 	CodeInvalidRun      = "invalid_run"
 	CodeRunNotFound     = "run_not_found"
 	CodeRunEnded        = "run_ended"
+	CodeRunNotHeld      = "run_not_held"
 )
 
 var errorCodes = []struct {
@@ -67,6 +68,7 @@ var errorCodes = []struct {
 	{ErrInvalidRun, http.StatusBadRequest, CodeInvalidRun},
 	{ErrRunNotFound, http.StatusNotFound, CodeRunNotFound},
 	{ErrRunEnded, http.StatusConflict, CodeRunEnded},
+	{ErrRunNotHeld, http.StatusConflict, CodeRunNotHeld},
 }
 
 func writeError(w http.ResponseWriter, err error) {

@@ -2200,5 +2200,151 @@
   "settingGroupOther": "Другое",
   "settingNavigatorSupport": "Навигатор: контакты психологической службы",
   "settingNavigatorMemory": "Навигатор: сколько сообщений диалога он помнит",
-  "settingLeagueGpu": "Лига: часы GPU по дивизионам"
+  "settingLeagueGpu": "Лига: часы GPU по дивизионам",
+  "setupTitle": "Мастер установки",
+  "setupHint": "Разделы, поручения и запуск вуза",
+  "setupProgress": "Утверждено {done} из {total}",
+  "@setupProgress": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "setupRequired": "Обязательный",
+  "setupDeploy": "Развёртывание",
+  "setupUniversity": "Вуз и структура",
+  "setupPeople": "Вход и люди",
+  "setupAdmins": "Администраторы и роли",
+  "setupIntegrations": "Интеграции",
+  "setupTeaching": "Обучение и оценка",
+  "setupNavigator": "Навигатор",
+  "setupLeague": "Лига и награды",
+  "setupSandbox": "Песочница GPU",
+  "setupCampus": "Быт вуза",
+  "setupPrivacy": "Данные и приватность",
+  "setupLegal": "Право и безопасность",
+  "setupLaunch": "Проверка и запуск",
+  "setupDeployHint": "Где работает Lodestar, адрес сайта и почта для уведомлений. Это настраивает ИТ-отдел при установке сервера.",
+  "setupUniversityHint": "Язык, тема и часовой пояс по умолчанию. Факультеты, кафедры и группы заводятся в разделе «Подразделения».",
+  "setupPeopleHint": "Вход через учётную запись вуза и импорт студентов и преподавателей.",
+  "setupAdminsHint": "Кто администраторы и какие роли нужны вузу.",
+  "setupIntegrationsHint": "LMS и откуда брать задания.",
+  "setupTeachingHint": "Правила курсов, заданий и защит.",
+  "setupNavigatorHint": "Как навигатор работает со студентами.",
+  "setupLeagueHint": "Лига, награды и часы GPU по дивизионам.",
+  "setupSandboxHint": "Квоты, ночная скидка и правила песочницы.",
+  "setupCampusHint": "Посещаемость и чаты.",
+  "setupPrivacyHint": "Сроки хранения, удаление аккаунтов и размер файлов.",
+  "setupLegalHint": "На каждый вопрос нужен ответ и основание: статья закона или приказ вуза. Ответ утверждает юрист или ответственный за данные.",
+  "setupLaunchHint": "Проверьте, что ничего не мешает запуску, и откройте приложение для всех.",
+  "setupNotStarted": "Не начат",
+  "setupInProgress": "В работе",
+  "setupInReview": "На проверке",
+  "setupApproved": "Утверждён",
+  "setupProblemsTitle": "Что мешает запуску",
+  "setupReady": "Всё готово к запуску",
+  "setupLaunchAction": "Запустить",
+  "setupLaunched": "Вуз запущен",
+  "setupFix": "Исправить",
+  "setupProblemNotApproved": "Раздел «{section}» не утверждён",
+  "@setupProblemNotApproved": {
+    "placeholders": {
+      "section": {
+        "type": "String"
+      }
+    }
+  },
+  "setupProblemLegalOpen": "Не утверждено ответов: {count}",
+  "@setupProblemLegalOpen": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "setupProblemUnsigned": "Протокол подключения не подписан",
+  "setupProblemNoUnits": "В вузе нет ни одного подразделения",
+  "setupProblemLonelyCourses": "Курсов без преподавателя: {count}",
+  "@setupProblemLonelyCourses": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "setupProblemModel": "Модель навигатора не подключена",
+  "setupProblemOther": "Проблема: {code}",
+  "@setupProblemOther": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "setupAssign": "Поручить",
+  "setupAssignee": "Поручено: {name}",
+  "@setupAssignee": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "setupUnassign": "Снять поручение",
+  "setupSubmit": "Отправить на проверку",
+  "setupApprove": "Утвердить",
+  "setupReturn": "Вернуть с комментарием",
+  "setupReturnTitle": "Что исправить?",
+  "setupNote": "Комментарий: {note}",
+  "@setupNote": {
+    "placeholders": {
+      "note": {
+        "type": "String"
+      }
+    }
+  },
+  "setupNoSettings": "Настроек для этого раздела в приложении пока нет.",
+  "setupOpenScreen": "Открыть",
+  "setupAnswer": "Ответ",
+  "setupBasis": "Основание",
+  "setupAnswerApproved": "Утверждено",
+  "setupAnswerWaiting": "Ждёт утверждения",
+  "setupAnswerEmpty": "Нет ответа",
+  "setupProtocol": "Протокол подключения",
+  "setupProtocolSigned": "Версия {version}, подписан",
+  "@setupProtocolSigned": {
+    "placeholders": {
+      "version": {
+        "type": "int"
+      }
+    }
+  },
+  "setupProtocolUnsigned": "Не подписан",
+  "setupDownload": "Скачать",
+  "setupSign": "Подписать",
+  "setupBanner": "Вуз ещё не запущен. Студенты и преподаватели увидят приложение после запуска.",
+  "setupOpen": "Открыть мастер",
+  "setupQuestionStorage": "Страна вуза и место хранения данных",
+  "setupQuestionConsent": "Согласие на обработку данных и согласие родителей несовершеннолетних",
+  "setupQuestionRedButton": "Красная кнопка навигатора: кому сообщает и на каком основании",
+  "setupQuestionRecording": "Запись защит и звонков",
+  "setupQuestionRetention": "Сроки хранения работ, оценок и личных данных",
+  "setupQuestionPersonalAccess": "Процедура доступа к личным данным",
+  "setupQuestionSandboxWatch": "Надзор в песочнице и публичный хостинг демо",
+  "setupQuestionDataOfficer": "Ответственный за данные и контакт для жалоб",
+  "errorNotLaunched": "Вуз ещё настраивается. Приложение откроется после запуска.",
+  "errorSetupLegalOpen": "Сначала утвердите все ответы раздела «Право и безопасность»",
+  "errorSetupNotReady": "Запуску мешают нерешённые проблемы",
+  "errorSetupAssignee": "Этот раздел можно поручить только юристу или ответственному за данные",
+  "errorSetupInReview": "Раздел уже на проверке",
+  "errorSetupAnswer": "Нужны и ответ, и основание",
+  "permissionManageSetup": "Проводить мастер установки",
+  "permissionSetupLegal": "Утверждать ответы «Право и безопасность»",
+  "permissionSetupSign": "Подписывать протокол подключения",
+  "permissionViewStats": "Смотреть статистику вуза",
+  "permissionFullStats": "Видеть статистику небольших групп"
 }

@@ -13,6 +13,11 @@ class PermissionLabels {
     'core.structure.members' => l10n.permissionManageMembers,
     'core.audit.view' => l10n.permissionViewAudit,
     'core.integrations.manage' => l10n.permissionManageIntegrations,
+    'core.setup.manage' => l10n.permissionManageSetup,
+    'core.setup.legal' => l10n.permissionSetupLegal,
+    'core.setup.sign' => l10n.permissionSetupSign,
+    'core.stats.view' => l10n.permissionViewStats,
+    'core.stats.full' => l10n.permissionFullStats,
     _ => permission,
   };
 }

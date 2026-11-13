@@ -12,6 +12,7 @@ import 'fake_attendance.dart';
 import 'fake_sandbox.dart';
 import 'fake_navigator.dart';
 import 'fake_notes.dart';
+import 'fake_setup.dart';
 import 'fake_sources.dart';
 import 'fake_stats.dart';
 import 'fake_study.dart';
@@ -32,6 +33,7 @@ class FakeServer {
   final FakeSandbox sandbox = FakeSandbox();
   final FakeAttendance attendance = FakeAttendance();
   final FakeStats stats = FakeStats();
+  final FakeSetup setup = FakeSetup();
   bool offline = false;
   final Map<String, Object?> profile = {
     'userId': 'u1',
@@ -224,6 +226,8 @@ class FakeServer {
       _ when path.startsWith('/v1/sandbox/') => sandbox.handle(request),
       _ when path.startsWith('/v1/attendance/') => attendance.handle(request),
       'GET /v1/stats/units' => stats.handle(request),
+      _ when path == '/v1/setup' || path.startsWith('/v1/setup/') =>
+        setup.handle(request),
       _ when path == '/v1/files' || path.startsWith('/v1/files/') =>
         files.handle(request),
       _

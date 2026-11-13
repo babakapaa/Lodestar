@@ -36,3 +36,7 @@ func (Module) PrivacySections(k module.Kernel) []privacy.Section {
 func (Module) StatsSources(module.Kernel) []module.StatsSource {
 	return []module.StatsSource{NavigatorStats{}}
 }
+
+func (Module) ReadinessSources(k module.Kernel) []module.ReadinessSource {
+	return []module.ReadinessSource{ModelReadiness{settings: k.Settings, configured: k.Model != nil}}
+}

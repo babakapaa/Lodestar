@@ -37,8 +37,11 @@ abstract final class AppRoutes {
   static const sandboxAdmin = '/admin/sandbox';
   static const attend = '/attend';
   static const stats = '/admin/stats';
+  static const setup = '/admin/setup';
 
   static String role(String id) => '/admin/roles/$id';
+
+  static String setupSection(String key) => '/admin/setup/$key';
 
   static String unitStats(String id, String name) => Uri(
     path: stats,

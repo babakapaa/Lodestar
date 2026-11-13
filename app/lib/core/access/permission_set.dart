@@ -13,6 +13,7 @@ class PermissionSet {
   static const manageIntegrations = 'core.integrations.manage';
   static const manageSandbox = 'sandbox.manage';
   static const viewStats = 'core.stats.view';
+  static const manageSetup = 'core.setup.manage';
 
   final Set<String> _granted;
 
@@ -29,5 +30,6 @@ class PermissionSet {
       has(manageAwards) ||
       has(manageIntegrations) ||
       has(manageSandbox) ||
-      has(viewStats);
+      has(viewStats) ||
+      has(manageSetup);
 }

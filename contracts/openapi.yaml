@@ -31,6 +31,8 @@ tags:
     description: Общий поиск по людям, подразделениям и модулям
   - name: audit
     description: Журнал изменений ролей, прав и настроек вуза
+  - name: setup
+    description: Мастер установки и запуск вуза
   - name: stats
     description: Сводная статистика вуза по подразделениям
   - name: privacy
@@ -7968,6 +7970,358 @@ paths:
           $ref: "#/components/responses/Error"
         default:
           $ref: "#/components/responses/Error"
+  /v1/setup/status:
+    get:
+      tags: [setup]
+      operationId: setupStatus
+      summary: Запущен ли вуз и что может делать этот человек в мастере
+      description: Доступен всем. До запуска модули отвечают 403 university_not_launched всем, кроме тех, у кого есть core.setup.manage или поручен раздел.
+      security:
+        - bearer: []
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SetupStatus"
+        "401":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/setup:
+    get:
+      tags: [setup]
+      operationId: setupOverview
+      summary: Мастер установки целиком
+      description: Человек с поручением видит только свои разделы. Проблемы готовности видит только core.setup.manage.
+      security:
+        - bearer: []
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SetupOverview"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/setup/sections/{section}/assignee:
+    put:
+      tags: [setup]
+      operationId: assignSetupSection
+      summary: Поручить раздел человеку
+      description: Нужно core.setup.manage. Раздел legal поручается только человеку с core.setup.legal. userId null снимает поручение.
+      security:
+        - bearer: []
+      parameters:
+        - name: section
+          in: path
+          required: true
+          description: Раздел мастера, например university или legal
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SetupAssignInput"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SetupSection"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/setup/sections/{section}/settings/{key}:
+    put:
+      tags: [setup]
+      operationId: setSetupSetting
+      summary: Изменить настройку своего раздела
+      description: value null возвращает значение по умолчанию.
+      security:
+        - bearer: []
+      parameters:
+        - name: section
+          in: path
+          required: true
+          description: Раздел мастера, например university или legal
+          schema:
+            type: string
+        - name: key
+          in: path
+          required: true
+          description: Ключ настройки
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SetupSettingInput"
+      responses:
+        "204":
+          description: Готово
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/setup/sections/{section}/submit:
+    post:
+      tags: [setup]
+      operationId: submitSetupSection
+      summary: Отправить раздел на проверку
+      security:
+        - bearer: []
+      parameters:
+        - name: section
+          in: path
+          required: true
+          description: Раздел мастера, например university или legal
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SetupSection"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/setup/sections/{section}/review:
+    post:
+      tags: [setup]
+      operationId: reviewSetupSection
+      summary: Утвердить раздел или вернуть с комментарием
+      description: Нужно core.setup.manage. Раздел legal утверждается, только когда утверждены все ответы.
+      security:
+        - bearer: []
+      parameters:
+        - name: section
+          in: path
+          required: true
+          description: Раздел мастера, например university или legal
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SetupReviewInput"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SetupSection"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/setup/legal/{question}:
+    put:
+      tags: [setup]
+      operationId: answerSetupLegal
+      summary: Ответить на вопрос «Право и безопасность»
+      description: Нужны ответ и основание. Любой ответ снимает утверждение вопроса и подпись протокола.
+      security:
+        - bearer: []
+      parameters:
+        - name: question
+          in: path
+          required: true
+          description: Вопрос раздела «Право и безопасность», например storage
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SetupAnswerInput"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SetupLegalAnswer"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/setup/legal/{question}/approve:
+    post:
+      tags: [setup]
+      operationId: approveSetupLegal
+      summary: Утвердить ответ
+      description: Нужно core.setup.legal.
+      security:
+        - bearer: []
+      parameters:
+        - name: question
+          in: path
+          required: true
+          description: Вопрос раздела «Право и безопасность», например storage
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SetupLegalAnswer"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/setup/protocol:
+    get:
+      tags: [setup]
+      operationId: setupProtocol
+      summary: Протокол подключения
+      description: С format=md отдаёт файл Markdown.
+      security:
+        - bearer: []
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SetupProtocol"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/setup/protocol/sign:
+    post:
+      tags: [setup]
+      operationId: signSetupProtocol
+      summary: Подписать протокол
+      description: Нужно core.setup.sign и все ответы утверждены. Каждая подпись создаёт новую версию.
+      security:
+        - bearer: []
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SetupOverview"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/setup/launch:
+    post:
+      tags: [setup]
+      operationId: launchSetup
+      summary: Запустить вуз для всех
+      description: Нужно core.setup.manage и пустой список проблем. Поручения снимаются.
+      security:
+        - bearer: []
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SetupOverview"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
 components:
   securitySchemes:
     bearer:
@@ -12532,3 +12886,158 @@ components:
           type: string
         value:
           type: number
+    SetupStatus:
+      type: object
+      required: [launched, manages, assigned]
+      properties:
+        launched:
+          type: boolean
+        manages:
+          type: boolean
+        assigned:
+          type: array
+          items:
+            type: string
+    SetupSection:
+      type: object
+      required: [key, required, status, assigneeId, dueOn, note, settings, updatedAt]
+      properties:
+        key:
+          type: string
+        required:
+          type: boolean
+        status:
+          type: string
+          enum: [not_started, in_progress, review, approved]
+        assigneeId:
+          type: [string, "null"]
+          format: uuid
+        dueOn:
+          type: [string, "null"]
+          format: date
+        note:
+          type: string
+          description: Комментарий при возврате
+        settings:
+          type: array
+          description: Ключи настроек этого раздела
+          items:
+            type: string
+        updatedAt:
+          type: [string, "null"]
+          format: date-time
+    SetupLegalAnswer:
+      type: object
+      required: [question, title, answer, basis, answeredBy, answeredAt, approvedBy, approvedAt]
+      properties:
+        question:
+          type: string
+        title:
+          type: string
+        answer:
+          type: string
+        basis:
+          type: string
+          description: Статья закона или приказ вуза
+        answeredBy:
+          type: [string, "null"]
+          format: uuid
+        answeredAt:
+          type: [string, "null"]
+          format: date-time
+        approvedBy:
+          type: [string, "null"]
+          format: uuid
+        approvedAt:
+          type: [string, "null"]
+          format: date-time
+    SetupProblem:
+      type: object
+      required: [section, code, count]
+      properties:
+        section:
+          type: string
+        code:
+          type: string
+          description: section_not_approved, legal_open, protocol_unsigned, no_units, courses_without_teacher, model_missing
+        count:
+          type: integer
+    SetupOverview:
+      type: object
+      required: [launched, launchedAt, protocolVersion, signedBy, signedAt, sections, legal, problems]
+      properties:
+        launched:
+          type: boolean
+        launchedAt:
+          type: [string, "null"]
+          format: date-time
+        protocolVersion:
+          type: integer
+        signedBy:
+          type: [string, "null"]
+          format: uuid
+        signedAt:
+          type: [string, "null"]
+          format: date-time
+        sections:
+          type: array
+          items:
+            $ref: "#/components/schemas/SetupSection"
+        legal:
+          type: array
+          items:
+            $ref: "#/components/schemas/SetupLegalAnswer"
+        problems:
+          type: [array, "null"]
+          items:
+            $ref: "#/components/schemas/SetupProblem"
+    SetupProtocol:
+      type: object
+      required: [version, signedBy, signedAt, answers]
+      properties:
+        version:
+          type: integer
+        signedBy:
+          type: [string, "null"]
+          format: uuid
+        signedAt:
+          type: [string, "null"]
+          format: date-time
+        answers:
+          type: array
+          items:
+            $ref: "#/components/schemas/SetupLegalAnswer"
+    SetupAssignInput:
+      type: object
+      required: [userId]
+      properties:
+        userId:
+          type: [string, "null"]
+          format: uuid
+        dueOn:
+          type: [string, "null"]
+          format: date
+    SetupSettingInput:
+      type: object
+      required: [value]
+      properties:
+        value:
+          description: Новое значение или null
+    SetupReviewInput:
+      type: object
+      required: [approve]
+      properties:
+        approve:
+          type: boolean
+        note:
+          type: string
+    SetupAnswerInput:
+      type: object
+      required: [answer, basis]
+      properties:
+        answer:
+          type: string
+          maxLength: 4000
+        basis:
+          type: string
+          maxLength: 1000

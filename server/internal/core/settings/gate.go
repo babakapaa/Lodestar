@@ -8,13 +8,16 @@ import (
 	"github.com/babakapaa/lodestar/server/internal/core/auth"
 )
 
+const CodeNotLaunched = "university_not_launched"
+
 type Gate struct {
 	service       Service
 	authenticator auth.Authenticator
+	launch        LaunchCheck
 }
 
-func NewGate(service Service, authenticator auth.Authenticator) Gate {
-	return Gate{service: service, authenticator: authenticator}
+func NewGate(service Service, authenticator auth.Authenticator, launch LaunchCheck) Gate {
+	return Gate{service: service, authenticator: authenticator, launch: launch}
 }
 
 func (g Gate) Wrap(name string, h http.Handler) http.Handler {
@@ -28,6 +31,16 @@ func (g Gate) Wrap(name string, h http.Handler) http.Handler {
 		}
 		if !enabled {
 			apierror.NotFound(w, r)
+			return
+		}
+		allowed, err := g.launch.Allowed(r.Context(), p)
+		if err != nil {
+			slog.Error("check launch", "error", err)
+			apierror.Write(w, http.StatusInternalServerError, apierror.CodeInternal)
+			return
+		}
+		if !allowed {
+			apierror.Write(w, http.StatusForbidden, CodeNotLaunched)
 			return
 		}
 		h.ServeHTTP(w, r)

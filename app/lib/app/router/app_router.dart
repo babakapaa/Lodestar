@@ -56,6 +56,8 @@ import '../../features/profile/profile_screen.dart';
 import '../../features/roles/role_edit_screen.dart';
 import '../../features/roles/roles_screen.dart';
 import '../../features/settings/settings_screen.dart';
+import '../../features/setup/setup_screen.dart';
+import '../../features/setup/setup_section_screen.dart';
 import '../../features/stats/unit_stats_screen.dart';
 import '../../features/study/assignment_edit_screen.dart';
 import '../../features/study/assignment_screen.dart';
@@ -283,6 +285,11 @@ class AppRouter {
           _route(AppRoutes.sandbox, const SandboxScreen()),
           _route(AppRoutes.sandboxTopups, const TopupsScreen()),
           _route(AppRoutes.sandboxAdmin, const SandboxAdminScreen()),
+          _route(AppRoutes.setup, const SetupScreen()),
+          _param(
+            AppRoutes.setupSection(':id'),
+            (key) => SetupSectionScreen(sectionKey: key),
+          ),
           GoRoute(
             path: AppRoutes.stats,
             pageBuilder: (context, state) => _fade(

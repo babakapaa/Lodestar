@@ -270,6 +270,16 @@ func (r *Registry) StatsSources(k Kernel) []StatsSource {
 	return sources
 }
 
+func (r *Registry) ReadinessSources(k Kernel) []ReadinessSource {
+	var sources []ReadinessSource
+	for _, m := range r.modules {
+		if s, ok := m.(ReadinessProviding); ok {
+			sources = append(sources, s.ReadinessSources(k)...)
+		}
+	}
+	return sources
+}
+
 func (r *Registry) ScoreSources(k Kernel) ScoreSources {
 	var sources ScoreSources
 	for _, m := range r.modules {

@@ -22,6 +22,7 @@ import (
 	"github.com/babakapaa/lodestar/server/internal/core/schema"
 	"github.com/babakapaa/lodestar/server/internal/core/search"
 	"github.com/babakapaa/lodestar/server/internal/core/settings"
+	"github.com/babakapaa/lodestar/server/internal/core/setup"
 	"github.com/babakapaa/lodestar/server/internal/core/stats"
 	"github.com/babakapaa/lodestar/server/internal/core/structure"
 	"github.com/babakapaa/lodestar/server/internal/platform/clientip"
@@ -105,11 +106,12 @@ func NewServer(version string, cfg config.Config, box secretbox.Box, pool *pgxpo
 		PublicURL:     cfg.PublicURL,
 		AppURL:        cfg.AppURL,
 	}
+	setupService := setup.NewService(tx, accessService, settingsService, registry.ReadinessSources(kernel)...)
 	proxies, err := clientip.Parse(cfg.TrustedProxies)
 	if err != nil {
 		return Server{}, fmt.Errorf("LODESTAR_TRUSTED_PROXIES: %w", err)
 	}
-	handler := NewRouter(version, registry, pool, settings.NewGate(settingsService, authn), kernel,
+	handler := NewRouter(version, registry, pool, settings.NewGate(settingsService, authn, setupService), kernel,
 		authRoutes,
 		access.Routes{Service: accessService, Authenticator: authn},
 		structure.Routes{Service: structure.NewService(tx, accessService), Authenticator: authn},
@@ -121,6 +123,7 @@ func NewServer(version string, cfg config.Config, box secretbox.Box, pool *pgxpo
 		delivery.Routes{Service: delivery.NewService(tx), Authenticator: authn},
 		search.Routes{Service: searchService, Authenticator: authn},
 		audit.Routes{Service: audit.NewService(tx, accessService), Authenticator: authn},
+		setup.Routes{Service: setupService, Authenticator: authn},
 		stats.Routes{Service: stats.NewService(tx, accessService, registry.StatsSources(kernel)...), Authenticator: authn},
 		lti.NewRoutes(pool, integrations),
 		privacy.Routes{

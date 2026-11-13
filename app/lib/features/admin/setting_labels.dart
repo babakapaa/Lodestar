@@ -23,6 +23,7 @@ class SettingLabels {
     'chat.calls' => l10n.settingChatCalls,
     'chat.screen_share' => l10n.settingChatScreenShare,
     'chat.call_recording' => l10n.settingChatRecording,
+    'chat.recording_consent' => l10n.settingChatRecordingConsent,
     'core.lti_assignment_source' => l10n.settingLtiSource,
     'sandbox.base_hours' => l10n.settingSandboxBaseHours,
     'sandbox.deadline_days' => l10n.settingSandboxDeadlineDays,

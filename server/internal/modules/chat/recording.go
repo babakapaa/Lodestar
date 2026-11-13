@@ -6,4 +6,5 @@ type Recording struct {
 	ChatID    string
 	FileID    *string
 	StartedBy *string
+	AudioOnly bool
 }

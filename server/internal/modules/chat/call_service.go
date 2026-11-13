@@ -56,7 +56,7 @@ func (s CallService) Active(ctx context.Context, p auth.Principal, chatID string
 	return out, err
 }
 
-func (s CallService) Join(ctx context.Context, p auth.Principal, chatID string) (CallTicket, error) {
+func (s CallService) Join(ctx context.Context, p auth.Principal, chatID string, in JoinInput) (CallTicket, error) {
 	if s.k.Calls == nil {
 		return CallTicket{}, ErrCallsUnavailable
 	}
@@ -86,6 +86,15 @@ func (s CallService) Join(ctx context.Context, p auth.Principal, chatID string) 
 		if err != nil {
 			return err
 		}
+		if found && call.Recording && !in.Consent {
+			var asks bool
+			if err := s.setting(ctx, tx, ConsentSetting, &asks); err != nil {
+				return err
+			}
+			if asks {
+				return ErrConsentRequired
+			}
+		}
 		if !found && c.Kind == KindChannel && !manages(c.Role) {
 			return ErrCallNotStarted
 		}
@@ -101,6 +110,11 @@ func (s CallService) Join(ctx context.Context, p auth.Principal, chatID string) 
 		}
 		if err := s.calls.Join(ctx, tx, call.ID, p.UserID); err != nil {
 			return err
+		}
+		if in.Consent {
+			if err := s.calls.Agree(ctx, tx, call.ID, p.UserID); err != nil {
+				return err
+			}
 		}
 		if call, _, err = s.calls.ByID(ctx, tx, call.ID); err != nil {
 			return err

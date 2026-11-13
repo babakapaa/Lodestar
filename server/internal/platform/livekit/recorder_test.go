@@ -47,7 +47,7 @@ func TestStartRecordingSendsRoomAndStorage(t *testing.T) {
 		URL: "ws" + strings.TrimPrefix(srv.URL, "http"), APIKey: "key", APISecret: secret,
 		Storage: objectstore.Config{Endpoint: "http://minio:9000", Bucket: "lodestar", AccessKey: "a", SecretKey: "s"},
 	})
-	id, err := issuer.StartRecording(context.Background(), "t_c", "t/f", now)
+	id, err := issuer.StartRecording(context.Background(), "t_c", "t/f", true, now)
 	if err != nil || id != "EG_1" {
 		t.Fatalf("start = %q, %v", id, err)
 	}
@@ -55,14 +55,14 @@ func TestStartRecordingSendsRoomAndStorage(t *testing.T) {
 		t.Fatalf("request = %s %v %v", path, record, got)
 	}
 	out := got["file_outputs"].([]any)[0].(map[string]any)
-	if out["filepath"] != "t/f" || out["s3"].(map[string]any)["bucket"] != "lodestar" {
+	if out["filepath"] != "t/f" || out["file_type"] != "OGG" || got["audio_only"] != true || out["s3"].(map[string]any)["bucket"] != "lodestar" {
 		t.Fatalf("output = %v", out)
 	}
 }
 
 func TestRecordingNeedsStorage(t *testing.T) {
 	issuer := livekit.NewIssuer(livekit.Config{URL: "wss://calls", APIKey: "key", APISecret: secret})
-	if _, err := issuer.StartRecording(context.Background(), "t_c", "t/f", time.Now()); !errors.Is(err, livekit.ErrNoRecording) {
+	if _, err := issuer.StartRecording(context.Background(), "t_c", "t/f", false, time.Now()); !errors.Is(err, livekit.ErrNoRecording) {
 		t.Fatalf("err = %v", err)
 	}
 }

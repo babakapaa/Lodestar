@@ -16,35 +16,35 @@ func TestRecordingFollowsUniversityRules(t *testing.T) {
 	if err != nil {
 		t.Fatalf("group: %v", err)
 	}
-	first, err := w.calls.Join(w.ctx, owner, g.ID)
+	first, err := w.calls.Join(w.ctx, owner, g.ID, chat.JoinInput{})
 	if err != nil {
 		t.Fatalf("join: %v", err)
 	}
-	if _, err := w.calls.Join(w.ctx, member, g.ID); err != nil {
+	if _, err := w.calls.Join(w.ctx, member, g.ID, chat.JoinInput{}); err != nil {
 		t.Fatalf("member joins: %v", err)
 	}
 	callID := first.Call.ID
 	if first.Record {
 		t.Fatal("record allowed while off")
 	}
-	if _, err := w.records.Start(w.ctx, owner, callID); !errors.Is(err, chat.ErrRecordingOff) {
+	if _, err := w.records.Start(w.ctx, owner, callID, chat.RecordingInput{}); !errors.Is(err, chat.ErrRecordingOff) {
 		t.Fatalf("off by default: %v", err)
 	}
 	w.settings.values[chat.RecordingSetting] = chat.RecordAdmins
-	if again, err := w.calls.Join(w.ctx, owner, g.ID); err != nil || !again.Record {
+	if again, err := w.calls.Join(w.ctx, owner, g.ID, chat.JoinInput{}); err != nil || !again.Record {
 		t.Fatalf("owner may record = %+v, %v", again, err)
 	}
-	if again, err := w.calls.Join(w.ctx, member, g.ID); err != nil || again.Record {
+	if again, err := w.calls.Join(w.ctx, member, g.ID, chat.JoinInput{}); err != nil || again.Record {
 		t.Fatalf("member may not record = %+v, %v", again, err)
 	}
-	if _, err := w.records.Start(w.ctx, member, callID); !errors.Is(err, chat.ErrRecordingOff) {
+	if _, err := w.records.Start(w.ctx, member, callID, chat.RecordingInput{}); !errors.Is(err, chat.ErrRecordingOff) {
 		t.Fatalf("member records: %v", err)
 	}
-	call, err := w.records.Start(w.ctx, owner, callID)
+	call, err := w.records.Start(w.ctx, owner, callID, chat.RecordingInput{})
 	if err != nil || !call.Recording {
 		t.Fatalf("owner records = %+v, %v", call, err)
 	}
-	if _, err := w.records.Start(w.ctx, owner, callID); !errors.Is(err, chat.ErrRecordingState) {
+	if _, err := w.records.Start(w.ctx, owner, callID, chat.RecordingInput{}); !errors.Is(err, chat.ErrRecordingState) {
 		t.Fatalf("twice: %v", err)
 	}
 	seen, err := w.calls.Active(w.ctx, member, g.ID)
@@ -95,19 +95,19 @@ func TestDirectCallsRecordOnlyWhenEveryoneMay(t *testing.T) {
 	if _, err := w.chats.Accept(w.ctx, b, d.ID); err != nil {
 		t.Fatalf("accept: %v", err)
 	}
-	ticket, err := w.calls.Join(w.ctx, a, d.ID)
+	ticket, err := w.calls.Join(w.ctx, a, d.ID, chat.JoinInput{})
 	if err != nil {
 		t.Fatalf("join: %v", err)
 	}
 	w.settings.values[chat.RecordingSetting] = chat.RecordAdmins
-	if _, err := w.records.Start(w.ctx, a, ticket.Call.ID); !errors.Is(err, chat.ErrRecordingOff) {
+	if _, err := w.records.Start(w.ctx, a, ticket.Call.ID, chat.RecordingInput{}); !errors.Is(err, chat.ErrRecordingOff) {
 		t.Fatalf("admins rule in direct: %v", err)
 	}
 	w.settings.values[chat.RecordingSetting] = chat.RecordEveryone
-	if call, err := w.records.Start(w.ctx, a, ticket.Call.ID); err != nil || !call.Recording {
+	if call, err := w.records.Start(w.ctx, a, ticket.Call.ID, chat.RecordingInput{}); err != nil || !call.Recording {
 		t.Fatalf("everyone = %+v, %v", call, err)
 	}
-	if _, err := w.records.Start(w.ctx, b, ticket.Call.ID); !errors.Is(err, chat.ErrCallNotFound) {
+	if _, err := w.records.Start(w.ctx, b, ticket.Call.ID, chat.RecordingInput{}); !errors.Is(err, chat.ErrCallNotFound) {
 		t.Fatalf("not in call: %v", err)
 	}
 }
@@ -119,20 +119,20 @@ func TestRecordingFailsCleanlyWithoutEgress(t *testing.T) {
 	if err != nil {
 		t.Fatalf("group: %v", err)
 	}
-	ticket, err := w.calls.Join(w.ctx, owner, g.ID)
+	ticket, err := w.calls.Join(w.ctx, owner, g.ID, chat.JoinInput{})
 	if err != nil {
 		t.Fatalf("join: %v", err)
 	}
 	w.settings.values[chat.RecordingSetting] = chat.RecordEveryone
 	w.egress.broken = true
-	if _, err := w.records.Start(w.ctx, owner, ticket.Call.ID); !errors.Is(err, chat.ErrRecordingUnavailable) {
+	if _, err := w.records.Start(w.ctx, owner, ticket.Call.ID, chat.RecordingInput{}); !errors.Is(err, chat.ErrRecordingUnavailable) {
 		t.Fatalf("broken egress: %v", err)
 	}
 	if call, err := w.calls.Active(w.ctx, owner, g.ID); err != nil || call.Recording {
 		t.Fatalf("after failure = %+v, %v", call, err)
 	}
 	w.egress.broken = false
-	if call, err := w.records.Start(w.ctx, owner, ticket.Call.ID); err != nil || !call.Recording {
+	if call, err := w.records.Start(w.ctx, owner, ticket.Call.ID, chat.RecordingInput{}); err != nil || !call.Recording {
 		t.Fatalf("retry = %+v, %v", call, err)
 	}
 }

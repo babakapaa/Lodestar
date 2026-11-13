@@ -50,17 +50,17 @@ func TestGroupCallFromRingToEnd(t *testing.T) {
 	if _, err := w.calls.Active(w.ctx, owner, g.ID); !errors.Is(err, chat.ErrCallNotFound) {
 		t.Fatalf("no call yet: %v", err)
 	}
-	if _, err := w.calls.Join(w.ctx, stranger, g.ID); !errors.Is(err, chat.ErrChatNotFound) {
+	if _, err := w.calls.Join(w.ctx, stranger, g.ID, chat.JoinInput{}); !errors.Is(err, chat.ErrChatNotFound) {
 		t.Fatalf("stranger joins: %v", err)
 	}
-	first, err := w.calls.Join(w.ctx, owner, g.ID)
+	first, err := w.calls.Join(w.ctx, owner, g.ID, chat.JoinInput{})
 	if err != nil || first.Token == "" || first.URL != "wss://calls.kaznu.kz" || !first.ScreenShare || first.Room != chat.RoomName(w.tenant, first.Call.ID) {
 		t.Fatalf("owner joins = %+v, %v", first, err)
 	}
 	if n := w.sent.last(); n.Type != chat.NotifyCall || len(n.UserIDs) != 1 || n.UserIDs[0] != member.UserID {
 		t.Fatalf("ring = %+v", n)
 	}
-	second, err := w.calls.Join(w.ctx, member, g.ID)
+	second, err := w.calls.Join(w.ctx, member, g.ID, chat.JoinInput{})
 	if err != nil || second.Call.ID != first.Call.ID || second.ScreenShare || len(second.Call.People) != 2 {
 		t.Fatalf("member joins = %+v, %v", second, err)
 	}
@@ -81,7 +81,7 @@ func TestGroupCallFromRingToEnd(t *testing.T) {
 	if _, err := w.calls.Active(w.ctx, member, g.ID); !errors.Is(err, chat.ErrCallNotFound) {
 		t.Fatalf("call ended: %v", err)
 	}
-	again, err := w.calls.Join(w.ctx, member, g.ID)
+	again, err := w.calls.Join(w.ctx, member, g.ID, chat.JoinInput{})
 	if err != nil || again.Call.ID == first.Call.ID {
 		t.Fatalf("new call = %+v, %v", again, err)
 	}
@@ -93,7 +93,7 @@ func TestGroupCallFromRingToEnd(t *testing.T) {
 	}
 
 	w.settings.values[chat.CallsSetting] = false
-	if _, err := w.calls.Join(w.ctx, owner, g.ID); !errors.Is(err, chat.ErrCallsOff) {
+	if _, err := w.calls.Join(w.ctx, owner, g.ID, chat.JoinInput{}); !errors.Is(err, chat.ErrCallsOff) {
 		t.Fatalf("calls off: %v", err)
 	}
 }
@@ -119,7 +119,7 @@ func TestCallsWithoutServer(t *testing.T) {
 		t.Fatalf("group: %v", err)
 	}
 	calls := chat.NewCallService(module.Kernel{Tenants: w.tx})
-	if _, err := calls.Join(w.ctx, owner, g.ID); !errors.Is(err, chat.ErrCallsUnavailable) {
+	if _, err := calls.Join(w.ctx, owner, g.ID, chat.JoinInput{}); !errors.Is(err, chat.ErrCallsUnavailable) {
 		t.Fatalf("no server: %v", err)
 	}
 }

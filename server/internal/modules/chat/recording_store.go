@@ -20,8 +20,8 @@ func (RecordingStore) ByEgress(ctx context.Context, tx pgx.Tx, egressID string) 
 
 func (RecordingStore) Start(ctx context.Context, tx pgx.Tx, r Recording) error {
 	_, err := tx.Exec(ctx, `
-		INSERT INTO chat.call_recordings (egress_id, call_id, file_id, started_by) VALUES ($1, $2, $3, $4)`,
-		r.EgressID, r.CallID, r.FileID, r.StartedBy)
+		INSERT INTO chat.call_recordings (egress_id, call_id, file_id, started_by, audio_only) VALUES ($1, $2, $3, $4, $5)`,
+		r.EgressID, r.CallID, r.FileID, r.StartedBy, r.AudioOnly)
 	if err != nil {
 		return fmt.Errorf("start recording: %w", err)
 	}

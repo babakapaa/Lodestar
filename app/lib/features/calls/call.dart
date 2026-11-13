@@ -1,3 +1,5 @@
+import 'call_consent.dart';
+
 class Call {
   const Call({
     required this.id,
@@ -6,6 +8,8 @@ class Call {
     required this.startedAt,
     required this.people,
     required this.recording,
+    this.audioOnly = false,
+    this.consent,
   });
 
   factory Call.fromJson(Map<String, Object?> json) => Call(
@@ -18,6 +22,11 @@ class Call {
         item! as String,
     ],
     recording: json['recording'] as bool? ?? false,
+    audioOnly: json['audioOnly'] as bool? ?? false,
+    consent: switch (json['consent']) {
+      final Map<String, Object?> c => CallConsent.fromJson(c),
+      _ => null,
+    },
   );
 
   final String id;
@@ -26,4 +35,6 @@ class Call {
   final DateTime startedAt;
   final List<String> people;
   final bool recording;
+  final bool audioOnly;
+  final CallConsent? consent;
 }

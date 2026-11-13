@@ -1,6 +1,7 @@
 import '../../core/api/api_client.dart';
 import 'assignment_source.dart';
 import 'link_target.dart';
+import 'lti_deep_link.dart';
 import 'lti_context.dart';
 import 'lti_platform.dart';
 import 'lti_platform_input.dart';
@@ -64,6 +65,24 @@ class LtiApi {
   Future<SyncReport> sync(String id) async => SyncReport.fromJson(
     (await _api.post('${_path(id)}/sync'))! as Map<String, Object?>,
   );
+
+  Future<LtiDeepLink> deepLink(String id) async => LtiDeepLink.fromJson(
+    (await _api.get(_deepLinkPath(id)))! as Map<String, Object?>,
+  );
+
+  Future<Uri> answerDeepLink(String id, List<LinkTarget> targets) async {
+    final json =
+        (await _api.post(_deepLinkPath(id), {
+              'items': [
+                for (final t in targets) {'kind': t.kind, 'id': t.id},
+              ],
+            }))!
+            as Map<String, Object?>;
+    return Uri.parse(json['formUrl']! as String);
+  }
+
+  String _deepLinkPath(String id) =>
+      '/v1/lti/deep-links/${Uri.encodeComponent(id)}';
 
   String _path(String id) => '/v1/lti/contexts/${Uri.encodeComponent(id)}';
 

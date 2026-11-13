@@ -1372,5 +1372,11 @@
   "previewStudent": "Student",
   "previewAnyone": "Any student, nothing submitted",
   "previewDate": "Date",
-  "previewEmpty": "The student sees no assignments on this date"
+  "previewEmpty": "The student sees no assignments on this date",
+  "lmsDeepLinkTitle": "Add to LMS",
+  "lmsDeepLinkHint": "Choose what {platform} will show to students. The link opens the chosen course in Lodestar.",
+  "lmsDeepLinkEmpty": "There are no courses you teach.",
+  "lmsDeepLinkSend": "Return to LMS",
+  "errorLmsDeepLinkGone": "The LMS request has expired. Start again in the LMS.",
+  "errorLmsDeepLinkInvalid": "The LMS does not accept this choice"
 }

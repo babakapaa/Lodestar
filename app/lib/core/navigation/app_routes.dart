@@ -50,6 +50,8 @@ abstract final class AppRoutes {
 
   static String ltiContext(String id) => '/lti/contexts/$id';
 
+  static String ltiDeepLink(String id) => '/lti/deep-links/$id';
+
   static String courseLms(String id) => '/study/courses/$id/lms';
 
   static String courseSchedule(String id) => '/study/courses/$id/schedule';

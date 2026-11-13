@@ -90,6 +90,8 @@ abstract final class ApiErrorText {
       'invalid_lti_platform' => l10n.errorLmsInvalid,
       'lti_platform_taken' => l10n.errorLmsTaken,
       'lti_context_not_found' => l10n.errorLmsCourseNotFound,
+      'lti_deep_link_not_found' => l10n.errorLmsDeepLinkGone,
+      'invalid_lti_deep_link' => l10n.errorLmsDeepLinkInvalid,
       'link_target_not_found' || 'unknown_link_kind' => l10n.errorLmsLinkTarget,
       'lti_context_not_linked' => l10n.errorLmsNotLinked,
       'lms_unavailable' => l10n.errorLmsUnavailable,

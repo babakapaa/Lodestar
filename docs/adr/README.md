@@ -75,3 +75,4 @@
 | [0067](0067-setup-notifications-pdf.md) | Уведомления мастера установки и протокол в PDF |
 | [0068](0068-setup-pilot.md) | Пилотный запуск на выбранных курсах |
 | [0069](0069-course-preview.md) | Курс глазами студента |
+| [0072](0072-lti-deep-linking.md) | Выбор курса из LMS (LTI Deep Linking) |

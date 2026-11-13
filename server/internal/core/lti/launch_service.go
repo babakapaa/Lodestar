@@ -27,6 +27,7 @@ type LaunchService struct {
 	attempts  AttemptStore
 	contexts  ContextStore
 	members   MemberStore
+	deepLinks DeepLinkStore
 	publicURL string
 	appURL    string
 }
@@ -138,7 +139,11 @@ func (s LaunchService) complete(ctx context.Context, t tenant.Tenant, in Launch)
 		if err := s.members.Record(ctx, tx, c.ID, userID, Member{Roles: claims.Roles, Instructor: claims.Instructor()}); err != nil {
 			return err
 		}
-		path, err = s.path(ctx, tx, c)
+		if claims.MessageType == MessageDeepLinking {
+			path, err = s.deepLink(ctx, tx, p, userID, claims)
+			return err
+		}
+		path, err = s.path(ctx, tx, c, claims)
 		return err
 	})
 	if err != nil {
@@ -151,16 +156,35 @@ func (s LaunchService) complete(ctx context.Context, t tenant.Tenant, in Launch)
 	return s.appLink("ticket", ticket, "next", path, "server", s.publicURL, "tenant", t.Slug), nil
 }
 
-func (s LaunchService) path(ctx context.Context, tx pgx.Tx, c Context) (string, error) {
-	fallback := appLaunchPath + "/contexts/" + c.ID
-	if c.OriginKind == nil {
-		return fallback, nil
+func (s LaunchService) deepLink(ctx context.Context, tx pgx.Tx, p Platform, userID string, claims LaunchClaims) (string, error) {
+	if !claims.Instructor() {
+		return "", fmt.Errorf("deep linking by a learner")
 	}
-	source, ok := s.links.Find(*c.OriginKind)
+	settings := claims.DeepLinking
+	id, err := s.deepLinks.Create(ctx, tx, DeepLink{
+		PlatformID: p.ID, UserID: userID, DeploymentID: claims.DeploymentID, ReturnURL: settings.ReturnURL,
+		Data: settings.Data, AcceptMultiple: settings.AcceptMultiple == nil || *settings.AcceptMultiple,
+	})
+	if err != nil {
+		return "", err
+	}
+	return appLaunchPath + "/deep-links/" + id, nil
+}
+
+func (s LaunchService) path(ctx context.Context, tx pgx.Tx, c Context, claims LaunchClaims) (string, error) {
+	fallback := appLaunchPath + "/contexts/" + c.ID
+	kind, id, custom := claims.Target()
+	if !custom {
+		if c.OriginKind == nil {
+			return fallback, nil
+		}
+		kind, id = *c.OriginKind, *c.OriginID
+	}
+	source, ok := s.links.Find(kind)
 	if !ok {
 		return fallback, nil
 	}
-	target, err := source.Describe(ctx, tx, *c.OriginID)
+	target, err := source.Describe(ctx, tx, id)
 	if errors.Is(err, module.ErrLinkTargetNotFound) {
 		return fallback, nil
 	}

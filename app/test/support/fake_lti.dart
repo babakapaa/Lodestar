@@ -28,6 +28,7 @@ class FakeLti {
     },
   };
   int syncs = 0;
+  final List<Object?> answers = [];
   int _next = 1;
 
   http.Response handle(http.Request request) {
@@ -50,8 +51,23 @@ class FakeLti {
         for (final c in contexts.values)
           if ((c['link'] as Map<String, Object?>?)?['id'] == id) c,
       ]),
+      ('GET', ['deep-links', 'd1']) => _json(200, {
+        'id': 'd1',
+        'platform': 'Moodle',
+        'acceptMultiple': false,
+        'targets': contexts['x1']!['options'],
+        'createdAt': '2026-11-13T10:00:00Z',
+      }),
+      ('POST', ['deep-links', 'd1']) => _answer(request),
       _ => _json(404, {'code': 'not_found'}),
     };
+  }
+
+  http.Response _answer(http.Request request) {
+    answers.add(jsonDecode(request.body));
+    return _json(200, {
+      'formUrl': 'https://campus.example.edu/v1/lti/tenants/kaznu/deep-links/return?code=abc',
+    });
   }
 
   http.Response _create(http.Request request) {

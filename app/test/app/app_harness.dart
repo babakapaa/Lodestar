@@ -13,6 +13,7 @@ import 'package:lodestar/features/chats/chats_providers.dart';
 import 'package:lodestar/features/notes/notes_database.dart';
 import 'package:lodestar/features/notes/notes_providers.dart';
 import 'package:lodestar/core/files/files_providers.dart';
+import 'package:lodestar/features/lti/lti_providers.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -21,6 +22,7 @@ import '../support/fake_call_engine.dart';
 import '../support/fake_export_saver.dart';
 import '../support/fake_file_opener.dart';
 import '../support/fake_live_socket.dart';
+import '../support/fake_lms_return.dart';
 import '../support/fake_server.dart';
 import '../support/memory_token_store.dart';
 
@@ -31,13 +33,21 @@ const signedInStorage = <String, Object>{
 };
 
 class AppHarness {
-  const AppHarness(this.server, this.live, this.saver, this.opener, this.calls);
+  const AppHarness(
+    this.server,
+    this.live,
+    this.saver,
+    this.opener,
+    this.calls,
+    this.lms,
+  );
 
   final FakeServer server;
   final FakeLiveSocket live;
   final FakeExportSaver saver;
   final FakeFileOpener opener;
   final List<FakeCallEngine> calls;
+  final FakeLmsReturn lms;
 }
 
 Future<AppHarness> pumpApp(
@@ -57,6 +67,7 @@ Future<AppHarness> pumpApp(
   final live = FakeLiveSocket();
   final saver = FakeExportSaver();
   final opener = FakeFileOpener();
+  final lms = FakeLmsReturn();
   final calls = <FakeCallEngine>[];
   final tokens = MemoryTokenStore(
     signedIn
@@ -72,6 +83,7 @@ Future<AppHarness> pumpApp(
         liveSocketProvider.overrideWithValue(live),
         exportSaverProvider.overrideWithValue(saver),
         fileOpenerProvider.overrideWithValue(opener),
+        lmsReturnProvider.overrideWithValue(lms),
         notesDatabaseProvider.overrideWith((ref) {
           final db = NotesDatabase(
             DatabaseConnection(
@@ -105,5 +117,5 @@ Future<AppHarness> pumpApp(
     ),
   );
   await tester.pumpAndSettle();
-  return AppHarness(fake, live, saver, opener, calls);
+  return AppHarness(fake, live, saver, opener, calls, lms);
 }

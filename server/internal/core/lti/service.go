@@ -23,6 +23,7 @@ type Service struct {
 	platforms PlatformStore
 	contexts  ContextStore
 	members   MemberStore
+	deepLinks DeepLinkStore
 	values    Values
 	sync      SyncService
 	audit     audit.Log

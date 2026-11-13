@@ -20,6 +20,7 @@ func (r Routes) Mount(mux *http.ServeMux) {
 	mux.Handle("GET /v1/lti/tenants/{tenant}/login", LoginHandler{launch: r.Launch})
 	mux.Handle("POST /v1/lti/tenants/{tenant}/login", LoginHandler{launch: r.Launch})
 	mux.Handle("POST /v1/lti/tenants/{tenant}/launch", LaunchHandler{launch: r.Launch})
+	mux.Handle("GET /v1/lti/tenants/{tenant}/deep-links/return", DeepLinkReturnHandler{launch: r.Launch})
 	mux.Handle("GET /v1/lti/tool", require(ToolHandler{service: s}))
 	mux.Handle("GET /v1/lti/platforms", require(PlatformsHandler{service: s}))
 	mux.Handle("POST /v1/lti/platforms", require(CreatePlatformHandler{service: s}))
@@ -31,4 +32,6 @@ func (r Routes) Mount(mux *http.ServeMux) {
 	mux.Handle("PUT /v1/lti/contexts/{id}/source", require(SourceHandler{service: s}))
 	mux.Handle("POST /v1/lti/contexts/{id}/sync", require(SyncHandler{service: s}))
 	mux.Handle("GET /v1/lti/links/{kind}/{id}", require(OriginHandler{service: s}))
+	mux.Handle("GET /v1/lti/deep-links/{id}", require(DeepLinkHandler{service: s}))
+	mux.Handle("POST /v1/lti/deep-links/{id}", require(AnswerDeepLinkHandler{service: s}))
 }

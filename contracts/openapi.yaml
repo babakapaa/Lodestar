@@ -37,6 +37,8 @@ tags:
     description: Заметки, совместная правка и версии
   - name: navigator
     description: ИИ-навигатор, диалоги и лестница подсказок
+  - name: chat
+    description: Чаты, группы и каналы
 paths:
   /healthz:
     get:
@@ -3873,6 +3875,431 @@ paths:
           $ref: "#/components/responses/Error"
         default:
           $ref: "#/components/responses/Error"
+  /v1/chat/chats:
+    get:
+      tags: [chat]
+      operationId: listChats
+      summary: Мои чаты
+      description: |
+        От последнего изменённого к старым. У личного чата title это имя собеседника.
+      security:
+        - bearer: []
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Chat"
+        "401":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+    post:
+      tags: [chat]
+      operationId: createChat
+      summary: Создать группу или канал
+      description: |
+        Канал создаёт только тот, у кого есть право chat.channels.create.
+        С origin создаётся чат курса: его создаёт ведущий курса, участники приходят из списка курса. Повтор возвращает тот же чат.
+      security:
+        - bearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChatInput"
+      responses:
+        "200":
+          description: Чат курса уже есть
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChatDetails"
+        "201":
+          description: Создан
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChatDetails"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/chat/direct:
+    post:
+      tags: [chat]
+      operationId: openDirectChat
+      summary: Открыть личный чат
+      description: |
+        Личный чат один на пару людей, повтор возвращает тот же чат.
+      security:
+        - bearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DirectInput"
+      responses:
+        "200":
+          description: Чат уже был
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChatDetails"
+        "201":
+          description: Создан
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChatDetails"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/chat/chats/{id}:
+    get:
+      tags: [chat]
+      operationId: getChat
+      summary: Чат с участниками
+      description: |
+        В канале подписчик видит только владельца и админов, остальных только числом.
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChatDetails"
+        "401":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+    patch:
+      tags: [chat]
+      operationId: updateChat
+      summary: Изменить название и описание
+      description: |
+        Только владелец и админы, не для личного чата.
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChatUpdate"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChatDetails"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/chat/chats/{id}/members:
+    post:
+      tags: [chat]
+      operationId: addChatMembers
+      summary: Добавить участников
+      description: |
+        Только владелец и админы. Новый участник видит историю, непрочитанных у него нет.
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MembersInput"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChatDetails"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/chat/chats/{id}/members/{userId}:
+    delete:
+      tags: [chat]
+      operationId: removeChatMember
+      summary: Убрать участника или выйти
+      description: |
+        Свой userId означает выход. Владелец не выходит. Участники из списка курса уходят только вместе со списком (synced_member).
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: Готово
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/chat/chats/{id}/mute:
+    put:
+      tags: [chat]
+      operationId: muteChat
+      summary: Выключить или включить звук
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MuteInput"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Chat"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/chat/chats/{id}/read:
+    post:
+      tags: [chat]
+      operationId: readChat
+      summary: Отметить прочитанным до seq
+      description: |
+        Отметка только растёт. В личном чате её видит собеседник, в канале она даёт только число просмотров.
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReadInput"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Chat"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/chat/chats/{id}/messages:
+    get:
+      tags: [chat]
+      operationId: listChatMessages
+      summary: История чата
+      description: |
+        Без параметров последние сообщения. before листает назад, since отдаёт изменения после rev: новые, исправленные и удалённые.
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+        - name: before
+          in: query
+          schema:
+            type: integer
+            format: int64
+            minimum: 0
+          description: Сообщения раньше этого seq, от новых к старым, в ответе по возрастанию seq
+        - name: since
+          in: query
+          schema:
+            type: integer
+            format: int64
+            minimum: 0
+          description: Сообщения, изменённые после этого rev, по возрастанию rev
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            format: int64
+            minimum: 1
+            maximum: 200
+          description: По умолчанию 50
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessagePage"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+    post:
+      tags: [chat]
+      operationId: sendChatMessage
+      summary: Отправить сообщение
+      description: |
+        clientId защищает от дублей: повтор возвращает то же сообщение. В канале пишут только владелец и админы, в архивном чате никто (chat_read_only).
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChatMessageInput"
+      responses:
+        "200":
+          description: Сообщение уже было
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChatMessage"
+        "201":
+          description: Отправлено
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChatMessage"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/chat/messages/{id}:
+    patch:
+      tags: [chat]
+      operationId: editChatMessage
+      summary: Исправить своё сообщение
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChatMessageEdit"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChatMessage"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+    delete:
+      tags: [chat]
+      operationId: deleteChatMessage
+      summary: Удалить сообщение
+      description: |
+        Своё может удалить автор, в группе и канале любое могут удалить владелец и админы. Остаётся пустая метка.
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChatMessage"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
 components:
   securitySchemes:
     bearer:
@@ -5712,3 +6139,239 @@ components:
         contacts:
           type: string
           description: Пусто, если вуз не указал контакты
+    ChatOrigin:
+      type: object
+      required: [kind, id]
+      properties:
+        kind:
+          type: string
+          maxLength: 60
+          description: Откуда список людей, например study.course
+        id:
+          type: string
+          maxLength: 100
+    Chat:
+      type: object
+      required: [id, kind, title, about, origin, peerId, role, muted, seq, rev, readSeq, unread, memberCount, last, archivedAt, createdAt, changedAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        kind:
+          type: string
+          enum: [direct, group, channel]
+        title:
+          type: string
+        about:
+          type: string
+        origin:
+          oneOf:
+            - $ref: "#/components/schemas/ChatOrigin"
+            - type: "null"
+        peerId:
+          type: [string, "null"]
+          format: uuid
+        role:
+          type: string
+          enum: [owner, admin, member]
+        muted:
+          type: boolean
+        seq:
+          type: integer
+          format: int64
+          description: Номер последнего сообщения
+        rev:
+          type: integer
+          format: int64
+          description: Номер последнего изменения сообщений
+        readSeq:
+          type: integer
+          format: int64
+        unread:
+          type: integer
+          format: int64
+        memberCount:
+          type: integer
+        last:
+          oneOf:
+            - $ref: "#/components/schemas/ChatMessage"
+            - type: "null"
+        archivedAt:
+          type: [string, "null"]
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        changedAt:
+          type: string
+          format: date-time
+    ChatMember:
+      type: object
+      required: [userId, displayName, role, synced, joinedAt]
+      properties:
+        userId:
+          type: string
+          format: uuid
+        displayName:
+          type: string
+        role:
+          type: string
+          enum: [owner, admin, member]
+        synced:
+          type: boolean
+          description: Пришёл из списка курса
+        joinedAt:
+          type: string
+          format: date-time
+    ChatDetails:
+      allOf:
+        - $ref: "#/components/schemas/Chat"
+        - type: object
+          required: [members, peerReadSeq]
+          properties:
+            members:
+              type: array
+              items:
+                $ref: "#/components/schemas/ChatMember"
+            peerReadSeq:
+              type: [integer, "null"]
+              format: int64
+              description: В личном чате, до какого сообщения прочитал собеседник
+    ChatInput:
+      type: object
+      required: [kind]
+      properties:
+        kind:
+          type: string
+          enum: [group, channel]
+        title:
+          type: string
+          maxLength: 200
+          description: Обязательно без origin, с origin по умолчанию название курса
+        about:
+          type: string
+          maxLength: 2000
+        memberIds:
+          type: array
+          maxItems: 200
+          items:
+            type: string
+            format: uuid
+        origin:
+          $ref: "#/components/schemas/ChatOrigin"
+    ChatUpdate:
+      type: object
+      required: [title]
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        about:
+          type: string
+          maxLength: 2000
+    DirectInput:
+      type: object
+      required: [userId]
+      properties:
+        userId:
+          type: string
+          format: uuid
+    MembersInput:
+      type: object
+      required: [userIds]
+      properties:
+        userIds:
+          type: array
+          minItems: 1
+          maxItems: 200
+          items:
+            type: string
+            format: uuid
+    MuteInput:
+      type: object
+      required: [muted]
+      properties:
+        muted:
+          type: boolean
+    ReadInput:
+      type: object
+      required: [seq]
+      properties:
+        seq:
+          type: integer
+          format: int64
+          minimum: 0
+    ChatMessage:
+      type: object
+      required: [id, chatId, seq, rev, authorId, clientId, text, replyTo, views, deleted, editedAt, createdAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        chatId:
+          type: string
+          format: uuid
+        seq:
+          type: integer
+          format: int64
+        rev:
+          type: integer
+          format: int64
+        authorId:
+          type: [string, "null"]
+          format: uuid
+          description: Пусто, если автор удалил аккаунт
+        clientId:
+          type: [string, "null"]
+        text:
+          type: string
+          description: Пусто у удалённого сообщения
+        replyTo:
+          type: [integer, "null"]
+          format: int64
+        views:
+          type: [integer, "null"]
+          description: Только в канале, число прочитавших без имён
+        deleted:
+          type: boolean
+        editedAt:
+          type: [string, "null"]
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+    ChatMessageInput:
+      type: object
+      required: [clientId, text]
+      properties:
+        clientId:
+          type: string
+          minLength: 1
+          maxLength: 100
+        text:
+          type: string
+          minLength: 1
+          maxLength: 4000
+        replyTo:
+          type: integer
+          format: int64
+          minimum: 1
+    ChatMessageEdit:
+      type: object
+      required: [text]
+      properties:
+        text:
+          type: string
+          minLength: 1
+          maxLength: 4000
+    MessagePage:
+      type: object
+      required: [messages, more]
+      properties:
+        messages:
+          type: array
+          items:
+            $ref: "#/components/schemas/ChatMessage"
+        more:
+          type: boolean

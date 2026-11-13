@@ -24,6 +24,8 @@ var ErrForeignSearchKind = errors.New("module search kind must start with the mo
 
 var ErrForeignSection = errors.New("module privacy section must start with the module name")
 
+var ErrForeignRoster = errors.New("module roster kind must start with the module name")
+
 var namePattern = regexp.MustCompile(`^[a-z][a-z0-9]{1,29}$`)
 
 var reservedNames = []string{
@@ -53,6 +55,9 @@ func NewRegistry(modules ...Module) (*Registry, error) {
 			return nil, err
 		}
 		if err := checkPrivacySections(m); err != nil {
+			return nil, err
+		}
+		if err := checkRosterKinds(m); err != nil {
 			return nil, err
 		}
 	}
@@ -185,4 +190,14 @@ func (r *Registry) Briefs(k Kernel) Briefs {
 		}
 	}
 	return briefs
+}
+
+func (r *Registry) Rosters(k Kernel) Rosters {
+	var rosters Rosters
+	for _, m := range r.modules {
+		if s, ok := m.(Rostering); ok {
+			rosters = append(rosters, s.RosterSources(k)...)
+		}
+	}
+	return rosters
 }

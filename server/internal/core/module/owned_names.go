@@ -32,3 +32,17 @@ func checkPrivacySections(m Module) error {
 	}
 	return nil
 }
+
+func checkRosterKinds(m Module) error {
+	s, ok := m.(Rostering)
+	if !ok {
+		return nil
+	}
+	name := m.Manifest().Name
+	for _, src := range s.RosterSources(Kernel{}) {
+		if !strings.HasPrefix(src.Kind(), name+".") {
+			return fmt.Errorf("%w: %s in module %s", ErrForeignRoster, src.Kind(), name)
+		}
+	}
+	return nil
+}

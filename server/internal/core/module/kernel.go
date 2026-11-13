@@ -24,4 +24,5 @@ type Kernel struct {
 	Embedder    llm.Embedder
 	Reranker    llm.Reranker
 	Briefs      Briefs
+	Rosters     Rosters
 }

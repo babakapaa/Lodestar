@@ -1326,5 +1326,6 @@
   "settingRecordingOff": "Ешкім",
   "errorRecordingOff": "Университет сізге қоңырауларды жазуға рұқсат бермеген",
   "errorRecordingUnavailable": "Серверде қоңырауларды жазу бапталмаған",
-  "errorRecordingState": "Жазу қосулы немесе тоқтатылған"
+  "errorRecordingState": "Жазу қосулы немесе тоқтатылған",
+  "statsOfUnit": "Статистика: {name}"
 }

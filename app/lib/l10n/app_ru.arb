@@ -2390,5 +2390,13 @@
   "settingRecordingOff": "Никто",
   "errorRecordingOff": "Вуз не разрешил вам записывать звонки",
   "errorRecordingUnavailable": "Запись звонков не настроена на сервере",
-  "errorRecordingState": "Запись уже включена или уже остановлена"
+  "errorRecordingState": "Запись уже включена или уже остановлена",
+  "statsOfUnit": "Статистика: {name}",
+  "@statsOfUnit": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  }
 }

@@ -17,6 +17,10 @@ const (
 	CodeOriginNotFound  = "origin_not_found"
 	CodeSyncedMember    = "synced_member"
 	CodeOwnerLeaves     = "owner_leaves"
+	CodeBadFile         = "invalid_file"
+	CodeBlocked         = "blocked"
+	CodeInvalidReport   = "invalid_report"
+	CodeReportNotFound  = "report_not_found"
 )
 
 var errorCodes = []struct {
@@ -32,6 +36,10 @@ var errorCodes = []struct {
 	{ErrOriginNotFound, http.StatusNotFound, CodeOriginNotFound},
 	{ErrSyncedMember, http.StatusConflict, CodeSyncedMember},
 	{ErrOwnerLeaves, http.StatusConflict, CodeOwnerLeaves},
+	{ErrBadFile, http.StatusBadRequest, CodeBadFile},
+	{ErrBlocked, http.StatusForbidden, CodeBlocked},
+	{ErrInvalidReport, http.StatusBadRequest, CodeInvalidReport},
+	{ErrReportNotFound, http.StatusNotFound, CodeReportNotFound},
 }
 
 func writeError(w http.ResponseWriter, err error) {

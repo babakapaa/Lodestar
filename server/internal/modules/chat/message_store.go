@@ -20,8 +20,8 @@ type MessageStore struct {
 	sealer Sealer
 }
 
-func (s MessageStore) Insert(ctx context.Context, tx pgx.Tx, chatID string, seq, rev int64, authorID string, in MessageInput) (Message, error) {
-	data, err := s.sealer.seal(messageBody{Text: in.Text})
+func (s MessageStore) Insert(ctx context.Context, tx pgx.Tx, chatID string, seq, rev int64, authorID string, in MessageInput, body messageBody) (Message, error) {
+	data, err := s.sealer.seal(body)
 	if err != nil {
 		return Message{}, err
 	}
@@ -69,8 +69,8 @@ func (MessageStore) Exists(ctx context.Context, tx pgx.Tx, chatID string, seq in
 	return found, nil
 }
 
-func (s MessageStore) Edit(ctx context.Context, tx pgx.Tx, id string, rev int64, text string) error {
-	data, err := s.sealer.seal(messageBody{Text: text})
+func (s MessageStore) Edit(ctx context.Context, tx pgx.Tx, id string, rev int64, body messageBody) error {
+	data, err := s.sealer.seal(body)
 	if err != nil {
 		return err
 	}

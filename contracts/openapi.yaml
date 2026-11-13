@@ -4300,6 +4300,172 @@ paths:
           $ref: "#/components/responses/Error"
         default:
           $ref: "#/components/responses/Error"
+  /v1/chat/chats/{id}/accept:
+    post:
+      tags: [chat]
+      operationId: acceptChatRequest
+      summary: Принять запрос
+      description: После этого сообщения от собеседника звонят как обычно. Ответ в чате тоже принимает запрос.
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Chat"
+        "401":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/chat/blocks:
+    get:
+      tags: [chat]
+      operationId: listChatBlocks
+      summary: Кого я заблокировал
+      security:
+        - bearer: []
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Person"
+        "401":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+    post:
+      tags: [chat]
+      operationId: blockChatUser
+      summary: Заблокировать
+      description: Заблокированный не может написать мне и открыть со мной личный чат (blocked).
+      security:
+        - bearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DirectInput"
+      responses:
+        "204":
+          description: Готово
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/chat/blocks/{userId}:
+    delete:
+      tags: [chat]
+      operationId: unblockChatUser
+      summary: Разблокировать
+      security:
+        - bearer: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: Готово
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/chat/reports:
+    get:
+      tags: [chat]
+      operationId: listChatReports
+      summary: Открытые жалобы
+      description: Только с правом chat.reports.review.
+      security:
+        - bearer: []
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ChatReport"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+    post:
+      tags: [chat]
+      operationId: reportChatMessages
+      summary: Пожаловаться на сообщения
+      description: В жалобу попадают только выбранные сообщения, их копия хранится зашифрованной.
+      security:
+        - bearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChatReportInput"
+      responses:
+        "201":
+          description: Создана
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChatReport"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/chat/reports/{id}/resolve:
+    post:
+      tags: [chat]
+      operationId: resolveChatReport
+      summary: Закрыть жалобу
+      description: Только с правом chat.reports.review.
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChatReport"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
 components:
   securitySchemes:
     bearer:
@@ -6152,7 +6318,7 @@ components:
           maxLength: 100
     Chat:
       type: object
-      required: [id, kind, title, about, origin, peerId, role, muted, seq, rev, readSeq, unread, memberCount, last, archivedAt, createdAt, changedAt]
+      required: [id, kind, title, about, origin, peerId, role, muted, request, seq, rev, readSeq, unread, memberCount, last, archivedAt, createdAt, changedAt]
       properties:
         id:
           type: string
@@ -6176,6 +6342,9 @@ components:
           enum: [owner, admin, member]
         muted:
           type: boolean
+        request:
+          type: boolean
+          description: Первое сообщение от незнакомого, лежит в «Запросах» и не звонит
         seq:
           type: integer
           format: int64
@@ -6304,7 +6473,7 @@ components:
           minimum: 0
     ChatMessage:
       type: object
-      required: [id, chatId, seq, rev, authorId, clientId, text, replyTo, views, deleted, editedAt, createdAt]
+      required: [id, chatId, seq, rev, authorId, clientId, text, replyTo, mentions, files, views, deleted, editedAt, createdAt]
       properties:
         id:
           type: string
@@ -6330,6 +6499,15 @@ components:
         replyTo:
           type: [integer, "null"]
           format: int64
+        mentions:
+          type: array
+          items:
+            type: string
+            format: uuid
+        files:
+          type: array
+          items:
+            $ref: "#/components/schemas/File"
         views:
           type: [integer, "null"]
           description: Только в канале, число прочитавших без имён
@@ -6343,7 +6521,7 @@ components:
           format: date-time
     ChatMessageInput:
       type: object
-      required: [clientId, text]
+      required: [clientId]
       properties:
         clientId:
           type: string
@@ -6351,12 +6529,26 @@ components:
           maxLength: 100
         text:
           type: string
-          minLength: 1
           maxLength: 4000
+          description: Может быть пустым, если есть файлы
         replyTo:
           type: integer
           format: int64
           minimum: 1
+        mentions:
+          type: array
+          maxItems: 50
+          description: Упомянутые участники, остальные отбрасываются
+          items:
+            type: string
+            format: uuid
+        fileIds:
+          type: array
+          maxItems: 10
+          description: Свои загруженные файлы
+          items:
+            type: string
+            format: uuid
     ChatMessageEdit:
       type: object
       required: [text]
@@ -6375,3 +6567,63 @@ components:
             $ref: "#/components/schemas/ChatMessage"
         more:
           type: boolean
+    ChatReportInput:
+      type: object
+      required: [chatId, messageIds, reason]
+      properties:
+        chatId:
+          type: string
+          format: uuid
+        messageIds:
+          type: array
+          minItems: 1
+          maxItems: 20
+          items:
+            type: string
+            format: uuid
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 1000
+    ChatReport:
+      type: object
+      required: [id, chatId, chatTitle, reporterId, reason, messages, createdAt, resolvedAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        chatId:
+          type: [string, "null"]
+          format: uuid
+        chatTitle:
+          type: string
+        reporterId:
+          type: [string, "null"]
+          format: uuid
+        reason:
+          type: string
+        messages:
+          type: array
+          items:
+            type: object
+            required: [seq, authorId, authorName, text, createdAt]
+            properties:
+              seq:
+                type: integer
+                format: int64
+              authorId:
+                type: [string, "null"]
+                format: uuid
+              authorName:
+                type: string
+              text:
+                type: string
+              createdAt:
+                type: string
+                format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        resolvedAt:
+          type: [string, "null"]
+          format: date-time

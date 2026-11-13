@@ -52,7 +52,7 @@ func (MemberStore) Audience(ctx context.Context, tx pgx.Tx, chatID string) ([]st
 func (MemberStore) Recipients(ctx context.Context, tx pgx.Tx, chatID, authorID string) ([]string, error) {
 	return userIDs(ctx, tx, `
 		SELECT user_id::text FROM chat.members
-		WHERE chat_id::text = $1 AND user_id::text <> $2 AND NOT muted`, chatID, authorID)
+		WHERE chat_id::text = $1 AND user_id::text <> $2 AND NOT muted AND NOT pending`, chatID, authorID)
 }
 
 func (MemberStore) Add(ctx context.Context, tx pgx.Tx, chatID string, ids []string, role string) ([]string, error) {
@@ -142,4 +142,31 @@ func userIDs(ctx context.Context, tx pgx.Tx, sql string, args ...any) ([]string,
 		return nil, fmt.Errorf("member ids: %w", err)
 	}
 	return pgx.CollectRows(rows, pgx.RowTo[string])
+}
+
+func (MemberStore) Among(ctx context.Context, tx pgx.Tx, chatID string, ids []string) ([]string, error) {
+	return userIDs(ctx, tx, `
+		SELECT user_id::text FROM chat.members WHERE chat_id::text = $1 AND user_id::text = ANY($2) AND NOT pending
+		ORDER BY user_id`, chatID, ids)
+}
+
+func (MemberStore) Pending(ctx context.Context, tx pgx.Tx, chatID, userID string, pending bool) error {
+	_, err := tx.Exec(ctx, `UPDATE chat.members SET pending = $3 WHERE chat_id::text = $1 AND user_id::text = $2`, chatID, userID, pending)
+	if err != nil {
+		return fmt.Errorf("set request: %w", err)
+	}
+	return nil
+}
+
+func (MemberStore) Acquainted(ctx context.Context, tx pgx.Tx, a, b string) (bool, error) {
+	var found bool
+	err := tx.QueryRow(ctx, `
+		SELECT EXISTS (
+			SELECT 1 FROM chat.members x JOIN chat.members y ON y.chat_id = x.chat_id JOIN chat.chats c ON c.id = x.chat_id
+			WHERE x.user_id::text = $1 AND y.user_id::text = $2 AND c.kind <> 'direct'
+		)`, a, b).Scan(&found)
+	if err != nil {
+		return false, fmt.Errorf("acquainted: %w", err)
+	}
+	return found, nil
 }

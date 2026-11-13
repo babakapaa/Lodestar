@@ -10,7 +10,7 @@ import (
 
 const chatSelect = `
 	SELECT c.id::text, c.kind, c.title, c.about, c.origin_kind, c.origin_id, peer.user_id::text,
-	       m.role, m.muted, c.seq, c.rev, m.read_seq, greatest(c.seq - m.read_seq, 0),
+	       m.role, m.muted, m.pending, c.seq, c.rev, m.read_seq, greatest(c.seq - m.read_seq, 0),
 	       (SELECT count(*) FROM chat.members a WHERE a.chat_id = c.id),
 	       c.archived_at, c.created_at, c.changed_at,
 	       ` + lastColumns + `
@@ -131,7 +131,7 @@ func (s ChatStore) scan(row pgx.CollectableRow) (Chat, error) {
 	c := &r.chat
 	targets := []any{
 		&c.ID, &c.Kind, &c.Title, &c.About, &r.originKind, &r.originID, &c.PeerID,
-		&c.Role, &c.Muted, &c.Seq, &c.Rev, &c.ReadSeq, &c.Unread, &c.MemberCount,
+		&c.Role, &c.Muted, &c.Request, &c.Seq, &c.Rev, &c.ReadSeq, &c.Unread, &c.MemberCount,
 		&c.ArchivedAt, &c.CreatedAt, &c.ChangedAt,
 	}
 	if err := row.Scan(append(targets, r.last.targets()...)...); err != nil {

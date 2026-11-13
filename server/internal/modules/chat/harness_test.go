@@ -12,10 +12,12 @@ import (
 	"testing"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/babakapaa/lodestar/server/internal/core/access"
 	"github.com/babakapaa/lodestar/server/internal/core/audit"
 	"github.com/babakapaa/lodestar/server/internal/core/auth"
+	"github.com/babakapaa/lodestar/server/internal/core/files"
 	"github.com/babakapaa/lodestar/server/internal/core/identity"
 	"github.com/babakapaa/lodestar/server/internal/core/live"
 	"github.com/babakapaa/lodestar/server/internal/core/module"
@@ -28,13 +30,15 @@ import (
 	"github.com/babakapaa/lodestar/server/internal/platform/secretbox"
 )
 
-type fakeSettings struct{}
-
-func (fakeSettings) Value(context.Context, pgx.Tx, string) (json.RawMessage, error) {
-	return json.RawMessage("null"), nil
+type fakeSettings struct {
+	retention int
 }
 
-func (fakeSettings) ModuleEnabled(context.Context, string, string) (bool, error) {
+func (f *fakeSettings) Value(context.Context, pgx.Tx, string) (json.RawMessage, error) {
+	return json.Marshal(f.retention)
+}
+
+func (*fakeSettings) ModuleEnabled(context.Context, string, string) (bool, error) {
 	return true, nil
 }
 
@@ -105,8 +109,13 @@ type world struct {
 	chats    chat.Service
 	messages chat.MessageService
 	worker   chat.RosterWorker
+	blocks   chat.BlockService
+	reports  chat.ReportService
+	purger   chat.Purger
 	rosters  *fakeRosters
 	sent     *outbox
+	settings *fakeSettings
+	pool     *pgxpool.Pool
 	admin    auth.Principal
 }
 
@@ -115,7 +124,7 @@ func newWorld(t *testing.T) *world {
 	ctx := context.Background()
 	pool := dbtest.New(t)
 	sets := []database.Migrations{
-		tenant.Migrations(), search.Migrations(), identity.Migrations(), audit.Migrations(), access.Migrations(), structure.Migrations(), live.Migrations(),
+		tenant.Migrations(), search.Migrations(), identity.Migrations(), audit.Migrations(), access.Migrations(), structure.Migrations(), live.Migrations(), files.Migrations(),
 		chat.Module{}.Migrations(),
 	}
 	if err := database.NewMigrator(pool).Apply(ctx, sets...); err != nil {
@@ -137,14 +146,16 @@ func newWorld(t *testing.T) *world {
 	acc := access.NewService(tx, catalog, structure.Tree{})
 	rosters := &fakeRosters{list: map[string]module.Roster{}}
 	sent := &outbox{}
+	settings := &fakeSettings{}
 	k := module.Kernel{
-		Pool: pool, Tenants: tx, Access: acc, Notifier: sent, Settings: fakeSettings{}, Secrets: box,
+		Pool: pool, Tenants: tx, Access: acc, Notifier: sent, Settings: settings, Secrets: box,
 		Rosters: module.Rosters{rosters},
 	}
 	w := &world{
 		t: t, ctx: ctx, tenant: created.ID, tx: tx, users: identity.NewStore(tx), access: acc,
 		chats: chat.NewService(k), messages: chat.NewMessageService(k), worker: chat.NewRosterWorker(k),
-		rosters: rosters, sent: sent,
+		blocks: chat.NewBlockService(k), reports: chat.NewReportService(k), purger: chat.NewPurger(k),
+		rosters: rosters, sent: sent, settings: settings, pool: pool,
 	}
 	w.admin = w.user("admin")
 	if _, err := access.NewBootstrap(tx).GrantTopRole(ctx, w.tenant, w.admin.UserID); err != nil {
@@ -218,10 +229,37 @@ func (w *world) raw(query string) []byte {
 func (w *world) call(p auth.Principal, method, path, body string) *httptest.ResponseRecorder {
 	w.t.Helper()
 	mux := http.NewServeMux()
-	chat.Routes{Chats: w.chats, Messages: w.messages}.Mount(mux)
+	chat.Routes{Chats: w.chats, Messages: w.messages, Blocks: w.blocks, Reports: w.reports}.Mount(mux)
 	req := httptest.NewRequest(method, path, strings.NewReader(body))
 	req = req.WithContext(auth.WithPrincipal(req.Context(), p))
 	rec := httptest.NewRecorder()
 	mux.ServeHTTP(rec, req)
 	return rec
+}
+
+func (w *world) file(owner auth.Principal, name string) string {
+	w.t.Helper()
+	var id string
+	err := w.tx.Run(w.ctx, w.tenant, func(tx pgx.Tx) error {
+		f, err := files.FileStore{}.Create(w.ctx, tx, owner.UserID, files.FileInput{Name: name, ContentType: "text/plain", Size: 1})
+		if err != nil {
+			return err
+		}
+		id = f.ID
+		_, err = files.FileStore{}.MarkReady(w.ctx, tx, f.ID)
+		return err
+	})
+	if err != nil {
+		w.t.Fatalf("file: %v", err)
+	}
+	return id
+}
+
+func (w *world) direct(a, b auth.Principal) chat.ChatDetails {
+	w.t.Helper()
+	d, _, err := w.chats.Direct(w.ctx, a, chat.DirectInput{UserID: b.UserID})
+	if err != nil {
+		w.t.Fatalf("direct: %v", err)
+	}
+	return d
 }

@@ -1,5 +1,6 @@
 package chat
 
 type messageBody struct {
-	Text string `json:"text"`
+	Text     string   `json:"text"`
+	Mentions []string `json:"mentions,omitempty"`
 }

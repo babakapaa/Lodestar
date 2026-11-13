@@ -5,6 +5,8 @@ import "net/http"
 type Routes struct {
 	Chats    Service
 	Messages MessageService
+	Blocks   BlockService
+	Reports  ReportService
 }
 
 func (r Routes) Mount(mux *http.ServeMux) {
@@ -17,9 +19,16 @@ func (r Routes) Mount(mux *http.ServeMux) {
 	mux.Handle("POST /v1/chat/chats/{id}/members", AddMembersHandler{service: s})
 	mux.Handle("DELETE /v1/chat/chats/{id}/members/{userId}", RemoveMemberHandler{service: s})
 	mux.Handle("PUT /v1/chat/chats/{id}/mute", MuteHandler{service: s})
+	mux.Handle("POST /v1/chat/chats/{id}/accept", AcceptHandler{service: s})
 	mux.Handle("POST /v1/chat/chats/{id}/read", ReadHandler{service: s})
 	mux.Handle("GET /v1/chat/chats/{id}/messages", MessagesHandler{service: m})
 	mux.Handle("POST /v1/chat/chats/{id}/messages", SendHandler{service: m})
 	mux.Handle("PATCH /v1/chat/messages/{id}", EditHandler{service: m})
 	mux.Handle("DELETE /v1/chat/messages/{id}", DeleteMessageHandler{service: m})
+	mux.Handle("GET /v1/chat/blocks", BlocksHandler{service: r.Blocks})
+	mux.Handle("POST /v1/chat/blocks", BlockHandler{service: r.Blocks})
+	mux.Handle("DELETE /v1/chat/blocks/{userId}", UnblockHandler{service: r.Blocks})
+	mux.Handle("GET /v1/chat/reports", ReportsHandler{service: r.Reports})
+	mux.Handle("POST /v1/chat/reports", ReportHandler{service: r.Reports})
+	mux.Handle("POST /v1/chat/reports/{id}/resolve", ResolveHandler{service: r.Reports})
 }

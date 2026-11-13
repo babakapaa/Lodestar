@@ -249,3 +249,51 @@ func TestRegistryRequiresOwnTeamScopeKinds(t *testing.T) {
 		t.Fatalf("unknown kind = %v", err)
 	}
 }
+
+type scoringModule struct {
+	stubModule
+	kind string
+}
+
+func (m scoringModule) ScoreSources(Kernel) []ScoreSource {
+	return []ScoreSource{scoreKind(m.kind)}
+}
+
+type scoreKind string
+
+func (k scoreKind) Kind() string {
+	return string(k)
+}
+
+func (scoreKind) ScoredWorks(context.Context, pgx.Tx, string) ([]ScoredWork, error) {
+	return nil, nil
+}
+
+func TestRegistryRequiresOwnScoreKinds(t *testing.T) {
+	if _, err := NewRegistry(scoringModule{stubModule{name: "league"}, "study.course"}); !errors.Is(err, ErrForeignScoreSource) {
+		t.Fatalf("err = %v, want ErrForeignScoreSource", err)
+	}
+	registry, err := NewRegistry(scoringModule{stubModule{name: "study"}, "study.course"})
+	if err != nil {
+		t.Fatalf("registry: %v", err)
+	}
+	if _, ok := registry.ScoreSources(Kernel{}).Find("study.course"); !ok {
+		t.Fatal("score source is not collected")
+	}
+}
+
+func TestWorkResultShare(t *testing.T) {
+	cases := []struct {
+		r    WorkResult
+		want float64
+	}{
+		{WorkResult{Score: 8, Max: 10}, 0.8},
+		{WorkResult{Score: 3, Max: 0}, 0},
+		{WorkResult{Score: -1, Max: 10}, 0},
+	}
+	for _, c := range cases {
+		if got := c.r.Share(); got != c.want {
+			t.Fatalf("share(%v) = %v, want %v", c.r, got, c.want)
+		}
+	}
+}

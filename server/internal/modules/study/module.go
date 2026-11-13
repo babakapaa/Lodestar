@@ -60,3 +60,7 @@ func (Module) RosterSources(module.Kernel) []module.RosterSource {
 func (Module) TeamScopeSources(k module.Kernel) []module.TeamScopeSource {
 	return []module.TeamScopeSource{AssignmentTeamScopes{work: NewAssignmentService(k.Tenants, k.Access, k.Notifier)}}
 }
+
+func (Module) ScoreSources(module.Kernel) []module.ScoreSource {
+	return []module.ScoreSource{CourseScores{}}
+}

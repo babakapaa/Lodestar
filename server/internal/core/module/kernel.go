@@ -27,4 +27,5 @@ type Kernel struct {
 	Rosters     Rosters
 	TeamScopes  TeamScopes
 	Teams       TeamDirectory
+	Scores      ScoreSources
 }

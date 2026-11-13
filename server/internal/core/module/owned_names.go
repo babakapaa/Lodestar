@@ -60,3 +60,17 @@ func checkTeamScopeKinds(m Module) error {
 	}
 	return nil
 }
+
+func checkScoreKinds(m Module) error {
+	s, ok := m.(Scoring)
+	if !ok {
+		return nil
+	}
+	name := m.Manifest().Name
+	for _, src := range s.ScoreSources(Kernel{}) {
+		if !strings.HasPrefix(src.Kind(), name+".") {
+			return fmt.Errorf("%w: %s in module %s", ErrForeignScoreSource, src.Kind(), name)
+		}
+	}
+	return nil
+}

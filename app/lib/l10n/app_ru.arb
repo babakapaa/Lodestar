@@ -1979,5 +1979,110 @@
   "errorSandboxNameTaken": "Такое имя уже есть",
   "errorSandboxInvalid": "Проверьте поля",
   "sandboxForWorkTile": "Запустить на GPU",
-  "sandboxForWorkHint": "Часы на задание курса идут в очереди первыми ближе к сроку"
+  "sandboxForWorkHint": "Часы на задание курса идут в очереди первыми ближе к сроку",
+  "attendanceTitle": "Посещаемость",
+  "attendanceHint": "Журнал курса и отметка по QR или коду",
+  "attendancePresent": "Есть",
+  "attendanceLate": "Опоздание",
+  "attendanceAbsent": "Нет",
+  "attendanceExcused": "Уважительная причина",
+  "attendanceUnmarked": "Не отмечен",
+  "attendanceOpenSection": "Отметка на занятии",
+  "attendanceCheckIn": "Отметиться",
+  "attendanceCheckTitle": "Отметиться на занятии",
+  "attendanceCodeField": "Код из 4 цифр",
+  "attendanceScanHint": "Наведите камеру телефона на QR на экране аудитории или введите код, который назвал преподаватель.",
+  "attendanceChecking": "Отмечаем…",
+  "attendanceDone": "«{course}»: {status}",
+  "@attendanceDone": {
+    "placeholders": {
+      "course": {
+        "type": "String"
+      },
+      "status": {
+        "type": "String"
+      }
+    }
+  },
+  "attendanceSessionTitle": "Отметка на занятии",
+  "attendanceQrHint": "Студенты наводят камеру телефона на QR. Он меняется каждые 15 секунд, поэтому фото из чата не сработает.",
+  "attendanceCode": "Код: {code}",
+  "@attendanceCode": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "attendanceCodeUntil": "Действует до {time}",
+  "@attendanceCodeUntil": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "attendanceNewCode": "Новый код",
+  "attendanceClose": "Закрыть отметку",
+  "attendanceCloseHint": "Кто не отметился, получит «Нет». Отметку можно исправить и после закрытия.",
+  "attendanceClosed": "Отметка закрыта",
+  "attendanceHere": "Отметились {here} из {total}",
+  "@attendanceHere": {
+    "placeholders": {
+      "here": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "attendanceStudents": "Студенты",
+  "attendanceClear": "Снять отметку",
+  "attendanceLessons": "Занятия",
+  "attendanceOpen": "Открыть отметку",
+  "attendanceLessonCancelled": "Отменено",
+  "attendanceLessonNone": "Отметки не было",
+  "attendanceLessonOpen": "Отметка идёт",
+  "attendanceLongAbsent": "Давно не были",
+  "attendanceLongAbsentHint": "Пропустили подряд {count} занятия или больше. Это видите только вы, студентам ничего не приходит.",
+  "@attendanceLongAbsentHint": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "attendanceRate": "{percent}% посещений",
+  "@attendanceRate": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "attendanceStreak": "{count} пропусков подряд",
+  "@attendanceStreak": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "attendanceNoLessons": "Занятий в расписании пока нет",
+  "attendanceNoStudents": "Студентов пока нет",
+  "attendanceExport": "Выгрузить журнал",
+  "errorAttendanceWrongCode": "Код неверный или уже устарел",
+  "errorAttendanceOffCampus": "Отметиться можно только из сети вуза",
+  "errorAttendanceTooMany": "Слишком много неверных кодов. Попробуйте через 10 минут",
+  "errorAttendanceClosed": "Отметка уже закрыта",
+  "errorAttendanceNotInLesson": "Вы не записаны на это занятие",
+  "errorAttendanceMethodOff": "Вуз выключил этот способ отметки",
+  "errorAttendanceCancelled": "Занятие отменено",
+  "errorAttendanceNotFound": "Занятие не найдено",
+  "settingAttendanceQr": "Посещаемость: отметка по QR",
+  "settingAttendanceCode": "Посещаемость: отметка кодом",
+  "settingAttendanceNetworks": "Посещаемость: сети вуза через запятую (пусто значит без проверки)",
+  "settingAttendanceLate": "Посещаемость: через сколько минут после начала отметка считается опозданием",
+  "settingAttendanceAlert": "Посещаемость: сколько пропусков подряд показать преподавателю"
 }

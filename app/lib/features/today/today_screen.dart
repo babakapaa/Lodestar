@@ -10,6 +10,8 @@ import '../../design/components/lodestar_button_variant.dart';
 import '../../design/components/section.dart';
 import '../../design/tokens/spacing.dart';
 import '../../l10n/l10n_context.dart';
+import '../attendance/attendance_providers.dart';
+import '../attendance/open_lessons_section.dart';
 import '../study/agenda.dart';
 import '../study/deadline_tile.dart';
 import '../study/lesson_tile.dart';
@@ -26,6 +28,7 @@ class TodayScreen extends ConsumerWidget {
     final l10n = context.l10n;
     return [
       const OutboxSection(),
+      const OpenLessonsSection(),
       Text(
         context.studyLabels.day(StudyDay.parse(agenda.date)),
         style: Theme.of(context).textTheme.titleLarge,
@@ -85,7 +88,10 @@ class TodayScreen extends ConsumerWidget {
       title: context.l10n.tabToday,
       child: LoadedListView(
         value: ref.watch(agendaProvider(null)),
-        onRefresh: () => ref.refresh(agendaProvider(null).future),
+        onRefresh: () {
+          ref.invalidate(openLessonsProvider);
+          return ref.refresh(agendaProvider(null).future);
+        },
         builder: (agenda) => _body(context, agenda),
       ),
     );

@@ -98,6 +98,15 @@ abstract final class ApiErrorText {
       'no_term' => l10n.errorSandboxNoTerm,
       'not_enough_gpu_hours' => l10n.errorSandboxHours,
       'starter_busy' => l10n.errorSandboxStarterBusy,
+      'wrong_attendance_code' => l10n.errorAttendanceWrongCode,
+      'off_campus' => l10n.errorAttendanceOffCampus,
+      'too_many_attendance_tries' => l10n.errorAttendanceTooMany,
+      'attendance_session_closed' => l10n.errorAttendanceClosed,
+      'not_in_lesson' => l10n.errorAttendanceNotInLesson,
+      'check_in_method_off' => l10n.errorAttendanceMethodOff,
+      'lesson_cancelled' => l10n.errorAttendanceCancelled,
+      'lesson_not_found' ||
+      'attendance_session_not_found' => l10n.errorAttendanceNotFound,
       'run_ended' ||
       'run_active' ||
       'run_not_held' => l10n.errorSandboxRunState,

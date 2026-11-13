@@ -68,6 +68,9 @@ import '../../features/team/team_join_screen.dart';
 import '../../features/team/team_profile_screen.dart';
 import '../../features/team/team_scope_screen.dart';
 import '../../features/team/team_screen.dart';
+import '../../features/attendance/attend_screen.dart';
+import '../../features/attendance/attendance_session_screen.dart';
+import '../../features/attendance/course_journal_screen.dart';
 import '../../features/sandbox/run_launch_screen.dart';
 import '../../features/sandbox/run_screen.dart';
 import '../../features/sandbox/run_work.dart';
@@ -286,6 +289,24 @@ class AppRouter {
             ),
           ),
           _param(AppRoutes.sandboxRun(':id'), (id) => RunScreen(runId: id)),
+          GoRoute(
+            path: AppRoutes.attend,
+            pageBuilder: (context, state) => _fade(
+              state,
+              AttendScreen(
+                sessionId: state.uri.queryParameters['s'],
+                token: state.uri.queryParameters['t'],
+              ),
+            ),
+          ),
+          _param(
+            AppRoutes.attendanceSession(':id'),
+            (id) => AttendanceSessionScreen(sessionId: id),
+          ),
+          _param(
+            AppRoutes.attendanceCourse(':id'),
+            (id) => CourseJournalScreen(courseId: id),
+          ),
           _route(AppRoutes.teams, const TeamsScreen()),
           _route(AppRoutes.teamProfile, const TeamProfileScreen()),
           _param(

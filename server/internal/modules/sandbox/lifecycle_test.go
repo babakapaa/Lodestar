@@ -96,6 +96,9 @@ func TestWatchdogHoldsAndAdminDecides(t *testing.T) {
 	if q := w.quota(w.aigerim); q.Reserved != 16 {
 		t.Fatalf("held runs keep reserve = %+v", q)
 	}
+	if nodes, err := w.quotas.Nodes(w.ctx, w.admin); err != nil || nodes[0].Busy != 2 {
+		t.Fatalf("held runs free their gpu = %+v, %v", nodes, err)
+	}
 	w.exec(`UPDATE sandbox.runs SET held_at = now() - interval '2 hours'`)
 	if rec := w.call(w.admin, http.MethodPost, "/v1/sandbox/runs/"+first.ID+"/hold-decision", `{"release":true}`); rec.Code != http.StatusOK || !strings.Contains(rec.Body.String(), `"status":"running"`) {
 		t.Fatalf("release = %d %s", rec.Code, rec.Body)

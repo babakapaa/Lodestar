@@ -25,6 +25,8 @@ abstract final class AppRoutes {
   static const sourceNew = '/notes/sources/new';
   static const dialogNew = '/navigator/new';
   static const journal = '/navigator/journal';
+  static const teams = '/teams';
+  static const teamProfile = '/teams/profile';
 
   static String role(String id) => '/admin/roles/$id';
 
@@ -53,6 +55,12 @@ abstract final class AppRoutes {
 
   static String grade(String assignmentId, String studentId) =>
       '/study/assignments/$assignmentId/students/$studentId';
+
+  static String team(String id) => '/teams/$id';
+
+  static String teamJoin(String code) => '/teams/codes/$code';
+
+  static String teamScope(String kind, String id) => '/teams/scopes/$kind/$id';
 
   static String note(String id) => '/notes/$id';
 

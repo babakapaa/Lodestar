@@ -2,6 +2,7 @@ import 'defense_format.dart';
 import 'grading.dart';
 import 'map_rules.dart';
 import 'navigator_mode.dart';
+import 'team_rules.dart';
 
 class AssignmentInput {
   const AssignmentInput({
@@ -15,6 +16,7 @@ class AssignmentInput {
     this.searchMap,
     this.navigatorMode = NavigatorMode.course,
     this.defense = DefenseFormat.none,
+    this.team,
   });
 
   final String title;
@@ -27,6 +29,7 @@ class AssignmentInput {
   final MapRules? searchMap;
   final NavigatorMode navigatorMode;
   final DefenseFormat defense;
+  final TeamRules? team;
 
   Map<String, Object?> toJson() => {
     'title': title,
@@ -39,5 +42,6 @@ class AssignmentInput {
     'searchMap': searchMap?.toJson(),
     'navigatorMode': navigatorMode.wire,
     'defense': defense.wire,
+    'team': team?.toJson(),
   };
 }

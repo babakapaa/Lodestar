@@ -20,6 +20,8 @@ import 'navigator_mode.dart';
 import 'points_text.dart';
 import 'study_labels_context.dart';
 import 'study_providers.dart';
+import 'team_rules.dart';
+import 'team_rules_editor.dart';
 
 class AssignmentForm extends ConsumerStatefulWidget {
   const AssignmentForm({required this.courseId, this.details, super.key});
@@ -47,6 +49,7 @@ class _AssignmentFormState extends ConsumerState<AssignmentForm> {
   late NavigatorMode _navigatorMode =
       _assignment?.navigatorMode ?? NavigatorMode.course;
   late DefenseFormat _defense = _assignment?.defense ?? DefenseFormat.none;
+  late TeamRules? _team = _assignment?.team;
   late final _minSources = TextEditingController(
     text: '${_assignment?.searchMap?.minSources ?? 5}',
   );
@@ -142,6 +145,7 @@ class _AssignmentFormState extends ConsumerState<AssignmentForm> {
             minScholarly > 100);
     if (_title.text.trim().isEmpty ||
         mapInvalid ||
+        !(_team?.valid ?? true) ||
         (_grading == Grading.points && (maxPoints == null || maxPoints <= 0))) {
       setState(() => _error = l10n.errorInvalidAssignment);
       return;
@@ -160,6 +164,7 @@ class _AssignmentFormState extends ConsumerState<AssignmentForm> {
           : null,
       navigatorMode: _navigatorMode,
       defense: _defense,
+      team: _team,
     );
     final assignment = _assignment;
     await _run(
@@ -311,6 +316,11 @@ class _AssignmentFormState extends ConsumerState<AssignmentForm> {
             labelOf: labels.defenseFormat,
             onSelected: (value) => setState(() => _defense = value),
           ),
+        ),
+        const SizedBox(height: Spacing.l),
+        TeamRulesEditor(
+          initial: _team,
+          onChanged: (value) => setState(() => _team = value),
         ),
         const SizedBox(height: Spacing.l),
         SwitchListTile(

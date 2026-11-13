@@ -10,6 +10,7 @@ import 'fake_navigator.dart';
 import 'fake_notes.dart';
 import 'fake_sources.dart';
 import 'fake_study.dart';
+import 'fake_teams.dart';
 
 class FakeServer {
   final List<http.Request> requests = [];
@@ -20,6 +21,7 @@ class FakeServer {
   final FakeNavigator navigator = FakeNavigator();
   final FakeFiles files = FakeFiles();
   late final FakeChats chats = FakeChats(files.files);
+  late final FakeTeams teams = FakeTeams(() => study.role);
   bool offline = false;
   final Map<String, Object?> profile = {
     'userId': 'u1',
@@ -206,6 +208,7 @@ class FakeServer {
       _ when path.startsWith('/v1/study/') => study.handle(request),
       _ when path.startsWith('/v1/navigator/') => navigator.handle(request),
       _ when path.startsWith('/v1/chat/') => chats.handle(request),
+      _ when path.startsWith('/v1/team/') => teams.handle(request),
       _ when path == '/v1/files' || path.startsWith('/v1/files/') =>
         files.handle(request),
       _

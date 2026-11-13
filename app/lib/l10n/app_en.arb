@@ -1366,5 +1366,6 @@
   "setupPilotTitle": "Pilot",
   "setupPilotCourses": "{count, plural, one{Open on {count} course} other{Open on {count} courses}}",
   "setupExpand": "Open for everyone",
-  "setupPilotBanner": "Lodestar is running as a pilot on a few courses. Yours are not among them yet."
+  "setupPilotBanner": "Lodestar is running as a pilot on a few courses. Yours are not among them yet.",
+  "errorCallNotStarted": "A channel admin starts the call. Wait for it to begin."
 }

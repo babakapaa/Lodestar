@@ -8420,7 +8420,7 @@ paths:
       tags: [chat]
       operationId: joinChatCall
       summary: Начать звонок или войти в идущий
-      description: Возвращает адрес и короткий токен комнаты LiveKit. Звонки работают в личных и групповых чатах, не в каналах и не в архиве. В звонке до 50 человек. Если вуз выключил звонки, ответ 403 calls_off. Если сервер звонков не настроен, ответ 503 calls_unavailable.
+      description: Возвращает адрес и короткий токен комнаты LiveKit. Звонки работают в личных и групповых чатах и в каналах, не в архиве. В канале звонок начинает только администратор канала, остальные присоединяются к идущему (иначе 409 call_not_started). В звонке до 50 человек, в канале до 300. Если вуз выключил звонки, ответ 403 calls_off. Если сервер звонков не настроен, ответ 503 calls_unavailable.
       security:
         - bearer: []
       parameters:
@@ -13336,7 +13336,7 @@ components:
           description: Идёт ли запись
     CallTicket:
       type: object
-      required: [call, url, room, token, screenShare, record]
+      required: [call, url, room, token, screenShare, record, muted]
       properties:
         call:
           $ref: "#/components/schemas/Call"
@@ -13354,6 +13354,9 @@ components:
         record:
           type: boolean
           description: Может ли этот участник начать запись по правилам вуза
+        muted:
+          type: boolean
+          description: Войти с выключенным микрофоном (участник канала)
     StatsEntry:
       type: object
       required: [unitId, kind, name]

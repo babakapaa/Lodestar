@@ -15,8 +15,9 @@ import (
 )
 
 const (
-	MaxCallPeople = 50
-	ticketTTL     = 6 * time.Hour
+	MaxCallPeople        = 50
+	MaxChannelCallPeople = 300
+	ticketTTL            = 6 * time.Hour
 )
 
 type CallService struct {
@@ -68,10 +69,10 @@ func (s CallService) Join(ctx context.Context, p auth.Principal, chatID string) 
 		if err != nil {
 			return err
 		}
-		if c.Kind == KindChannel || c.ArchivedAt != nil || c.Request {
+		if c.ArchivedAt != nil || c.Request {
 			return ErrInvalidChat
 		}
-		if c.MemberCount > MaxCallPeople {
+		if c.Kind != KindChannel && c.MemberCount > MaxCallPeople {
 			return ErrCallFull
 		}
 		var on bool
@@ -84,6 +85,9 @@ func (s CallService) Join(ctx context.Context, p auth.Principal, chatID string) 
 		call, found, err := s.calls.Active(ctx, tx, chatID)
 		if err != nil {
 			return err
+		}
+		if !found && c.Kind == KindChannel && !manages(c.Role) {
+			return ErrCallNotStarted
 		}
 		if !found {
 			id, err := s.calls.Start(ctx, tx, chatID, p.UserID)
@@ -101,7 +105,7 @@ func (s CallService) Join(ctx context.Context, p auth.Principal, chatID string) 
 		if call, _, err = s.calls.ByID(ctx, tx, call.ID); err != nil {
 			return err
 		}
-		if len(call.People) > MaxCallPeople {
+		if len(call.People) > callLimit(c) {
 			return ErrCallFull
 		}
 		share, err := s.canShare(ctx, tx, c)
@@ -121,7 +125,10 @@ func (s CallService) Join(ctx context.Context, p auth.Principal, chatID string) 
 		if err != nil {
 			return err
 		}
-		out = CallTicket{Call: call, URL: s.k.Calls.URL(), Room: room, Token: token, ScreenShare: share, Record: record}
+		out = CallTicket{
+			Call: call, URL: s.k.Calls.URL(), Room: room, Token: token, ScreenShare: share, Record: record,
+			Muted: c.Kind == KindChannel && !manages(c.Role),
+		}
 		return s.announce(ctx, tx, p.TenantID, chatID, call.ID, true)
 	})
 	return out, err

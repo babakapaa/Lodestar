@@ -142,6 +142,9 @@ class FakeChats {
       'token': 'room-token',
       'screenShare': screenShare,
       'record': record,
+      'muted':
+          chats[chatId]?['kind'] == 'channel' &&
+          chats[chatId]?['role'] == 'member',
     });
   }
 

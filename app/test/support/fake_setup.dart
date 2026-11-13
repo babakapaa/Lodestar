@@ -10,6 +10,8 @@ class FakeSetup {
   final Map<String, Map<String, Object?>> answers = {};
   final Map<String, String?> assignees = {};
   final List<String> calls = [];
+  List<String> pilot = [];
+  bool included = true;
 
   static const _sections = [
     ('deploy', true),
@@ -65,6 +67,7 @@ class FakeSetup {
         },
     ],
     'problems': launched ? <Object?>[] : _problems,
+    'pilot': pilot,
   };
 
   http.Response handle(http.Request request) {
@@ -77,9 +80,18 @@ class FakeSetup {
       case ('GET', ['status']):
         return _json(200, {
           'launched': launched,
-          'manages': !launched && manages,
+          'manages': (!launched || pilot.isNotEmpty) && manages,
           'assigned': <String>[],
+          'pilot': launched && pilot.isNotEmpty,
+          'included': included,
         });
+      case ('GET', ['pilot', 'courses']):
+        return _json(200, [
+          {'id': 'c-bio', 'title': 'Основы биологии', 'code': 'BIO-101'},
+          {'id': 'c-chem', 'title': 'Химия', 'code': null},
+        ]);
+      case ('POST', ['expand']):
+        pilot = [];
       case ('GET', []):
         return _json(200, _overview());
       case ('PUT', ['sections', final key, 'assignee']):
@@ -105,6 +117,10 @@ class FakeSetup {
           return _json(409, {'code': 'setup_not_ready'});
         }
         launched = true;
+        pilot = [
+          for (final id in body['pilot'] as List<Object?>? ?? const [])
+            id! as String,
+        ];
       default:
         return _json(404, {'code': 'not_found'});
     }

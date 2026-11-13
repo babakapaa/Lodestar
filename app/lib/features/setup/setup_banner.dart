@@ -14,10 +14,20 @@ class SetupBanner extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final status = ref.watch(setupStatusProvider).value;
-    if (status == null || !status.takesPart) {
+    if (status == null || !(status.takesPart || status.outsidePilot)) {
       return const SizedBox.shrink();
     }
     final l10n = context.l10n;
+    if (status.outsidePilot) {
+      return Padding(
+        padding: const EdgeInsets.only(bottom: Spacing.xl),
+        child: NoticeBanner(
+          key: const ValueKey('setup-pilot-banner'),
+          icon: Icons.science_outlined,
+          message: l10n.setupPilotBanner,
+        ),
+      );
+    }
     return Padding(
       padding: const EdgeInsets.only(bottom: Spacing.xl),
       child: Column(

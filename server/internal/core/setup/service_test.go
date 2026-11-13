@@ -52,6 +52,7 @@ type world struct {
 	count     int
 	pool      *pgxpool.Pool
 	sent      *sentNotifications
+	pilot     *fakePilot
 }
 
 func newWorld(t *testing.T) *world {
@@ -89,10 +90,10 @@ func newWorld(t *testing.T) *world {
 	acc := access.NewService(tx, catalog, structure.Tree{})
 	w := &world{
 		t: t, ctx: ctx, tenant: created.ID, users: identity.NewStore(tx), access: acc, structure: structure.NewService(tx, acc),
-		pool: pool, sent: &sentNotifications{},
+		pool: pool, sent: &sentNotifications{}, pilot: &fakePilot{members: map[string][]string{}},
 	}
 	w.settings = settings.NewService(tx, acc, defs, registry)
-	w.setup = setup.NewService(tx, acc, w.settings, w.sent, lonelyCourses{count: &w.lonely})
+	w.setup = setup.NewService(tx, acc, w.settings, w.sent, []module.PilotSource{w.pilot}, lonelyCourses{count: &w.lonely})
 	w.admin = w.user()
 	if _, err := access.NewBootstrap(tx).GrantTopRole(ctx, w.tenant, w.admin.UserID); err != nil {
 		t.Fatalf("grant: %v", err)
@@ -247,7 +248,7 @@ func TestWizardFromDelegationToLaunch(t *testing.T) {
 	if got := strings.Join(codes(o.Problems), " "); got != want {
 		t.Fatalf("problems = %s", got)
 	}
-	if _, err := w.setup.Launch(w.ctx, w.admin); !errors.Is(err, setup.ErrNotReady) {
+	if _, err := w.setup.Launch(w.ctx, w.admin, setup.LaunchInput{}); !errors.Is(err, setup.ErrNotReady) {
 		t.Fatalf("launch early: %v", err)
 	}
 
@@ -266,7 +267,7 @@ func TestWizardFromDelegationToLaunch(t *testing.T) {
 		t.Fatalf("unit: %v", err)
 	}
 	w.lonely = 0
-	launched, err := w.setup.Launch(w.ctx, w.admin)
+	launched, err := w.setup.Launch(w.ctx, w.admin, setup.LaunchInput{})
 	if err != nil || !launched.Launched || launched.ProtocolVersion != 2 || len(launched.Problems) != 0 {
 		t.Fatalf("launch = %+v, %v", launched, err)
 	}

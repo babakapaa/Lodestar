@@ -30,7 +30,7 @@ class AdminScreen extends ConsumerWidget {
             child: ListView(
               padding: const EdgeInsets.all(Spacing.l),
               children: [
-                if (setup.takesPart && setup.manages)
+                if (setup.opensWizard)
                   ListTile(
                     key: const ValueKey('admin-setup'),
                     contentPadding: EdgeInsets.zero,

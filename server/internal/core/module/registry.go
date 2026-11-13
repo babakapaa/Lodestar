@@ -280,6 +280,16 @@ func (r *Registry) ReadinessSources(k Kernel) []ReadinessSource {
 	return sources
 }
 
+func (r *Registry) PilotSources(k Kernel) []PilotSource {
+	var sources []PilotSource
+	for _, m := range r.modules {
+		if s, ok := m.(PilotProviding); ok {
+			sources = append(sources, s.PilotSources(k)...)
+		}
+	}
+	return sources
+}
+
 func (r *Registry) ScoreSources(k Kernel) ScoreSources {
 	var sources ScoreSources
 	for _, m := range r.modules {

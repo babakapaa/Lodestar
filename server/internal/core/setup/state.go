@@ -7,4 +7,5 @@ type State struct {
 	SignedBy        *string
 	SignedAt        *time.Time
 	LaunchedAt      *time.Time
+	Pilot           []string
 }

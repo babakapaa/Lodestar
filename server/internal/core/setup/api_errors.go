@@ -20,6 +20,8 @@ const (
 	CodeLegalOpen       = "setup_legal_open"
 	CodeNotReady        = "setup_not_ready"
 	CodeNoSetup         = "setup_not_found"
+	CodeInvalidPilot    = "invalid_setup_pilot"
+	CodeNotPilot        = "setup_not_pilot"
 )
 
 var errorCodes = []struct {
@@ -36,6 +38,8 @@ var errorCodes = []struct {
 	{ErrLegalOpen, http.StatusConflict, CodeLegalOpen},
 	{ErrNotReady, http.StatusConflict, CodeNotReady},
 	{ErrNoSetup, http.StatusNotFound, CodeNoSetup},
+	{ErrInvalidPilot, http.StatusBadRequest, CodeInvalidPilot},
+	{ErrNotPilot, http.StatusConflict, CodeNotPilot},
 	{schema.ErrUnknownKey, http.StatusNotFound, settings.CodeUnknownKey},
 	{schema.ErrInvalidValue, http.StatusBadRequest, settings.CodeInvalidValue},
 }

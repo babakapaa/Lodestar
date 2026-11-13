@@ -12,4 +12,6 @@ var (
 	ErrLegalOpen       = errors.New("legal answers are not all approved")
 	ErrNotReady        = errors.New("setup has open problems")
 	ErrNoSetup         = errors.New("university is not in setup")
+	ErrInvalidPilot    = errors.New("pilot courses are not valid")
+	ErrNotPilot        = errors.New("university is not in a pilot")
 )

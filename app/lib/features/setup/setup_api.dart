@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 
 import '../../core/api/api_client.dart';
+import 'pilot_course.dart';
 import 'setup_overview.dart';
 import 'setup_status.dart';
 
@@ -53,5 +54,14 @@ class SetupApi {
 
   Future<void> sign() => _api.post('/v1/setup/protocol/sign');
 
-  Future<void> launch() => _api.post('/v1/setup/launch');
+  Future<void> launch(List<String> pilot) =>
+      _api.post('/v1/setup/launch', {'pilot': pilot});
+
+  Future<void> expand() => _api.post('/v1/setup/expand');
+
+  Future<List<PilotCourse>> pilotCourses() async => [
+    for (final item
+        in (await _api.get('/v1/setup/pilot/courses'))! as List<Object?>)
+      PilotCourse.fromJson(item! as Map<String, Object?>),
+  ];
 }

@@ -66,8 +66,20 @@ void main() {
     );
     await tester.tap(find.byKey(const ValueKey('setup-launch-action')));
     await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('launch-pilot')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Основы биологии'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('launch-confirm')));
+    await tester.pumpAndSettle();
     expect(server.setup.launched, isTrue);
+    expect(server.setup.pilot, ['c-bio']);
     expect(find.text('Вуз запущен'), findsOneWidget);
+    expect(find.text('Открыт на 1 курсе'), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('setup-expand')));
+    await tester.pumpAndSettle();
+    expect(server.setup.pilot, isEmpty);
+    expect(find.byKey(const ValueKey('setup-expand')), findsNothing);
   });
 
   testWidgets('a section setting is saved through the wizard', (tester) async {
@@ -99,5 +111,18 @@ void main() {
     await pumpApp(tester, size: const Size(390, 1000), server: server);
 
     expect(find.textContaining('Вуз ещё не запущен'), findsNothing);
+  });
+
+  testWidgets('a student outside the pilot sees why the app is closed', (
+    tester,
+  ) async {
+    final server = FakeServer();
+    server.setup
+      ..manages = false
+      ..pilot = ['c-chem']
+      ..included = false;
+    await pumpApp(tester, size: const Size(390, 1000), server: server);
+
+    expect(find.byKey(const ValueKey('setup-pilot-banner')), findsOneWidget);
   });
 }

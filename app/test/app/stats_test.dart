@@ -33,6 +33,24 @@ void main() {
     expect(find.text('Нет данных за этот период'), findsOneWidget);
   });
 
+  testWidgets('a dean opens the statistics of their faculty', (tester) async {
+    final server = FakeServer();
+    server.stats.entries.add({
+      'unitId': 'bio',
+      'kind': 'faculty',
+      'name': 'Биофак',
+    });
+    await pumpApp(tester, size: const Size(390, 1200), server: server);
+    await tester.tap(find.byTooltip('Профиль и настройки'));
+    await tester.pumpAndSettle();
+    expect(find.text('Администрирование'), findsNothing);
+
+    await tester.tap(find.text('Статистика: Биофак'));
+    await tester.pumpAndSettle();
+    expect(server.stats.queries.last['parent'], 'bio');
+    expect(find.text('Кафедра генетики'), findsOneWidget);
+  });
+
   testWidgets('university settings are grouped by section', (tester) async {
     final server = FakeServer()..permissions = ['core.administrator'];
     await pumpApp(tester, size: const Size(390, 1200), server: server);

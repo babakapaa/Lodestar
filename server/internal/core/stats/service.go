@@ -97,6 +97,42 @@ func (s Service) Units(ctx context.Context, p auth.Principal, parentID *string, 
 	return out, err
 }
 
+func (s Service) Entries(ctx context.Context, p auth.Principal) ([]Entry, error) {
+	out := []Entry{}
+	err := s.tenants.Run(ctx, p.TenantID, func(tx pgx.Tx) error {
+		whole, err := s.allowed(ctx, tx, p, access.TenantScope(p.TenantID), View)
+		if err != nil || whole {
+			return err
+		}
+		scopes, err := s.access.HeldScopes(ctx, tx, p)
+		if err != nil {
+			return err
+		}
+		for _, scope := range scopes {
+			if scope.Kind != structure.ScopeKind {
+				continue
+			}
+			ok, err := s.allowed(ctx, tx, p, scope, View)
+			if err != nil {
+				return err
+			}
+			if !ok {
+				continue
+			}
+			u, err := s.units.ByID(ctx, tx, scope.ID)
+			if errors.Is(err, structure.ErrUnitNotFound) {
+				continue
+			}
+			if err != nil {
+				return err
+			}
+			out = append(out, Entry{UnitID: u.ID, Kind: u.Kind, Name: u.Name})
+		}
+		return nil
+	})
+	return out, err
+}
+
 func (s Service) allowed(ctx context.Context, tx pgx.Tx, p auth.Principal, scope access.Scope, perm access.Permission) (bool, error) {
 	err := s.access.Require(ctx, tx, p, scope, perm)
 	if errors.Is(err, access.ErrForbidden) {

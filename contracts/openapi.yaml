@@ -8537,6 +8537,27 @@ paths:
           $ref: "#/components/responses/Error"
         default:
           $ref: "#/components/responses/Error"
+  /v1/stats/entries:
+    get:
+      tags: [stats]
+      operationId: statsEntries
+      summary: Подразделения, статистику которых я вижу
+      description: Подразделения, на которые у меня есть право core.stats.view. Если право есть на весь вуз, список пустой, потому что вход есть в администрировании.
+      security:
+        - bearer: []
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/StatsEntry"
+        "401":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
 components:
   securitySchemes:
     bearer:
@@ -13333,3 +13354,13 @@ components:
         record:
           type: boolean
           description: Может ли этот участник начать запись по правилам вуза
+    StatsEntry:
+      type: object
+      required: [unitId, kind, name]
+      properties:
+        unitId:
+          type: string
+        kind:
+          type: string
+        name:
+          type: string

@@ -9,6 +9,7 @@ import '../../design/components/lodestar_button.dart';
 import '../../design/components/lodestar_button_variant.dart';
 import '../../design/tokens/spacing.dart';
 import '../../l10n/l10n_context.dart';
+import '../stats/stats_providers.dart';
 import 'profile_header.dart';
 import 'sessions_section.dart';
 
@@ -20,6 +21,7 @@ class ProfileScreen extends ConsumerWidget {
     final l10n = context.l10n;
     final administers =
         ref.watch(myPermissionsProvider).value?.administers ?? false;
+    final units = ref.watch(statsEntriesProvider).value ?? const [];
     return Scaffold(
       appBar: AppBar(title: Text(l10n.profileTitle)),
       body: SafeArea(
@@ -46,6 +48,12 @@ class ProfileScreen extends ConsumerWidget {
                       Icons.admin_panel_settings_outlined,
                       l10n.adminTitle,
                       AppRoutes.admin,
+                    ),
+                  for (final unit in units)
+                    (
+                      Icons.query_stats,
+                      l10n.statsOfUnit(unit.name),
+                      AppRoutes.unitStats(unit.unitId, unit.name),
                     ),
                 ])
                   ListTile(

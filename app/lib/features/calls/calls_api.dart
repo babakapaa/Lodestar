@@ -7,6 +7,7 @@ class CallsApi {
   const CallsApi(this._api);
 
   static const notFound = 'call_not_found';
+  static const consentRequired = 'recording_consent_required';
 
   final ApiClient _api;
 
@@ -23,16 +24,29 @@ class CallsApi {
     }
   }
 
-  Future<CallTicket> join(String chatId) async => CallTicket.fromJson(
-    (await _api.post(_call(chatId)))! as Map<String, Object?>,
-  );
+  Future<CallTicket> join(String chatId, {bool consent = false}) async =>
+      CallTicket.fromJson(
+        (await _api.post(_call(chatId), {'consent': consent}))!
+            as Map<String, Object?>,
+      );
 
   Future<void> leave(String callId) =>
       _api.post('/v1/chat/calls/${Uri.encodeComponent(callId)}/leave');
 
-  Future<Call> startRecording(String callId) async => Call.fromJson(
-    (await _api.post(_recording(callId)))! as Map<String, Object?>,
-  );
+  Future<Call> startRecording(String callId, {bool audioOnly = false}) async =>
+      Call.fromJson(
+        (await _api.post(_recording(callId), {'audioOnly': audioOnly}))!
+            as Map<String, Object?>,
+      );
+
+  Future<Call> answerConsent(String callId, {required bool agree}) async =>
+      Call.fromJson(
+        (await _api.post(
+              '/v1/chat/calls/${Uri.encodeComponent(callId)}/consent',
+              {'agree': agree},
+            ))!
+            as Map<String, Object?>,
+      );
 
   Future<Call> stopRecording(String callId) async => Call.fromJson(
     (await _api.delete(_recording(callId)))! as Map<String, Object?>,

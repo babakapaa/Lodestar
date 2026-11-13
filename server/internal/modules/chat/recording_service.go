@@ -14,8 +14,6 @@ import (
 	"github.com/babakapaa/lodestar/server/internal/platform/livekit"
 )
 
-const recordingType = "video/mp4"
-
 type RecordingService struct {
 	k           module.Kernel
 	chats       ChatStore
@@ -36,32 +34,88 @@ func NewRecordingService(k module.Kernel) RecordingService {
 	}
 }
 
-func (s RecordingService) Start(ctx context.Context, p auth.Principal, callID string) (Call, error) {
+func (s RecordingService) Start(ctx context.Context, p auth.Principal, callID string, in RecordingInput) (Call, error) {
 	if s.k.Calls == nil || !s.k.Calls.Records() {
 		return Call{}, ErrRecordingUnavailable
 	}
-	if !validID(callID) {
-		return Call{}, ErrCallNotFound
-	}
-	var fileID string
-	err := s.k.Tenants.Run(ctx, p.TenantID, func(tx pgx.Tx) error {
-		call, c, err := s.member(ctx, tx, p, callID)
-		if err != nil {
-			return err
-		}
+	var ready *ConsentRequest
+	out, err := s.change(ctx, p, callID, func(tx pgx.Tx, call Call, c Chat) error {
 		if err := s.startable(ctx, tx, call, c); err != nil {
 			return err
 		}
-		f, err := s.files.Create(ctx, tx, p.UserID, files.FileInput{
-			Name: "call-" + s.now().UTC().Format("2006-01-02-1504") + ".mp4", ContentType: recordingType, Size: 1,
-		})
+		if call.Consent != nil {
+			if len(call.Consent.Waiting) > 0 {
+				return ErrRecordingState
+			}
+			ready = call.Consent
+			return nil
+		}
+		var asks bool
+		if err := s.calls.setting(ctx, tx, ConsentSetting, &asks); err != nil {
+			return err
+		}
+		if !asks {
+			ready = &ConsentRequest{RequestedBy: p.UserID, AudioOnly: in.AudioOnly}
+			return nil
+		}
+		if err := s.store.Agree(ctx, tx, call.ID, p.UserID); err != nil {
+			return err
+		}
+		waiting, err := s.store.Waiting(ctx, tx, call.ID)
+		if err != nil {
+			return err
+		}
+		if len(waiting) == 0 {
+			ready = &ConsentRequest{RequestedBy: p.UserID, AudioOnly: in.AudioOnly}
+			return nil
+		}
+		return s.store.RequestConsent(ctx, tx, call.ID, p.UserID, in.AudioOnly)
+	})
+	if err != nil || ready == nil {
+		return out, err
+	}
+	return s.begin(ctx, p, callID, *ready)
+}
+
+func (s RecordingService) Consent(ctx context.Context, p auth.Principal, callID string, in ConsentInput) (Call, error) {
+	var ready *ConsentRequest
+	out, err := s.change(ctx, p, callID, func(tx pgx.Tx, call Call, _ Chat) error {
+		if call.Consent == nil {
+			return ErrRecordingState
+		}
+		if !in.Agree {
+			return s.store.ClearConsent(ctx, tx, call.ID)
+		}
+		if err := s.store.Agree(ctx, tx, call.ID, p.UserID); err != nil {
+			return err
+		}
+		waiting, err := s.store.Waiting(ctx, tx, call.ID)
+		if err == nil && len(waiting) == 0 {
+			ready = call.Consent
+		}
+		return err
+	})
+	if err != nil || ready == nil {
+		return out, err
+	}
+	return s.begin(ctx, p, callID, *ready)
+}
+
+func (s RecordingService) begin(ctx context.Context, p auth.Principal, callID string, r ConsentRequest) (Call, error) {
+	if s.k.Calls == nil || !s.k.Calls.Records() {
+		return Call{}, ErrRecordingUnavailable
+	}
+	name, contentType := recordingFile(s.now(), r.AudioOnly)
+	var fileID string
+	err := s.k.Tenants.Run(ctx, p.TenantID, func(tx pgx.Tx) error {
+		f, err := s.files.Create(ctx, tx, r.RequestedBy, files.FileInput{Name: name, ContentType: contentType, Size: 1})
 		fileID = f.ID
 		return err
 	})
 	if err != nil {
 		return Call{}, err
 	}
-	egressID, err := s.k.Calls.StartRecording(ctx, RoomName(p.TenantID, callID), files.ObjectKey(p.TenantID, fileID), s.now())
+	egressID, err := s.k.Calls.StartRecording(ctx, RoomName(p.TenantID, callID), files.ObjectKey(p.TenantID, fileID), r.AudioOnly, s.now())
 	if err != nil {
 		return Call{}, errors.Join(ErrRecordingUnavailable, err)
 	}
@@ -69,7 +123,10 @@ func (s RecordingService) Start(ctx context.Context, p auth.Principal, callID st
 		if err := s.startable(ctx, tx, call, c); err != nil {
 			return err
 		}
-		return s.recordings.Start(ctx, tx, Recording{EgressID: egressID, CallID: call.ID, FileID: &fileID, StartedBy: &p.UserID})
+		if err := s.store.ClearConsent(ctx, tx, call.ID); err != nil {
+			return err
+		}
+		return s.recordings.Start(ctx, tx, Recording{EgressID: egressID, CallID: call.ID, FileID: &fileID, StartedBy: &r.RequestedBy, AudioOnly: r.AudioOnly})
 	})
 	if err != nil {
 		return Call{}, errors.Join(err, s.k.Calls.StopRecording(context.WithoutCancel(ctx), egressID, s.now()))

@@ -156,7 +156,7 @@ func newWorld(t *testing.T) *world {
 	rosters := &fakeRosters{list: map[string]module.Roster{}}
 	sent := &outbox{}
 	egress := newFakeEgress(t)
-	settings := &fakeSettings{values: map[string]any{chat.CallsSetting: true, chat.ScreenShareSetting: chat.ShareAdmins, chat.RecordingSetting: chat.RecordOff}}
+	settings := &fakeSettings{values: map[string]any{chat.CallsSetting: true, chat.ScreenShareSetting: chat.ShareAdmins, chat.RecordingSetting: chat.RecordOff, chat.ConsentSetting: false}}
 	k := module.Kernel{
 		Pool: pool, Tenants: tx, Access: acc, Notifier: sent, Settings: settings, Secrets: box,
 		Rosters: module.Rosters{rosters},

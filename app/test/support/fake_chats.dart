@@ -15,6 +15,7 @@ class FakeChats {
   String callError = '';
   bool screenShare = true;
   bool record = false;
+  bool askConsent = false;
 
   final Map<String, Map<String, Object?>> chats = {};
   final Map<String, List<Map<String, Object?>>> messages = {};
@@ -97,9 +98,17 @@ class FakeChats {
         calls[id] == null
             ? _json(404, {'code': 'call_not_found'})
             : _json(200, calls[id]),
-      ('POST', ['chats', final id, 'call']) => _joinCall(id),
+      ('POST', ['chats', final id, 'call']) => _joinCall(id, _body(request)),
       ('POST', ['calls', final id, 'leave']) => _leaveCall(id),
-      ('POST', ['calls', final id, 'recording']) => _recording(id, true),
+      ('POST', ['calls', final id, 'recording']) => _recording(
+        id,
+        true,
+        audioOnly: _body(request)['audioOnly'] == true,
+      ),
+      ('POST', ['calls', final id, 'consent']) => _consent(
+        id,
+        agree: _body(request)['agree'] == true,
+      ),
       ('DELETE', ['calls', final id, 'recording']) => _recording(id, false),
       ('GET', ['blocks']) => _json(200, [
         for (final id in blocked) {'userId': id, 'displayName': id},
@@ -129,11 +138,14 @@ class FakeChats {
     return call;
   }
 
-  http.Response _joinCall(String chatId) {
+  http.Response _joinCall(String chatId, Map<String, Object?> body) {
     if (callError.isNotEmpty) {
       return _json(403, {'code': callError});
     }
     final call = calls[chatId] ?? startCall(chatId, const []);
+    if (askConsent && call['recording'] == true && body['consent'] != true) {
+      return _json(409, {'code': 'recording_consent_required'});
+    }
     call['people'] = {...call['people']! as List<String>, me}.toList();
     return _json(200, {
       'call': call,
@@ -142,15 +154,50 @@ class FakeChats {
       'token': 'room-token',
       'screenShare': screenShare,
       'record': record,
+      'muted':
+          chats[chatId]?['kind'] == 'channel' &&
+          chats[chatId]?['role'] == 'member',
     });
   }
 
-  http.Response _recording(String callId, bool on) {
+  http.Response _recording(String callId, bool on, {bool audioOnly = false}) {
     final call = calls.values.firstWhere((call) => call['id'] == callId);
     if (!record) {
       return _json(403, {'code': 'recording_off'});
     }
+    final others = [
+      for (final p in call['people']! as List<String>)
+        if (p != me) p,
+    ];
+    if (on && askConsent && others.isNotEmpty) {
+      call['consent'] = {
+        'requestedBy': me,
+        'audioOnly': audioOnly,
+        'waiting': others,
+      };
+      return _json(200, call);
+    }
     call['recording'] = on;
+    call['audioOnly'] = on && audioOnly;
+    return _json(200, call);
+  }
+
+  http.Response _consent(String callId, {required bool agree}) {
+    final call = calls.values.firstWhere((call) => call['id'] == callId);
+    final consent = call['consent']! as Map<String, Object?>;
+    final waiting = [
+      for (final p in consent['waiting']! as List<Object?>)
+        if (p != me) p,
+    ];
+    if (!agree) {
+      call['consent'] = null;
+    } else if (waiting.isEmpty) {
+      call['consent'] = null;
+      call['recording'] = true;
+      call['audioOnly'] = consent['audioOnly'];
+    } else {
+      consent['waiting'] = waiting;
+    }
     return _json(200, call);
   }
 

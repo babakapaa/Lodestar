@@ -8536,11 +8536,17 @@ paths:
       tags: [chat]
       operationId: joinChatCall
       summary: Начать звонок или войти в идущий
-      description: Возвращает адрес и короткий токен комнаты LiveKit. Звонки работают в личных и групповых чатах, не в каналах и не в архиве. В звонке до 50 человек. Если вуз выключил звонки, ответ 403 calls_off. Если сервер звонков не настроен, ответ 503 calls_unavailable.
+      description: Возвращает адрес и короткий токен комнаты LiveKit. Звонки работают в личных и групповых чатах и в каналах, не в архиве. В канале звонок начинает только администратор канала, остальные присоединяются к идущему (иначе 409 call_not_started). В звонке до 50 человек, в канале до 300. Если вуз выключил звонки, ответ 403 calls_off. Если сервер звонков не настроен, ответ 503 calls_unavailable. Если идёт запись и вуз требует согласия (chat.recording_consent), войти можно только с consent, иначе 409 recording_consent_required.
       security:
         - bearer: []
       parameters:
         - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CallJoinInput"
       responses:
         "200":
           description: Готово
@@ -8596,16 +8602,57 @@ paths:
           $ref: "#/components/responses/Error"
         default:
           $ref: "#/components/responses/Error"
+  /v1/chat/calls/{id}/consent:
+    post:
+      tags: [chat]
+      operationId: answerRecordingConsent
+      summary: Ответить на просьбу о записи
+      description: Отказ любого участника отменяет просьбу. Когда согласились все, кто в звонке, запись начинается.
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConsentInput"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Call"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        "503":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
   /v1/chat/calls/{id}/recording:
     post:
       tags: [chat]
       operationId: startCallRecording
       summary: Начать запись звонка
-      description: Записывать можно, только если вуз разрешил настройкой chat.call_recording. При значении admins записывают администраторы группового чата, при everyone любой участник звонка. Все участники видят, что идёт запись. Запись появится в чате файлом от того, кто её начал.
+      description: Записывать можно, только если вуз разрешил настройкой chat.call_recording. При значении admins записывают администраторы группового чата, при everyone любой участник звонка. Все участники видят, что идёт запись. Запись появится в чате файлом от того, кто её начал. С audioOnly пишется только звук (OGG). Если вуз требует согласия (chat.recording_consent, по умолчанию да), запись начнётся, только когда согласятся все, кто в звонке; до этого в звонке есть consent со списком тех, кого ждут.
       security:
         - bearer: []
       parameters:
         - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RecordingInput"
       responses:
         "200":
           description: Готово
@@ -13466,7 +13513,7 @@ components:
           maxLength: 1000
     Call:
       type: object
-      required: [id, chatId, startedBy, startedAt, people, recording]
+      required: [id, chatId, startedBy, startedAt, people, recording, audioOnly, consent]
       properties:
         id:
           type: string
@@ -13485,9 +13532,46 @@ components:
         recording:
           type: boolean
           description: Идёт ли запись
+        audioOnly:
+          type: boolean
+          description: Пишется только звук
+        consent:
+          oneOf:
+            - $ref: "#/components/schemas/ConsentRequest"
+            - type: "null"
+    ConsentRequest:
+      type: object
+      required: [requestedBy, audioOnly, waiting]
+      properties:
+        requestedBy:
+          type: string
+        audioOnly:
+          type: boolean
+        waiting:
+          type: array
+          description: Кто ещё не согласился
+          items:
+            type: string
+    ConsentInput:
+      type: object
+      required: [agree]
+      properties:
+        agree:
+          type: boolean
+    RecordingInput:
+      type: object
+      properties:
+        audioOnly:
+          type: boolean
+    CallJoinInput:
+      type: object
+      properties:
+        consent:
+          type: boolean
+          description: Согласие на идущую запись
     CallTicket:
       type: object
-      required: [call, url, room, token, screenShare, record]
+      required: [call, url, room, token, screenShare, record, muted]
       properties:
         call:
           $ref: "#/components/schemas/Call"
@@ -13505,6 +13589,9 @@ components:
         record:
           type: boolean
           description: Может ли этот участник начать запись по правилам вуза
+        muted:
+          type: boolean
+          description: Войти с выключенным микрофоном (участник канала)
     StatsEntry:
       type: object
       required: [unitId, kind, name]

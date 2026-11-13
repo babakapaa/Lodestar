@@ -9,12 +9,17 @@ import '../../core/api/api_exception.dart';
 import '../../design/components/empty_state.dart';
 import '../../design/tokens/spacing.dart';
 import '../../l10n/l10n_context.dart';
+import '../chats/chats_providers.dart';
+import 'call.dart';
 import 'call_controls.dart';
 import 'call_engine.dart';
 import 'call_grid.dart';
 import 'call_ticket.dart';
 import 'calls_api.dart';
 import 'calls_providers.dart';
+import 'consent_banner.dart';
+import 'consent_join_dialog.dart';
+import 'record_mode_dialog.dart';
 import 'recording_banner.dart';
 
 class CallScreen extends ConsumerStatefulWidget {
@@ -31,8 +36,10 @@ class _CallScreenState extends ConsumerState<CallScreen> {
   late final CallsApi _api;
   CallTicket? _ticket;
   String? _error;
-  bool _recording = false;
+  Call? _call;
   bool _left = false;
+
+  bool get _recording => _call?.recording ?? false;
 
   @override
   void initState() {
@@ -48,23 +55,34 @@ class _CallScreenState extends ConsumerState<CallScreen> {
     super.dispose();
   }
 
-  Future<void> _join() async {
+  Future<void> _join({bool consent = false}) async {
     final l10n = context.l10n;
     try {
-      final ticket = await _api.join(widget.chatId);
+      final ticket = await _api.join(widget.chatId, consent: consent);
       if (!mounted) {
         return;
       }
       setState(() {
         _ticket = ticket;
-        _recording = ticket.call.recording;
+        _call = ticket.call;
       });
       await _engine.connect(ticket.url, ticket.token);
-      await _engine.setMicrophone(on: true);
+      await _engine.setMicrophone(on: !ticket.muted);
     } on ApiException catch (error) {
-      if (mounted) {
-        setState(() => _error = ApiErrorText.of(l10n, error));
+      if (!mounted) {
+        return;
       }
+      if (error.code == CallsApi.consentRequired && !consent) {
+        if (await ConsentJoinDialog.show(context)) {
+          return _join(consent: true);
+        }
+        _left = true;
+        if (mounted) {
+          context.pop();
+        }
+        return;
+      }
+      setState(() => _error = ApiErrorText.of(l10n, error));
     }
   }
 
@@ -92,11 +110,37 @@ class _CallScreenState extends ConsumerState<CallScreen> {
     final l10n = context.l10n;
     final messenger = ScaffoldMessenger.of(context);
     try {
-      final call = _recording
-          ? await _api.stopRecording(ticket.call.id)
-          : await _api.startRecording(ticket.call.id);
+      final Call call;
+      if (_recording) {
+        call = await _api.stopRecording(ticket.call.id);
+      } else {
+        final audioOnly = await RecordModeDialog.show(context);
+        if (audioOnly == null) {
+          return;
+        }
+        call = await _api.startRecording(ticket.call.id, audioOnly: audioOnly);
+      }
       if (mounted) {
-        setState(() => _recording = call.recording);
+        setState(() => _call = call);
+      }
+    } on ApiException catch (error) {
+      messenger.showSnackBar(
+        SnackBar(content: Text(ApiErrorText.of(l10n, error))),
+      );
+    }
+  }
+
+  Future<void> _answer(bool agree) async {
+    final ticket = _ticket;
+    if (ticket == null) {
+      return;
+    }
+    final l10n = context.l10n;
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      final call = await _api.answerConsent(ticket.call.id, agree: agree);
+      if (mounted) {
+        setState(() => _call = call);
       }
     } on ApiException catch (error) {
       messenger.showSnackBar(
@@ -120,7 +164,7 @@ class _CallScreenState extends ConsumerState<CallScreen> {
     ref.listen(activeCallProvider(widget.chatId), (_, next) {
       final call = next.value;
       if (call != null && call.id == ticket?.call.id) {
-        setState(() => _recording = call.recording);
+        setState(() => _call = call);
       }
     });
     return Scaffold(
@@ -141,6 +185,12 @@ class _CallScreenState extends ConsumerState<CallScreen> {
                 builder: (context, _) => Column(
                   children: [
                     if (_recording) const RecordingBanner(),
+                    if (_call?.consent case final consent?)
+                      ConsentBanner(
+                        consent: consent,
+                        me: ref.watch(myIdProvider).value,
+                        onAnswer: _answer,
+                      ),
                     Expanded(child: CallGrid(engine: _engine)),
                     Padding(
                       padding: const EdgeInsets.all(Spacing.l),

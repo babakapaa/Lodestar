@@ -223,7 +223,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           ],
         ),
         actions: [
-          if (chat.kind != ChatKind.channel &&
+          if ((chat.kind != ChatKind.channel || chat.role.manages) &&
               !chat.request &&
               chat.archivedAt == null)
             IconButton(

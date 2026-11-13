@@ -24,6 +24,8 @@ const (
 	CodeCallsOff        = "calls_off"
 	CodeCallNotFound    = "call_not_found"
 	CodeCallFull        = "call_full"
+	CodeCallNotStarted  = "call_not_started"
+	CodeConsentRequired = "recording_consent_required"
 	CodeCallsDown       = "calls_unavailable"
 	CodeRecordingOff    = "recording_off"
 	CodeRecordingDown   = "recording_unavailable"
@@ -52,6 +54,8 @@ var errorCodes = []struct {
 	{ErrCallsOff, http.StatusForbidden, CodeCallsOff},
 	{ErrCallNotFound, http.StatusNotFound, CodeCallNotFound},
 	{ErrCallFull, http.StatusConflict, CodeCallFull},
+	{ErrCallNotStarted, http.StatusConflict, CodeCallNotStarted},
+	{ErrConsentRequired, http.StatusConflict, CodeConsentRequired},
 	{ErrRecordingOff, http.StatusForbidden, CodeRecordingOff},
 	{ErrRecordingUnavailable, http.StatusServiceUnavailable, CodeRecordingDown},
 	{ErrRecordingState, http.StatusConflict, CodeRecordingState},

@@ -92,7 +92,10 @@ void main() {
 
     await tester.tap(find.byKey(const ValueKey('call-record')));
     await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('record-audio')));
+    await tester.pumpAndSettle();
     expect(server.chats.calls['g1']!['recording'], isTrue);
+    expect(server.chats.calls['g1']!['audioOnly'], isTrue);
     expect(find.byKey(const ValueKey('call-recording')), findsOneWidget);
 
     await tester.tap(find.byKey(const ValueKey('call-record')));
@@ -114,6 +117,45 @@ void main() {
     expect(find.byKey(const ValueKey('call-record')), findsNothing);
   });
 
+  testWidgets('a participant agrees to a recording request', (tester) async {
+    final server = grouped()..chats.askConsent = true;
+    server.chats.startCall('g1', ['u2'])['consent'] = {
+      'requestedBy': 'u2',
+      'audioOnly': false,
+      'waiting': ['u1'],
+    };
+    await pumpApp(tester, size: const Size(390, 1400), server: server);
+    await openGroup(tester);
+    await tester.tap(find.text('Войти'));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('call-consent')), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('consent-agree')));
+    await tester.pumpAndSettle();
+    expect(server.chats.calls['g1']!['recording'], isTrue);
+    expect(find.byKey(const ValueKey('call-consent')), findsNothing);
+    expect(find.byKey(const ValueKey('call-recording')), findsOneWidget);
+  });
+
+  testWidgets('joining a recorded call asks for consent first', (tester) async {
+    final server = grouped()..chats.askConsent = true;
+    server.chats.startCall('g1', ['u2'])['recording'] = true;
+    final app = await pumpApp(
+      tester,
+      size: const Size(390, 1400),
+      server: server,
+    );
+    await openGroup(tester);
+    await tester.tap(find.text('Войти'));
+    for (var i = 0; i < 5; i++) {
+      await tester.pump(const Duration(milliseconds: 200));
+    }
+    expect(app.calls.single.url, isNull);
+    await tester.tap(find.byKey(const ValueKey('consent-join')));
+    await tester.pumpAndSettle();
+    expect(server.chats.calls['g1']!['people'], ['u2', 'u1']);
+    expect(find.byKey(const ValueKey('call-recording')), findsOneWidget);
+  });
+
   testWidgets('a call explains why it cannot start', (tester) async {
     final server = grouped()..chats.callError = 'calls_off';
     await pumpApp(tester, size: const Size(390, 1400), server: server);
@@ -125,13 +167,43 @@ void main() {
     expect(find.text('Вуз выключил звонки'), findsOneWidget);
   });
 
-  testWidgets('channels have no call button', (tester) async {
+  testWidgets('only channel admins start a call', (tester) async {
     final server = FakeServer();
     server.chats.addChat(id: 'ch1', kind: 'channel', title: 'Новости');
+    server.chats.addChat(
+      id: 'ch2',
+      kind: 'channel',
+      title: 'Биология',
+      role: 'owner',
+    );
     await pumpApp(tester, size: const Size(390, 1400), server: server);
     await openChats(tester);
     await tester.tap(find.text('Новости'));
     await settleSync(tester);
     expect(find.byKey(const ValueKey('chat-call')), findsNothing);
+    await tester.tap(find.byTooltip('Назад'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Биология'));
+    await settleSync(tester);
+    expect(find.byKey(const ValueKey('chat-call')), findsOneWidget);
+  });
+
+  testWidgets('a channel member joins the call with the microphone off', (
+    tester,
+  ) async {
+    final server = FakeServer();
+    server.chats.addChat(id: 'ch1', kind: 'channel', title: 'Биология');
+    server.chats.startCall('ch1', ['u3']);
+    final app = await pumpApp(
+      tester,
+      size: const Size(390, 1400),
+      server: server,
+    );
+    await openChats(tester);
+    await tester.tap(find.text('Биология'));
+    await settleSync(tester);
+    await tester.tap(find.text('Войти'));
+    await tester.pumpAndSettle();
+    expect(app.calls.single.microphone, isFalse);
   });
 }

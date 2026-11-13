@@ -16,6 +16,9 @@ class SettingLabels {
     'core.audit_retention_days' => l10n.settingAuditRetention,
     'core.self_deletion' => l10n.settingSelfDeletion,
     'core.deletion_grace_days' => l10n.settingDeletionGrace,
+    'study.teachers_edit_schedule' => l10n.settingTeachersEditSchedule,
+    'study.defense_recording' => l10n.settingDefenseRecording,
+    'chat.retention_days' => l10n.settingChatRetention,
     _ => key,
   };
 

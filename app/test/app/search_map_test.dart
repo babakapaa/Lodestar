@@ -157,6 +157,7 @@ void main() {
       find.widgetWithText(TextField, 'Минимум источников'),
       '3',
     );
+    await scrollTo(tester, find.text('Сохранить'));
     await tester.tap(find.text('Сохранить'));
     await tester.pumpAndSettle();
     expect(server.study.assignments.first['searchMap'], {

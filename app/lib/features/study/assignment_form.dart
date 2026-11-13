@@ -15,6 +15,7 @@ import 'assignment_details.dart';
 import 'assignment_input.dart';
 import 'grading.dart';
 import 'map_rules.dart';
+import 'defense_format.dart';
 import 'navigator_mode.dart';
 import 'points_text.dart';
 import 'study_labels_context.dart';
@@ -45,6 +46,7 @@ class _AssignmentFormState extends ConsumerState<AssignmentForm> {
   late bool _mapRequired = _assignment?.searchMap != null;
   late NavigatorMode _navigatorMode =
       _assignment?.navigatorMode ?? NavigatorMode.course;
+  late DefenseFormat _defense = _assignment?.defense ?? DefenseFormat.none;
   late final _minSources = TextEditingController(
     text: '${_assignment?.searchMap?.minSources ?? 5}',
   );
@@ -157,6 +159,7 @@ class _AssignmentFormState extends ConsumerState<AssignmentForm> {
           ? MapRules(minSources: minSources!, minScholarly: minScholarly!)
           : null,
       navigatorMode: _navigatorMode,
+      defense: _defense,
     );
     final assignment = _assignment;
     await _run(
@@ -297,6 +300,16 @@ class _AssignmentFormState extends ConsumerState<AssignmentForm> {
             selected: _navigatorMode,
             labelOf: labels.navigatorMode,
             onSelected: (value) => setState(() => _navigatorMode = value),
+          ),
+        ),
+        const SizedBox(height: Spacing.xl),
+        Section(
+          title: l10n.assignmentDefense,
+          child: ChoiceGroup<DefenseFormat>(
+            values: DefenseFormat.values,
+            selected: _defense,
+            labelOf: labels.defenseFormat,
+            onSelected: (value) => setState(() => _defense = value),
           ),
         ),
         const SizedBox(height: Spacing.l),

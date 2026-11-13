@@ -7,9 +7,11 @@ import '../../design/components/section.dart';
 import '../../design/tokens/spacing.dart';
 import '../../design/tokens/tokens_context.dart';
 import '../../l10n/l10n_context.dart';
+import '../defense/my_defense_section.dart';
 import 'assignment_details.dart';
 import 'class_work_section.dart';
 import 'course_role.dart';
+import 'defense_format.dart';
 import 'loaded_list_view.dart';
 import 'my_work_section.dart';
 import 'navigator_tile.dart';
@@ -89,8 +91,22 @@ class AssignmentScreen extends ConsumerWidget {
         SearchMapTile(assignment: assignment),
         const SizedBox(height: Spacing.l),
         SubmitForm(details: details),
-      ] else
+        if (assignment.defense != DefenseFormat.none) ...[
+          const SizedBox(height: Spacing.xl),
+          MyDefenseSection(assignmentId: assignment.id),
+        ],
+      ] else ...[
+        if (assignment.defense != DefenseFormat.none) ...[
+          NavigatorTile(
+            key: const ValueKey('defenses'),
+            icon: Icons.record_voice_over_outlined,
+            title: l10n.defensesTitle,
+            route: AppRoutes.defenses(assignment.id),
+          ),
+          const SizedBox(height: Spacing.l),
+        ],
         ClassWorkSection(assignment: assignment),
+      ],
     ];
   }
 

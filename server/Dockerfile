@@ -6,10 +6,11 @@ COPY . .
 ARG VERSION=dev
 RUN CGO_ENABLED=0 go build -trimpath -ldflags "-s -w -X main.version=${VERSION}" -o /out/lodestar ./cmd/lodestar \
  && CGO_ENABLED=0 go build -trimpath -ldflags "-s -w" -o /out/lodestarctl ./cmd/lodestarctl \
- && CGO_ENABLED=0 go build -trimpath -ldflags "-s -w" -o /out/lodestar-demo-idp ./cmd/lodestar-demo-idp
+ && CGO_ENABLED=0 go build -trimpath -ldflags "-s -w" -o /out/lodestar-demo-idp ./cmd/lodestar-demo-idp \
+ && CGO_ENABLED=0 go build -trimpath -ldflags "-s -w" -o /out/lodestar-agent ./cmd/lodestar-agent
 
 FROM gcr.io/distroless/static-debian12:nonroot
-COPY --from=build /out/lodestar /out/lodestarctl /out/lodestar-demo-idp /
+COPY --from=build /out/lodestar /out/lodestarctl /out/lodestar-demo-idp /out/lodestar-agent /
 EXPOSE 8080
 USER nonroot:nonroot
 ENTRYPOINT ["/lodestar"]

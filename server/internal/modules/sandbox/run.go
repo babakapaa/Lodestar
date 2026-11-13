@@ -59,3 +59,8 @@ func (r Run) seenBy(userID string) Run {
 	}
 	return r
 }
+
+func (r Run) workspace() string {
+	kind, id := r.owner()
+	return kind + "-" + id
+}

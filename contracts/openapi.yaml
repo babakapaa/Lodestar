@@ -11451,7 +11451,7 @@ components:
             $ref: "#/components/schemas/SandboxRunReport"
     SandboxRunSpec:
       type: object
-      required: [runId, kind, title, image, command, maxHours, stop]
+      required: [runId, kind, title, image, command, maxHours, workspace, stop]
       properties:
         runId:
           type: string
@@ -11467,6 +11467,9 @@ components:
           type: string
         maxHours:
           type: number
+        workspace:
+          type: string
+          description: Папка владельца на узле, user-<id> или team-<id>
         stop:
           type: boolean
     SandboxAgentPlan:

@@ -225,6 +225,7 @@ class AppRouter {
                   scope: kind == null || id == null
                       ? null
                       : DialogScope(kind: kind, id: id),
+                  draft: query['text'] ?? '',
                 ),
               );
             },

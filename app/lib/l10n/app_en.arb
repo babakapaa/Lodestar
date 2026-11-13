@@ -1326,5 +1326,7 @@
   "settingRecordingOff": "Nobody",
   "errorRecordingOff": "The university does not allow you to record calls",
   "errorRecordingUnavailable": "Call recording is not set up on the server",
-  "errorRecordingState": "Recording is already on or already stopped"
+  "errorRecordingState": "Recording is already on or already stopped",
+  "sandboxWhy": "Why did it fail?",
+  "sandboxWhyPrompt": "My sandbox run failed. Help me understand why without fixing the code for me."
 }

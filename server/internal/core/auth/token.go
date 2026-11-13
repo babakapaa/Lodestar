@@ -13,6 +13,7 @@ const (
 	accessPrefix  = "lsa_"
 	refreshPrefix = "lsr_"
 	grantPrefix   = "lsg_"
+	ticketPrefix  = "lst_"
 	tenantBytes   = 16
 	secretBytes   = 32
 )

@@ -74,3 +74,17 @@ func checkScoreKinds(m Module) error {
 	}
 	return nil
 }
+
+func checkLinkKinds(m Module) error {
+	s, ok := m.(LinkProviding)
+	if !ok {
+		return nil
+	}
+	name := m.Manifest().Name
+	for _, src := range s.LinkSources(Kernel{}) {
+		if !strings.HasPrefix(src.Kind(), name+".") {
+			return fmt.Errorf("%w: %s in module %s", ErrForeignLinkSource, src.Kind(), name)
+		}
+	}
+	return nil
+}

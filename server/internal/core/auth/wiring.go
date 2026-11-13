@@ -18,6 +18,7 @@ func NewRoutes(pool *pgxpool.Pool, s Settings) Routes {
 		Providers: NewProviderStore(tx, s.Box),
 		Attempts:  NewAttemptStore(tx, s.Lifetimes.Login),
 		Grants:    NewGrantStore(tx, s.Lifetimes.Grant),
+		Tickets:   NewTicketStore(tx, s.Lifetimes.Grant),
 		Sessions:  sessions,
 		Discovery: NewDiscovery(s.HTTPClient),
 		Redirects: NewRedirects(s.Redirects),
@@ -28,5 +29,6 @@ func NewRoutes(pool *pgxpool.Pool, s Settings) Routes {
 		Sessions:      sessions,
 		Users:         users,
 		Authenticator: NewAuthenticator(sessions),
+		Tickets:       NewTicketStore(tx, s.Lifetimes.Grant),
 	}
 }

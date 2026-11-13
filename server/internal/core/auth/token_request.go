@@ -6,4 +6,5 @@ type TokenRequest struct {
 	CodeVerifier string `json:"codeVerifier"`
 	RedirectURI  string `json:"redirectUri"`
 	RefreshToken string `json:"refreshToken"`
+	Ticket       string `json:"ticket"`
 }

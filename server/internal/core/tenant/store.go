@@ -56,6 +56,19 @@ func (s Store) BySlug(ctx context.Context, slug string) (Tenant, error) {
 	return t, nil
 }
 
+func (s Store) ByID(ctx context.Context, id string) (Tenant, error) {
+	row := s.pool.QueryRow(ctx,
+		`SELECT id::text, slug, name, created_at FROM core.tenants WHERE id::text = $1`, id)
+	t, err := scan(row)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return Tenant{}, ErrNotFound
+	}
+	if err != nil {
+		return Tenant{}, fmt.Errorf("find tenant: %w", err)
+	}
+	return t, nil
+}
+
 func scan(row pgx.Row) (Tenant, error) {
 	var t Tenant
 	err := row.Scan(&t.ID, &t.Slug, &t.Name, &t.CreatedAt)

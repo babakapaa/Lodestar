@@ -7,6 +7,7 @@ import (
 
 	"github.com/babakapaa/lodestar/server/internal/core/access"
 	"github.com/babakapaa/lodestar/server/internal/platform/database"
+	"github.com/babakapaa/lodestar/server/internal/platform/livekit"
 	"github.com/babakapaa/lodestar/server/internal/platform/llm"
 	"github.com/babakapaa/lodestar/server/internal/platform/secretbox"
 )
@@ -23,6 +24,7 @@ type Kernel struct {
 	Model       llm.Model
 	Embedder    llm.Embedder
 	Reranker    llm.Reranker
+	Calls       *livekit.Issuer
 	Briefs      Briefs
 	Rosters     Rosters
 	TeamScopes  TeamScopes

@@ -7,6 +7,7 @@ type Routes struct {
 	Messages MessageService
 	Blocks   BlockService
 	Reports  ReportService
+	Calls    CallService
 }
 
 func (r Routes) Mount(mux *http.ServeMux) {
@@ -31,4 +32,11 @@ func (r Routes) Mount(mux *http.ServeMux) {
 	mux.Handle("GET /v1/chat/reports", ReportsHandler{service: r.Reports})
 	mux.Handle("POST /v1/chat/reports", ReportHandler{service: r.Reports})
 	mux.Handle("POST /v1/chat/reports/{id}/resolve", ResolveHandler{service: r.Reports})
+	mux.Handle("GET /v1/chat/chats/{id}/call", CallHandler{service: r.Calls})
+	mux.Handle("POST /v1/chat/chats/{id}/call", JoinCallHandler{service: r.Calls})
+	mux.Handle("POST /v1/chat/calls/{id}/leave", LeaveCallHandler{service: r.Calls})
+}
+
+func (r Routes) MountOpen(mux *http.ServeMux) {
+	mux.Handle("POST /v1/open/chat/livekit", CallHookHandler{service: r.Calls})
 }

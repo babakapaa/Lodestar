@@ -18,7 +18,11 @@ func (Module) Manifest() module.Manifest {
 }
 
 func (Module) Mount(mux *http.ServeMux, k module.Kernel) {
-	Routes{Chats: NewService(k), Messages: NewMessageService(k), Blocks: NewBlockService(k), Reports: NewReportService(k)}.Mount(mux)
+	Routes{Chats: NewService(k), Messages: NewMessageService(k), Blocks: NewBlockService(k), Reports: NewReportService(k), Calls: NewCallService(k)}.Mount(mux)
+}
+
+func (Module) MountOpen(mux *http.ServeMux, k module.Kernel) {
+	Routes{Calls: NewCallService(k)}.MountOpen(mux)
 }
 
 func (Module) Workers(k module.Kernel) []module.Worker {

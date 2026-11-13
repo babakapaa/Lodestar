@@ -8322,6 +8322,95 @@ paths:
           $ref: "#/components/responses/Error"
         default:
           $ref: "#/components/responses/Error"
+  /v1/chat/chats/{id}/call:
+    get:
+      tags: [chat]
+      operationId: getChatCall
+      summary: Идущий звонок в чате
+      description: Если звонка нет, ответ 404 call_not_found.
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Call"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+    post:
+      tags: [chat]
+      operationId: joinChatCall
+      summary: Начать звонок или войти в идущий
+      description: Возвращает адрес и короткий токен комнаты LiveKit. Звонки работают в личных и групповых чатах, не в каналах и не в архиве. В звонке до 50 человек. Если вуз выключил звонки, ответ 403 calls_off. Если сервер звонков не настроен, ответ 503 calls_unavailable.
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CallTicket"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        "503":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/chat/calls/{id}/leave:
+    post:
+      tags: [chat]
+      operationId: leaveChatCall
+      summary: Выйти из звонка
+      description: Когда выходит последний участник, звонок заканчивается.
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "204":
+          description: Готово
+        "401":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/open/chat/livekit:
+    post:
+      tags: [chat]
+      operationId: livekitWebhook
+      summary: События сервера звонков
+      description: LiveKit присылает события комнат, подписанные ключом API. Сервер отмечает, кто вышел и когда комната закрылась.
+      security:
+        - livekit: []
+      responses:
+        "204":
+          description: Готово
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
 components:
   securitySchemes:
     bearer:
@@ -8332,6 +8421,11 @@ components:
       type: http
       scheme: bearer
       description: Токен GPU-узла lsn_..., выдаётся один раз при добавлении узла
+    livekit:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Подпись LiveKit, JWT на ключе API с хешем тела запроса
   parameters:
     After:
       name: after
@@ -13041,3 +13135,38 @@ components:
         basis:
           type: string
           maxLength: 1000
+    Call:
+      type: object
+      required: [id, chatId, startedBy, startedAt, people]
+      properties:
+        id:
+          type: string
+        chatId:
+          type: string
+        startedBy:
+          type: [string, "null"]
+        startedAt:
+          type: string
+          format: date-time
+        people:
+          type: array
+          description: Кто сейчас в звонке
+          items:
+            type: string
+    CallTicket:
+      type: object
+      required: [call, url, room, token, screenShare]
+      properties:
+        call:
+          $ref: "#/components/schemas/Call"
+        url:
+          type: string
+          description: Адрес сервера LiveKit
+        room:
+          type: string
+        token:
+          type: string
+          description: Токен комнаты, действует 6 часов
+        screenShare:
+          type: boolean
+          description: Можно ли этому участнику показывать экран

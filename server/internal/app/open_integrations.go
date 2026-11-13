@@ -8,6 +8,7 @@ import (
 
 	"github.com/babakapaa/lodestar/server/internal/platform/config"
 	"github.com/babakapaa/lodestar/server/internal/platform/fcm"
+	"github.com/babakapaa/lodestar/server/internal/platform/livekit"
 	"github.com/babakapaa/lodestar/server/internal/platform/llm"
 	"github.com/babakapaa/lodestar/server/internal/platform/mail"
 )
@@ -45,6 +46,11 @@ func OpenIntegrations(ctx context.Context, cfg config.Config) (Integrations, err
 		ext.Model = llm.NewClient(cfg.LLM)
 	} else {
 		slog.Warn("navigator is not configured, set LODESTAR_LLM_URL and LODESTAR_LLM_MODEL to an OpenAI-compatible server such as vLLM or Ollama")
+	}
+	if cfg.LiveKit.Enabled() {
+		ext.Calls = livekit.NewIssuer(cfg.LiveKit)
+	} else {
+		slog.Warn("calls are not configured, set LODESTAR_LIVEKIT_URL, LODESTAR_LIVEKIT_API_KEY and LODESTAR_LIVEKIT_API_SECRET")
 	}
 	if cfg.Embed.Enabled() {
 		ext.Embedder = llm.NewEmbedClient(cfg.Embed)

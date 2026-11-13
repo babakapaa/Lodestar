@@ -5,6 +5,7 @@ import "github.com/babakapaa/lodestar/server/internal/core/module"
 const (
 	NotifyMessage = "chat.message"
 	NotifyMention = "chat.mention"
+	NotifyCall    = "chat.call"
 )
 
 func (Module) NotificationTypes() []module.NotificationType {
@@ -25,6 +26,15 @@ func (Module) NotificationTypes() []module.NotificationType {
 				"ru": {Title: "{chat}", Body: "{author} упомянул(а) вас"},
 				"kk": {Title: "{chat}", Body: "{author} сізді атап өтті"},
 				"en": {Title: "{chat}", Body: "{author} mentioned you"},
+			},
+		},
+		{
+			Key: NotifyCall, Push: true,
+			Names: map[string]string{"ru": "Звонки", "kk": "Қоңыраулар", "en": "Calls"},
+			Texts: map[string]module.NotificationText{
+				"ru": {Title: "{chat}", Body: "{author} начал(а) звонок"},
+				"kk": {Title: "{chat}", Body: "{author} қоңырау бастады"},
+				"en": {Title: "{chat}", Body: "{author} started a call"},
 			},
 		},
 	}

@@ -34,3 +34,11 @@ func (People) Exists(ctx context.Context, tx pgx.Tx, id string) (bool, error) {
 	}
 	return found, nil
 }
+
+func (People) IDsByEmail(ctx context.Context, tx pgx.Tx, email string) ([]string, error) {
+	rows, err := tx.Query(ctx, `SELECT id::text FROM core.users WHERE lower(email) = lower($1) ORDER BY id`, email)
+	if err != nil {
+		return nil, fmt.Errorf("people by email: %w", err)
+	}
+	return pgx.CollectRows(rows, pgx.RowTo[string])
+}

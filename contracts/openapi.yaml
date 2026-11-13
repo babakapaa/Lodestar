@@ -725,6 +725,10 @@ paths:
             schema:
               type: string
               description: Столбцы code, parent_code, kind, name. Родитель выше ребёнка
+          application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+            schema:
+              type: string
+              format: binary
       responses:
         "200":
           description: Готово
@@ -764,6 +768,10 @@ paths:
             schema:
               type: string
               description: Столбцы unit_code, email
+          application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+            schema:
+              type: string
+              format: binary
       responses:
         "200":
           description: Готово
@@ -2737,6 +2745,89 @@ paths:
       responses:
         "204":
           description: Готово
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/study/courses/{id}/students/import:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    post:
+      tags: [study]
+      operationId: importCourseStudents
+      summary: Добавить студентов в курс из таблицы .csv или .xlsx, всё или ничего
+      description: Столбец email, остальные столбцы не важны. Добавляются только люди, у которых уже есть аккаунт.
+      security:
+        - bearer: []
+      requestBody:
+        required: true
+        content:
+          text/csv:
+            schema:
+              type: string
+          application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+            schema:
+              type: string
+              format: binary
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StudentImport"
+        "422":
+          description: В файле есть ошибки, ничего не сохранено
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StudentImport"
+        "409":
+          $ref: "#/components/responses/Error"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/study/courses/{id}/gradebook:
+    parameters:
+      - $ref: "#/components/parameters/Id"
+    get:
+      tags: [study]
+      operationId: exportGradebook
+      summary: Ведомость курса в .csv или .xlsx
+      description: Столбцы name, email и по столбцу на каждое оцениваемое задание с итоговым баллом. Для преподавателей курса.
+      security:
+        - bearer: []
+      parameters:
+        - name: format
+          in: query
+          schema:
+            type: string
+            enum: [csv, xlsx]
+            default: csv
+      responses:
+        "200":
+          description: Файл ведомости
+          content:
+            text/csv:
+              schema:
+                type: string
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema:
+                type: string
+                format: binary
+        "400":
+          $ref: "#/components/responses/Error"
         "401":
           $ref: "#/components/responses/Error"
         "403":
@@ -7366,6 +7457,25 @@ components:
           examples: [/people/6f1c]
         score:
           type: number
+    StudentImport:
+      type: object
+      required: [added, existing, errors]
+      properties:
+        added:
+          type: integer
+        existing:
+          type: integer
+        errors:
+          type: array
+          items:
+            type: object
+            required: [line, code]
+            properties:
+              line:
+                type: integer
+              code:
+                type: string
+                enum: [missing_email, unknown_user, ambiguous_user]
     LtiToolUrls:
       type: object
       required: [loginUrl, launchUrl, jwksUrl]

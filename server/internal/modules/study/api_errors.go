@@ -42,6 +42,7 @@ const (
 	CodeTeamWork           = "team_work"
 	CodeAIUnavailable      = "study_ai_unavailable"
 	CodeAIFailed           = "study_ai_failed"
+	CodeBadImport          = "bad_import"
 )
 
 var errorCodes = []struct {
@@ -49,6 +50,7 @@ var errorCodes = []struct {
 	status int
 	code   string
 }{
+	{ErrBadImport, http.StatusBadRequest, CodeBadImport},
 	{ErrCourseNotFound, http.StatusNotFound, CodeCourseNotFound},
 	{ErrInvalidCourse, http.StatusBadRequest, CodeInvalidCourse},
 	{ErrCodeTaken, http.StatusConflict, CodeCodeTaken},

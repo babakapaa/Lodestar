@@ -18,6 +18,7 @@ const (
 	CodeScopeNotFound    = "scope_not_found"
 	CodeInvalidMaterial  = "invalid_material"
 	CodeMaterialNotFound = "material_not_found"
+	CodeJournalNotFound  = "journal_entry_not_found"
 )
 
 var errorCodes = []struct {
@@ -33,6 +34,7 @@ var errorCodes = []struct {
 	{module.ErrBriefNotFound, http.StatusNotFound, CodeScopeNotFound},
 	{ErrInvalidMaterial, http.StatusBadRequest, CodeInvalidMaterial},
 	{ErrMaterialNotFound, http.StatusNotFound, CodeMaterialNotFound},
+	{ErrJournalNotFound, http.StatusNotFound, CodeJournalNotFound},
 }
 
 func writeError(w http.ResponseWriter, err error) {

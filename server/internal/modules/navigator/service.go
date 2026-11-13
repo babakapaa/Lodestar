@@ -23,6 +23,7 @@ type Service struct {
 	k         module.Kernel
 	dialogs   DialogStore
 	messages  MessageStore
+	journal   JournalStore
 	retriever Retriever
 	verifier  Verifier
 }
@@ -30,7 +31,7 @@ type Service struct {
 func NewService(k module.Kernel) Service {
 	sealer := Sealer{box: k.Secrets}
 	return Service{
-		k: k, dialogs: DialogStore{sealer: sealer}, messages: MessageStore{sealer: sealer},
+		k: k, dialogs: DialogStore{sealer: sealer}, messages: MessageStore{sealer: sealer}, journal: JournalStore{sealer: sealer},
 		retriever: Retriever{tenants: k.Tenants, embedder: k.Embedder, reranker: k.Reranker},
 		verifier:  Verifier{model: k.Model},
 	}
@@ -101,14 +102,14 @@ func (s Service) Ask(ctx context.Context, p auth.Principal, id string, in Messag
 	if err != nil {
 		return Answer{}, false, err
 	}
-	if s.k.Model == nil {
-		return Answer{}, false, ErrUnavailable
-	}
 	var prompt Prompt
+	var dialog Dialog
 	var support string
+	var journal bool
 	var done *Answer
 	err = s.k.Tenants.Run(ctx, p.TenantID, func(tx pgx.Tx) error {
-		dialog, err := s.dialogs.Owned(ctx, tx, p.UserID, id, false)
+		var err error
+		dialog, err = s.dialogs.Owned(ctx, tx, p.UserID, id, false)
 		if err != nil {
 			return err
 		}
@@ -134,6 +135,9 @@ func (s Service) Ask(ctx context.Context, p auth.Principal, id string, in Messag
 		if prompt.Memory, err = s.messages.Memory(ctx, tx, p.UserID, dialog, limit); err != nil {
 			return err
 		}
+		if journal, err = s.journaling(ctx, tx, p.UserID); err != nil {
+			return err
+		}
 		support, err = s.text(ctx, tx, SupportSetting)
 		return err
 	})
@@ -143,21 +147,9 @@ func (s Service) Ask(ctx context.Context, p auth.Principal, id string, in Messag
 		}
 		return Answer{}, false, err
 	}
-	distress := false
-	if prompt.Intent == "" {
-		c := Classifier{model: s.k.Model}.Classify(ctx, in.Text)
-		prompt.Intent, distress = c.Intent, c.Distress
-	}
-	if !in.More {
-		prompt.Step = prompt.Intent.start()
-	}
-	verdict, err := s.answer(ctx, p, prompt, stage)
+	body, err := s.reply(ctx, p, in, prompt, support, stage)
 	if err != nil {
 		return Answer{}, false, err
-	}
-	body := messageBody{Text: verdict.Text, Intent: prompt.Intent, Step: prompt.Step, Citations: verdict.Citations}
-	if distress {
-		body.Support = support
 	}
 	var answer Answer
 	var created bool
@@ -169,7 +161,7 @@ func (s Service) Ask(ctx context.Context, p auth.Principal, id string, in Messag
 			answer = existing
 			return err
 		}
-		question, err := s.messages.Insert(ctx, tx, id, in.Key, RoleStudent, messageBody{Text: in.Text, Intent: prompt.Intent})
+		question, err := s.messages.Insert(ctx, tx, id, in.Key, RoleStudent, messageBody{Text: in.Text, Intent: body.Intent})
 		if err != nil {
 			return err
 		}
@@ -180,10 +172,41 @@ func (s Service) Ask(ctx context.Context, p auth.Principal, id string, in Messag
 		if _, err := s.dialogs.Touch(ctx, tx, id, title(in.Text)); err != nil {
 			return err
 		}
+		if journal && in.Text != "" && body.Intent != IntentClosed {
+			if err := s.journal.Insert(ctx, tx, p.UserID, dialog, journalBody{Query: in.Text, Sources: sources(body.Citations)}); err != nil {
+				return err
+			}
+		}
 		answer, created = Answer{Question: question, Reply: replied}, true
 		return nil
 	})
 	return answer, created, err
+}
+
+func (s Service) reply(ctx context.Context, p auth.Principal, in MessageInput, prompt Prompt, support string, stage func(Stage) error) (messageBody, error) {
+	if prompt.Brief != nil && prompt.Brief.Mode == module.ModeClosed {
+		return messageBody{Text: closedReply, Intent: IntentClosed}, nil
+	}
+	if s.k.Model == nil {
+		return messageBody{}, ErrUnavailable
+	}
+	distress := false
+	if prompt.Intent == "" {
+		c := Classifier{model: s.k.Model}.Classify(ctx, in.Text)
+		prompt.Intent, distress = c.Intent, c.Distress
+	}
+	if !in.More {
+		prompt.Step = prompt.Intent.start()
+	}
+	verdict, err := s.answer(ctx, p, prompt, stage)
+	if err != nil {
+		return messageBody{}, err
+	}
+	body := messageBody{Text: verdict.Text, Intent: prompt.Intent, Step: prompt.Step, Citations: verdict.Citations}
+	if distress {
+		body.Support = support
+	}
+	return body, nil
 }
 
 func (s Service) answer(ctx context.Context, p auth.Principal, prompt Prompt, stage func(Stage) error) (Verdict, error) {
@@ -283,4 +306,53 @@ func title(text string) string {
 		return text
 	}
 	return string([]rune(text)[:titleLength-1]) + "…"
+}
+
+func (s Service) Journal(ctx context.Context, p auth.Principal, scopeKind, scopeID string) ([]JournalEntry, error) {
+	var list []JournalEntry
+	err := s.k.Tenants.Run(ctx, p.TenantID, func(tx pgx.Tx) error {
+		var err error
+		list, err = s.journal.List(ctx, tx, p.UserID, scopeKind, scopeID)
+		return err
+	})
+	return list, err
+}
+
+func (s Service) Forget(ctx context.Context, p auth.Principal, id string) error {
+	return s.k.Tenants.Run(ctx, p.TenantID, func(tx pgx.Tx) error {
+		return s.journal.Delete(ctx, tx, p.UserID, id)
+	})
+}
+
+func (s Service) Support(ctx context.Context, p auth.Principal) (Support, error) {
+	var out Support
+	err := s.k.Tenants.Run(ctx, p.TenantID, func(tx pgx.Tx) error {
+		var err error
+		out.Contacts, err = s.text(ctx, tx, SupportSetting)
+		return err
+	})
+	return out, err
+}
+
+func (s Service) journaling(ctx context.Context, tx pgx.Tx, userID string) (bool, error) {
+	if s.k.Preferences == nil {
+		return true, nil
+	}
+	raw, err := s.k.Preferences.Value(ctx, tx, userID, JournalPreference)
+	if err != nil {
+		return false, err
+	}
+	var on bool
+	if err := json.Unmarshal(raw, &on); err != nil {
+		return false, err
+	}
+	return on, nil
+}
+
+func sources(citations []Citation) []JournalSource {
+	out := make([]JournalSource, 0, len(citations))
+	for _, c := range citations {
+		out = append(out, JournalSource{Title: c.Title, Reference: c.Reference, URL: c.URL})
+	}
+	return out
 }

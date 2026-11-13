@@ -3807,6 +3807,72 @@ paths:
           $ref: "#/components/responses/Error"
         default:
           $ref: "#/components/responses/Error"
+  /v1/navigator/journal:
+    get:
+      tags: [navigator]
+      operationId: listJournal
+      summary: Журнал поиска студента
+      description: Вопросы к навигатору и найденные источники. Пишется, пока у студента включена настройка navigator.journal. Без scopeKind возвращает весь журнал.
+      security:
+        - bearer: []
+      parameters:
+        - name: scopeKind
+          in: query
+          schema:
+            type: string
+        - name: scopeId
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/JournalEntry"
+        "401":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/navigator/journal/{id}:
+    delete:
+      tags: [navigator]
+      operationId: deleteJournalEntry
+      summary: Удалить запись журнала
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "204":
+          description: Удалена
+        "401":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/navigator/support:
+    get:
+      tags: [navigator]
+      operationId: getSupport
+      summary: Контакты поддержки вуза для кнопки «Мне тяжело»
+      security:
+        - bearer: []
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Support"
+        "401":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
 components:
   securitySchemes:
     bearer:
@@ -4611,8 +4677,8 @@ components:
           $ref: "#/components/schemas/NavigatorMode"
     NavigatorMode:
       type: string
-      enum: [study, project]
-      description: study полная лестница подсказок, project прямая помощь с кодом, которая попадает в ИИ-декларацию
+      enum: [study, project, closed]
+      description: study полная лестница подсказок, project прямая помощь с кодом, которая попадает в ИИ-декларацию, closed навигатор не отвечает по заданию на время контрольной
     Grading:
       type: string
       enum: [points, pass, none]
@@ -5611,3 +5677,38 @@ components:
           type: string
           minLength: 1
           maxLength: 1500000
+    JournalEntry:
+      type: object
+      required: [id, scopeKind, scopeId, query, sources, createdAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        scopeKind:
+          type: string
+        scopeId:
+          type: string
+        query:
+          type: string
+        sources:
+          type: array
+          items:
+            type: object
+            required: [title, reference, url]
+            properties:
+              title:
+                type: string
+              reference:
+                type: string
+              url:
+                type: string
+        createdAt:
+          type: string
+          format: date-time
+    Support:
+      type: object
+      required: [contacts]
+      properties:
+        contacts:
+          type: string
+          description: Пусто, если вуз не указал контакты

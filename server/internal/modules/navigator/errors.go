@@ -15,3 +15,5 @@ var ErrModelFailed = errors.New("navigator could not get an answer from the mode
 var ErrInvalidMaterial = errors.New("material title, link or text is empty or too long")
 
 var ErrMaterialNotFound = errors.New("material not found")
+
+var ErrJournalNotFound = errors.New("journal entry not found")

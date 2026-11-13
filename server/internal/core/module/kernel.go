@@ -12,15 +12,16 @@ import (
 )
 
 type Kernel struct {
-	Pool     *pgxpool.Pool
-	Tenants  database.TenantTx
-	Access   access.Service
-	Notifier Notifier
-	Settings Settings
-	Secrets  secretbox.Box
-	Outbound *http.Client
-	Model    llm.Model
-	Embedder llm.Embedder
-	Reranker llm.Reranker
-	Briefs   Briefs
+	Pool        *pgxpool.Pool
+	Tenants     database.TenantTx
+	Access      access.Service
+	Notifier    Notifier
+	Settings    Settings
+	Preferences Preferences
+	Secrets     secretbox.Box
+	Outbound    *http.Client
+	Model       llm.Model
+	Embedder    llm.Embedder
+	Reranker    llm.Reranker
+	Briefs      Briefs
 }

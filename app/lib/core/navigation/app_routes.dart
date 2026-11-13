@@ -35,6 +35,7 @@ abstract final class AppRoutes {
   static const sandboxNew = '/sandbox/new';
   static const sandboxTopups = '/sandbox/topups';
   static const sandboxAdmin = '/admin/sandbox';
+  static const attend = '/attend';
 
   static String role(String id) => '/admin/roles/$id';
 
@@ -71,6 +72,10 @@ abstract final class AppRoutes {
   static String team(String id) => '/teams/$id';
 
   static String sandboxRun(String id) => '/sandbox/runs/$id';
+
+  static String attendanceSession(String id) => '/attendance/sessions/$id';
+
+  static String attendanceCourse(String id) => '/attendance/courses/$id';
 
   static String sandboxNewFor(String kind, String id, String title) => Uri(
     path: sandboxNew,

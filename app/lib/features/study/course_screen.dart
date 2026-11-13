@@ -6,6 +6,7 @@ import '../../core/navigation/app_routes.dart';
 import '../../design/components/section.dart';
 import '../../design/tokens/spacing.dart';
 import '../../l10n/l10n_context.dart';
+import '../attendance/attendance_providers.dart';
 import 'assignments_section.dart';
 import 'loaded_list_view.dart';
 import 'navigator_tile.dart';
@@ -25,6 +26,7 @@ class CourseScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final details = ref.watch(courseProvider(courseId));
+    final attendance = ref.watch(attendanceEnabledProvider);
     final course = details.value?.value;
     final canCreate =
         course != null && course.course.role.teaches && !course.course.archived;
@@ -106,6 +108,16 @@ class CourseScreen extends ConsumerWidget {
                 subtitle: l10n.courseTablesHint,
                 route: AppRoutes.courseLms(courseId),
               ),
+              if (attendance) ...[
+                const SizedBox(height: Spacing.m),
+                NavigatorTile(
+                  key: const ValueKey('course-attendance'),
+                  icon: Icons.how_to_reg_outlined,
+                  title: l10n.attendanceTitle,
+                  subtitle: l10n.attendanceHint,
+                  route: AppRoutes.attendanceCourse(courseId),
+                ),
+              ],
             ],
             const SizedBox(height: Spacing.xl),
             AssignmentsSection(

@@ -26,6 +26,11 @@ class SettingLabels {
     'sandbox.night_discount' => l10n.settingSandboxNightDiscount,
     'sandbox.night_from' => l10n.settingSandboxNightFrom,
     'sandbox.night_to' => l10n.settingSandboxNightTo,
+    'attendance.qr' => l10n.settingAttendanceQr,
+    'attendance.code' => l10n.settingAttendanceCode,
+    'attendance.networks' => l10n.settingAttendanceNetworks,
+    'attendance.late_minutes' => l10n.settingAttendanceLate,
+    'attendance.absent_alert' => l10n.settingAttendanceAlert,
     _ => key,
   };
 

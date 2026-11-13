@@ -61,25 +61,11 @@ func (s Service) Value(ctx context.Context, tx pgx.Tx, key string) (json.RawMess
 }
 
 func (s Service) Set(ctx context.Context, p auth.Principal, key string, value json.RawMessage) error {
-	d, err := s.catalog.Lookup(key)
-	if err != nil {
-		return err
-	}
-	if err := d.Validate(value); err != nil {
+	if err := s.check(key, value); err != nil {
 		return err
 	}
 	return s.managed(ctx, p, func(tx pgx.Tx) error {
-		before, err := s.Value(ctx, tx, key)
-		if err != nil {
-			return err
-		}
-		if err := s.settings.Put(ctx, tx, key, value, p.UserID); err != nil {
-			return err
-		}
-		return s.log.Record(ctx, tx, p.UserID, audit.Change{
-			Action: ActionSettingChanged, TargetKind: "setting", TargetID: key,
-			Details: map[string]json.RawMessage{"before": before, "after": value},
-		})
+		return s.Put(ctx, tx, p.UserID, key, value)
 	})
 }
 
@@ -88,11 +74,43 @@ func (s Service) Reset(ctx context.Context, p auth.Principal, key string) error 
 		return err
 	}
 	return s.managed(ctx, p, func(tx pgx.Tx) error {
-		if err := s.settings.Delete(ctx, tx, key); err != nil {
-			return err
-		}
-		return s.log.Record(ctx, tx, p.UserID, audit.Change{Action: ActionSettingReset, TargetKind: "setting", TargetID: key})
+		return s.Clear(ctx, tx, p.UserID, key)
 	})
+}
+
+func (s Service) Put(ctx context.Context, tx pgx.Tx, userID, key string, value json.RawMessage) error {
+	if err := s.check(key, value); err != nil {
+		return err
+	}
+	before, err := s.Value(ctx, tx, key)
+	if err != nil {
+		return err
+	}
+	if err := s.settings.Put(ctx, tx, key, value, userID); err != nil {
+		return err
+	}
+	return s.log.Record(ctx, tx, userID, audit.Change{
+		Action: ActionSettingChanged, TargetKind: "setting", TargetID: key,
+		Details: map[string]json.RawMessage{"before": before, "after": value},
+	})
+}
+
+func (s Service) Clear(ctx context.Context, tx pgx.Tx, userID, key string) error {
+	if _, err := s.catalog.Lookup(key); err != nil {
+		return err
+	}
+	if err := s.settings.Delete(ctx, tx, key); err != nil {
+		return err
+	}
+	return s.log.Record(ctx, tx, userID, audit.Change{Action: ActionSettingReset, TargetKind: "setting", TargetID: key})
+}
+
+func (s Service) check(key string, value json.RawMessage) error {
+	d, err := s.catalog.Lookup(key)
+	if err != nil {
+		return err
+	}
+	return d.Validate(value)
 }
 
 func (s Service) Modules(ctx context.Context, p auth.Principal) ([]ModuleState, error) {

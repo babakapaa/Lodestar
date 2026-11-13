@@ -40,3 +40,29 @@ func (Directory) UnitsAbove(ctx context.Context, tx pgx.Tx, userID string) ([]st
 	}
 	return pgx.CollectRows(rows, pgx.RowTo[string])
 }
+
+func (Directory) UsersUnderEach(ctx context.Context, tx pgx.Tx, unitIDs []string) (map[string][]string, error) {
+	out := make(map[string][]string, len(unitIDs))
+	if len(unitIDs) == 0 {
+		return out, nil
+	}
+	rows, err := tx.Query(ctx, `
+		WITH RECURSIVE inside AS (
+			SELECT id AS root, id FROM core.units WHERE id::text = ANY($1) AND archived_at IS NULL
+			UNION
+			SELECT inside.root, u.id FROM core.units u JOIN inside ON u.parent_id = inside.id WHERE u.archived_at IS NULL
+		)
+		SELECT DISTINCT inside.root::text, m.user_id::text FROM core.unit_members m JOIN inside ON inside.id = m.unit_id`, unitIDs)
+	if err != nil {
+		return nil, fmt.Errorf("users under each unit: %w", err)
+	}
+	var root, userID string
+	_, err = pgx.ForEachRow(rows, []any{&root, &userID}, func() error {
+		out[root] = append(out[root], userID)
+		return nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("users under each unit: %w", err)
+	}
+	return out, nil
+}

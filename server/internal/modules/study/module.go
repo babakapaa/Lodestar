@@ -51,3 +51,7 @@ func (Module) Briefers(k module.Kernel) []module.Briefer {
 		CourseBriefer{gate: CourseGate{access: k.Access}},
 	}
 }
+
+func (Module) RosterSources(module.Kernel) []module.RosterSource {
+	return []module.RosterSource{CourseRosters{}}
+}

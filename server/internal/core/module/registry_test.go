@@ -168,3 +168,39 @@ func TestRegistryRequiresOwnSearchKinds(t *testing.T) {
 		t.Fatalf("registry = %v, %v", registry, err)
 	}
 }
+
+type rosteringModule struct {
+	stubModule
+	kind string
+}
+
+func (m rosteringModule) RosterSources(Kernel) []RosterSource {
+	return []RosterSource{rosterKind(m.kind)}
+}
+
+type rosterKind string
+
+func (k rosterKind) Kind() string {
+	return string(k)
+}
+
+func (rosterKind) All(context.Context, pgx.Tx) ([]Roster, error) {
+	return nil, nil
+}
+
+func (rosterKind) One(context.Context, pgx.Tx, string) (Roster, error) {
+	return Roster{}, ErrRosterNotFound
+}
+
+func TestRegistryRequiresOwnRosterKinds(t *testing.T) {
+	if _, err := NewRegistry(rosteringModule{stubModule{name: "chat"}, "study.course"}); !errors.Is(err, ErrForeignRoster) {
+		t.Fatalf("err = %v, want ErrForeignRoster", err)
+	}
+	registry, err := NewRegistry(rosteringModule{stubModule{name: "study"}, "study.course"})
+	if err != nil {
+		t.Fatalf("registry: %v", err)
+	}
+	if _, ok := registry.Rosters(Kernel{}).Find("study.course"); !ok {
+		t.Fatal("roster source is not collected")
+	}
+}

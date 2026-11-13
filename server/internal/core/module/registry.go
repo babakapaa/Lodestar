@@ -255,3 +255,13 @@ func (r *Registry) ScoreSources(k Kernel) ScoreSources {
 	}
 	return sources
 }
+
+func (r *Registry) GPUSources(k Kernel) GPUSources {
+	var sources GPUSources
+	for _, m := range r.modules {
+		if g, ok := m.(GPUGranting); ok {
+			sources = append(sources, g.GPUSources(k)...)
+		}
+	}
+	return sources
+}

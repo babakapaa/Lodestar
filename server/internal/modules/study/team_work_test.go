@@ -19,6 +19,10 @@ func (p placedIn) Placement(context.Context, pgx.Tx, string, string, string) (mo
 	return module.TeamPlacement{TeamID: string(p)}, nil
 }
 
+func (placedIn) Teams(context.Context, pgx.Tx, string) ([]module.TeamRef, error) {
+	return nil, nil
+}
+
 func TestTeamWorkIsCheckedAndHandedInForEveryMember(t *testing.T) {
 	d := newDefenseCase(t, study.DefenseShort)
 	w := d.w

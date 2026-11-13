@@ -28,4 +28,5 @@ type Kernel struct {
 	TeamScopes  TeamScopes
 	Teams       TeamDirectory
 	Scores      ScoreSources
+	GPU         GPUSources
 }

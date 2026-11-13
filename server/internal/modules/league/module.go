@@ -30,3 +30,7 @@ func (Module) Workers(k module.Kernel) []module.Worker {
 func (Module) TeamScopeSources(k module.Kernel) []module.TeamScopeSource {
 	return []module.TeamScopeSource{TaskScopes{service: NewService(k)}}
 }
+
+func (Module) GPUSources(module.Kernel) []module.GPUSource {
+	return []module.GPUSource{GPUGrants{}}
+}

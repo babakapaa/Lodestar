@@ -45,6 +45,8 @@ tags:
     description: Команды для заданий и задач
   - name: league
     description: Лига курса, дивизионы и споры о баллах
+  - name: sandbox
+    description: Песочница GPU, квоты в GPU-часах и запуски
 paths:
   /healthz:
     get:
@@ -6759,6 +6761,340 @@ paths:
           $ref: "#/components/responses/Error"
         default:
           $ref: "#/components/responses/Error"
+  /v1/sandbox/quota:
+    get:
+      tags: [sandbox]
+      operationId: getSandboxQuota
+      summary: Моя квота GPU-часов в текущем семестре
+      description: База вуза, часы дивизиона и награды из лиги, добавки преподавателя, переводы в запас команды. Без текущего семестра term равен null и часов нет.
+      security:
+        - bearer: []
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SandboxQuota"
+        "401":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/sandbox/transfers:
+    post:
+      tags: [sandbox]
+      operationId: transferSandboxHours
+      summary: Перевести часы в запас команды
+      description: Только участник команды, не больше своего остатка.
+      security:
+        - bearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SandboxTransferInput"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SandboxQuota"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/sandbox/topups:
+    get:
+      tags: [sandbox]
+      operationId: listSandboxTopups
+      summary: Запросы добавки часов
+      description: Свои запросы и запросы по работам, которые я веду, в текущем семестре.
+      security:
+        - bearer: []
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SandboxTopup"
+        "401":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+    post:
+      tags: [sandbox]
+      operationId: requestSandboxTopup
+      summary: Попросить добавку часов к работе
+      description: Запрос уходит преподавателям курса. По одной работе ждёт не больше одного запроса.
+      security:
+        - bearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SandboxTopupInput"
+      responses:
+        "201":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SandboxTopup"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/sandbox/topups/{id}/decision:
+    post:
+      tags: [sandbox]
+      operationId: decideSandboxTopup
+      summary: Ответить на запрос добавки
+      description: Только преподаватель работы. hours меняет запрошенное число часов.
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SandboxTopupDecision"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SandboxTopup"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/sandbox/classes:
+    get:
+      tags: [sandbox]
+      operationId: listGpuClasses
+      summary: Классы видеокарт
+      security:
+        - bearer: []
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/GpuClass"
+        "401":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+    post:
+      tags: [sandbox]
+      operationId: createGpuClass
+      summary: Добавить класс видеокарт
+      description: Нужно право sandbox.manage. rate показывает, сколько часов квоты стоит час работы на такой карте.
+      security:
+        - bearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GpuClassInput"
+      responses:
+        "201":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GpuClass"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/sandbox/classes/{id}:
+    put:
+      tags: [sandbox]
+      operationId: updateGpuClass
+      summary: Изменить класс видеокарт
+      description: Нужно право sandbox.manage.
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GpuClassInput"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GpuClass"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/sandbox/terms:
+    get:
+      tags: [sandbox]
+      operationId: listSandboxTerms
+      summary: Семестры квот
+      security:
+        - bearer: []
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SandboxTerm"
+        "401":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+    post:
+      tags: [sandbox]
+      operationId: createSandboxTerm
+      summary: Добавить семестр
+      description: Нужно право sandbox.manage. Семестры не пересекаются, непотраченные часы не переносятся.
+      security:
+        - bearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SandboxTermInput"
+      responses:
+        "201":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SandboxTerm"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/sandbox/terms/{id}:
+    put:
+      tags: [sandbox]
+      operationId: updateSandboxTerm
+      summary: Изменить семестр
+      description: Нужно право sandbox.manage.
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SandboxTermInput"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SandboxTerm"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+    delete:
+      tags: [sandbox]
+      operationId: deleteSandboxTerm
+      summary: Удалить семестр
+      description: Нужно право sandbox.manage. Удаляет и его движения часов.
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "204":
+          description: Готово
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
 components:
   securitySchemes:
     bearer:
@@ -10426,3 +10762,184 @@ components:
         resolvedAt:
           type: [string, "null"]
           format: date-time
+    SandboxQuotaLine:
+      type: object
+      required: [source, title, hours]
+      properties:
+        source:
+          type: string
+          description: sandbox.base, sandbox.topup, sandbox.transfer, league.division, league.award
+        title:
+          type: string
+        hours:
+          type: number
+    SandboxTerm:
+      type: object
+      required: [id, name, startsOn, endsOn]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        startsOn:
+          type: string
+          format: date
+        endsOn:
+          type: string
+          format: date
+    SandboxTermInput:
+      type: object
+      required: [name, startsOn, endsOn]
+      properties:
+        name:
+          type: string
+          maxLength: 100
+        startsOn:
+          type: string
+          format: date
+        endsOn:
+          type: string
+          format: date
+    SandboxTeamPool:
+      type: object
+      required: [id, name, hours, lines]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        hours:
+          type: number
+        lines:
+          type: array
+          items:
+            $ref: "#/components/schemas/SandboxQuotaLine"
+    SandboxQuota:
+      type: object
+      required: [term, lines, hours, teams]
+      properties:
+        term:
+          oneOf:
+            - $ref: "#/components/schemas/SandboxTerm"
+            - type: "null"
+        lines:
+          type: array
+          items:
+            $ref: "#/components/schemas/SandboxQuotaLine"
+        hours:
+          type: number
+          description: Остаток в часах квоты
+        teams:
+          type: array
+          items:
+            $ref: "#/components/schemas/SandboxTeamPool"
+    SandboxTransferInput:
+      type: object
+      required: [teamId, hours]
+      properties:
+        teamId:
+          type: string
+        hours:
+          type: number
+          exclusiveMinimum: 0
+    SandboxTopup:
+      type: object
+      required: [id, termId, userId, displayName, email, workKind, workId, title, hours, reason, status, granted, createdAt, decidedAt, mine]
+      properties:
+        id:
+          type: string
+          format: uuid
+        termId:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        displayName:
+          type: string
+        email:
+          type: string
+        workKind:
+          type: string
+        workId:
+          type: string
+        title:
+          type: string
+        hours:
+          type: number
+        reason:
+          type: string
+        status:
+          type: string
+          enum: [pending, approved, declined]
+        granted:
+          type: [number, "null"]
+        createdAt:
+          type: string
+          format: date-time
+        decidedAt:
+          type: [string, "null"]
+          format: date-time
+        mine:
+          type: boolean
+    SandboxTopupInput:
+      type: object
+      required: [workKind, workId, hours]
+      properties:
+        workKind:
+          type: string
+          example: assignment
+        workId:
+          type: string
+        hours:
+          type: number
+          exclusiveMinimum: 0
+        reason:
+          type: string
+          maxLength: 1000
+    SandboxTopupDecision:
+      type: object
+      required: [approve]
+      properties:
+        approve:
+          type: boolean
+        hours:
+          type: [number, "null"]
+          exclusiveMinimum: 0
+    GpuClass:
+      type: object
+      required: [id, name, memoryGb, rate, archived, createdAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        memoryGb:
+          type: integer
+        rate:
+          type: number
+          description: Часов квоты за час работы
+        archived:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+    GpuClassInput:
+      type: object
+      required: [name, memoryGb, rate]
+      properties:
+        name:
+          type: string
+          maxLength: 100
+        memoryGb:
+          type: integer
+          minimum: 1
+          maximum: 4096
+        rate:
+          type: number
+          exclusiveMinimum: 0
+          maximum: 1000
+        archived:
+          type: boolean

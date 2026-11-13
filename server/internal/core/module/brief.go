@@ -18,4 +18,5 @@ type Brief struct {
 	Teaches     bool       `json:"teaches"`
 	DueAt       *time.Time `json:"dueAt"`
 	Mode        string     `json:"mode"`
+	Teachers    []string   `json:"-"`
 }

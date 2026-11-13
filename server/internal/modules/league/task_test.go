@@ -221,6 +221,27 @@ func TestUniversityAwardsAndDivisionQuota(t *testing.T) {
 		t.Fatalf("quota = %+v", v.Me)
 	}
 
+	gpuAward, err := w.leagues.CreateAward(w.ctx, w.admin, league.AwardInput{Title: "Часы GPU", GPUHours: 20})
+	if err != nil {
+		t.Fatalf("gpu award: %v", err)
+	}
+	if _, err := w.leagues.Grant(w.ctx, w.teacher, id, league.GrantInput{AwardID: gpuAward.ID, UserID: w.dana.UserID, Reason: "Лучший проект"}); err != nil {
+		t.Fatalf("gpu grant: %v", err)
+	}
+	var grants []module.GPUGrant
+	err = w.tx.Run(w.ctx, w.tenant, func(tx pgx.Tx) error {
+		var err error
+		grants, err = league.GPUGrants{}.GPUGrants(w.ctx, tx, w.dana.UserID, time.Now().Add(-time.Hour), time.Now().Add(time.Hour))
+		return err
+	})
+	want := []module.GPUGrant{
+		{Source: league.GPUSourceDivision, Title: "2", Hours: 10},
+		{Source: league.GPUSourceAward, Title: "Часы GPU", Hours: 20},
+	}
+	if err != nil || len(grants) != 2 || grants[0].Source != want[0].Source || grants[0].Hours != 10 || grants[1] != want[1] {
+		t.Fatalf("gpu grants = %+v, %v", grants, err)
+	}
+
 	rec := w.call(w.teacher, http.MethodDelete, "/v1/league/grants/"+grant.ID, "")
 	if rec.Code != http.StatusNotFound {
 		t.Fatalf("revoke twice = %d %s", rec.Code, rec.Body)

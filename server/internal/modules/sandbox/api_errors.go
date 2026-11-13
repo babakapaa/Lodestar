@@ -24,6 +24,17 @@ const (
 	CodeWorkNotFound    = "sandbox_work_not_found"
 	CodeTopupNotFound   = "topup_not_found"
 	CodeTopupPending    = "topup_pending"
+	CodeInvalidTemplate = "invalid_template"
+	CodeTemplateMissing = "template_not_found"
+	CodeTemplateTaken   = "template_taken"
+	CodeInvalidNode     = "invalid_gpu_node"
+	CodeNodeNotFound    = "gpu_node_not_found"
+	CodeNodeTaken       = "gpu_node_taken"
+	CodeNodeBusy        = "gpu_node_busy"
+	CodeBadNodeToken    = "bad_node_token"
+	CodeInvalidRun      = "invalid_run"
+	CodeRunNotFound     = "run_not_found"
+	CodeRunEnded        = "run_ended"
 )
 
 var errorCodes = []struct {
@@ -45,6 +56,17 @@ var errorCodes = []struct {
 	{ErrWorkNotFound, http.StatusNotFound, CodeWorkNotFound},
 	{ErrTopupNotFound, http.StatusNotFound, CodeTopupNotFound},
 	{ErrTopupPending, http.StatusConflict, CodeTopupPending},
+	{ErrInvalidTemplate, http.StatusBadRequest, CodeInvalidTemplate},
+	{ErrTemplateNotFound, http.StatusNotFound, CodeTemplateMissing},
+	{ErrTemplateTaken, http.StatusConflict, CodeTemplateTaken},
+	{ErrInvalidNode, http.StatusBadRequest, CodeInvalidNode},
+	{ErrNodeNotFound, http.StatusNotFound, CodeNodeNotFound},
+	{ErrNodeTaken, http.StatusConflict, CodeNodeTaken},
+	{ErrNodeBusy, http.StatusConflict, CodeNodeBusy},
+	{ErrBadNodeToken, http.StatusUnauthorized, CodeBadNodeToken},
+	{ErrInvalidRun, http.StatusBadRequest, CodeInvalidRun},
+	{ErrRunNotFound, http.StatusNotFound, CodeRunNotFound},
+	{ErrRunEnded, http.StatusConflict, CodeRunEnded},
 }
 
 func writeError(w http.ResponseWriter, err error) {

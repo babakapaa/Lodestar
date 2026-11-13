@@ -7095,12 +7095,308 @@ paths:
           $ref: "#/components/responses/Error"
         default:
           $ref: "#/components/responses/Error"
+  /v1/sandbox/templates:
+    get:
+      tags: [sandbox]
+      operationId: listSandboxTemplates
+      summary: Готовые окружения
+      security:
+        - bearer: []
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SandboxTemplate"
+        "401":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+    post:
+      tags: [sandbox]
+      operationId: createSandboxTemplate
+      summary: Добавить окружение
+      description: Нужно право sandbox.manage. image — образ контейнера.
+      security:
+        - bearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SandboxTemplateInput"
+      responses:
+        "201":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SandboxTemplate"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/sandbox/templates/{id}:
+    put:
+      tags: [sandbox]
+      operationId: updateSandboxTemplate
+      summary: Изменить окружение
+      description: Нужно право sandbox.manage.
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SandboxTemplateInput"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SandboxTemplate"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/sandbox/nodes:
+    get:
+      tags: [sandbox]
+      operationId: listGpuNodes
+      summary: GPU-узлы вуза
+      description: Нужно право sandbox.manage.
+      security:
+        - bearer: []
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/GpuNode"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+    post:
+      tags: [sandbox]
+      operationId: createGpuNode
+      summary: Добавить GPU-узел
+      description: Нужно право sandbox.manage. Токен узла показывается только в этом ответе.
+      security:
+        - bearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GpuNodeInput"
+      responses:
+        "201":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GpuNodeCreated"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/sandbox/nodes/{id}:
+    delete:
+      tags: [sandbox]
+      operationId: deleteGpuNode
+      summary: Удалить GPU-узел
+      description: Нужно право sandbox.manage. Узел с идущими запусками удалить нельзя.
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "204":
+          description: Готово
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/sandbox/runs:
+    get:
+      tags: [sandbox]
+      operationId: listSandboxRuns
+      summary: Мои запуски и запуски моих команд
+      description: Текущий семестр. Ссылку на сеанс видит только тот, кто запустил.
+      security:
+        - bearer: []
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SandboxRun"
+        "401":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+    post:
+      tags: [sandbox]
+      operationId: startSandboxRun
+      summary: Запустить
+      description: Запуск встаёт в очередь своего класса карт. На него резервируется rate × maxHours часов квоты, списывается фактическое время. Задания курса со сроком в ближайшие sandbox.deadline_days дней идут первыми, среди остальных выше дивизион.
+      security:
+        - bearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SandboxRunInput"
+      responses:
+        "201":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SandboxRun"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/sandbox/runs/{id}:
+    get:
+      tags: [sandbox]
+      operationId: getSandboxRun
+      summary: Запуск
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SandboxRun"
+        "401":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/sandbox/runs/{id}/stop:
+    post:
+      tags: [sandbox]
+      operationId: stopSandboxRun
+      summary: Остановить запуск
+      description: Только тот, кто запустил. Из очереди запуск снимается сразу и без списания.
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SandboxRun"
+        "401":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/open/sandbox/agent/sync:
+    post:
+      tags: [sandbox]
+      operationId: syncGpuNode
+      summary: Сверка GPU-узла
+      description: Агент на узле присылает состояние своих запусков и получает список того, что должно на нём идти. Запуск со stop=true надо остановить. Запуск, которого агент не прислал, считается пропавшим. Узел без сверки дольше 90 секунд считается потерянным.
+      security:
+        - node: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SandboxAgentReport"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SandboxAgentPlan"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
 components:
   securitySchemes:
     bearer:
       type: http
       scheme: bearer
       description: Токен доступа из /v1/auth/token
+    node:
+      type: http
+      scheme: bearer
+      description: Токен GPU-узла lsn_..., выдаётся один раз при добавлении узла
   parameters:
     After:
       name: after
@@ -10768,7 +11064,7 @@ components:
       properties:
         source:
           type: string
-          description: sandbox.base, sandbox.topup, sandbox.transfer, league.division, league.award
+          description: sandbox.base, sandbox.topup, sandbox.transfer, sandbox.run, league.division, league.award
         title:
           type: string
         hours:
@@ -10803,7 +11099,7 @@ components:
           format: date
     SandboxTeamPool:
       type: object
-      required: [id, name, hours, lines]
+      required: [id, name, hours, reserved, lines]
       properties:
         id:
           type: string
@@ -10811,13 +11107,15 @@ components:
           type: string
         hours:
           type: number
+        reserved:
+          type: number
         lines:
           type: array
           items:
             $ref: "#/components/schemas/SandboxQuotaLine"
     SandboxQuota:
       type: object
-      required: [term, lines, hours, teams]
+      required: [term, lines, hours, reserved, teams]
       properties:
         term:
           oneOf:
@@ -10830,6 +11128,9 @@ components:
         hours:
           type: number
           description: Остаток в часах квоты
+        reserved:
+          type: number
+          description: Зарезервировано под идущие и ждущие запуски
         teams:
           type: array
           items:
@@ -10943,3 +11244,239 @@ components:
           maximum: 1000
         archived:
           type: boolean
+    SandboxTemplate:
+      type: object
+      required: [id, name, about, image, archived, createdAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        about:
+          type: string
+        image:
+          type: string
+        archived:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+    SandboxTemplateInput:
+      type: object
+      required: [name, image]
+      properties:
+        name:
+          type: string
+          maxLength: 100
+        about:
+          type: string
+          maxLength: 1000
+        image:
+          type: string
+          maxLength: 300
+        archived:
+          type: boolean
+    GpuNode:
+      type: object
+      required: [id, name, classId, className, gpus, busy, seenAt, online, createdAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        classId:
+          type: string
+          format: uuid
+        className:
+          type: string
+        gpus:
+          type: integer
+        busy:
+          type: integer
+        seenAt:
+          type: [string, "null"]
+          format: date-time
+        online:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+    GpuNodeCreated:
+      allOf:
+        - $ref: "#/components/schemas/GpuNode"
+        - type: object
+          required: [token]
+          properties:
+            token:
+              type: string
+    GpuNodeInput:
+      type: object
+      required: [name, classId, gpus]
+      properties:
+        name:
+          type: string
+          maxLength: 100
+        classId:
+          type: string
+          format: uuid
+        gpus:
+          type: integer
+          minimum: 1
+          maximum: 64
+    SandboxRunInput:
+      type: object
+      required: [kind, title, templateId, classId]
+      properties:
+        kind:
+          type: string
+          enum: [jupyter, vscode, job]
+        title:
+          type: string
+          maxLength: 200
+        command:
+          type: string
+          maxLength: 2000
+          description: Только для job
+        templateId:
+          type: string
+          format: uuid
+        classId:
+          type: string
+          format: uuid
+        maxHours:
+          type: number
+          exclusiveMinimum: 0
+          maximum: 168
+          description: Для сеансов по умолчанию 4, для job обязательно
+        workKind:
+          type: string
+        workId:
+          type: string
+        teamId:
+          type: string
+          description: Платить из запаса команды
+    SandboxRun:
+      type: object
+      required: [id, userId, displayName, teamId, teamName, kind, title, command, templateId, templateName, classId, className, rate, maxHours, workKind, workId, workTitle, dueAt, status, position, url, exitCode, reason, charged, queuedAt, startedAt, endedAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        displayName:
+          type: string
+        teamId:
+          type: [string, "null"]
+        teamName:
+          type: string
+        kind:
+          type: string
+          enum: [jupyter, vscode, job]
+        title:
+          type: string
+        command:
+          type: string
+        templateId:
+          type: string
+          format: uuid
+        templateName:
+          type: string
+        classId:
+          type: string
+          format: uuid
+        className:
+          type: string
+        rate:
+          type: number
+        maxHours:
+          type: number
+        workKind:
+          type: [string, "null"]
+        workId:
+          type: [string, "null"]
+        workTitle:
+          type: string
+        dueAt:
+          type: [string, "null"]
+          format: date-time
+        status:
+          type: string
+          enum: [queued, starting, running, stopping, finished, failed, stopped]
+        position:
+          type: [integer, "null"]
+          description: Место в очереди своего класса карт
+        url:
+          type: string
+        exitCode:
+          type: [integer, "null"]
+        reason:
+          type: string
+          description: time_limit, node_lost, vanished или пусто
+        charged:
+          type: [number, "null"]
+        queuedAt:
+          type: string
+          format: date-time
+        startedAt:
+          type: [string, "null"]
+          format: date-time
+        endedAt:
+          type: [string, "null"]
+          format: date-time
+    SandboxRunReport:
+      type: object
+      required: [runId, phase]
+      properties:
+        runId:
+          type: string
+          format: uuid
+        phase:
+          type: string
+          enum: [running, exited]
+        url:
+          type: string
+        exitCode:
+          type: integer
+    SandboxAgentReport:
+      type: object
+      required: [runs]
+      properties:
+        runs:
+          type: array
+          items:
+            $ref: "#/components/schemas/SandboxRunReport"
+    SandboxRunSpec:
+      type: object
+      required: [runId, kind, title, image, command, maxHours, stop]
+      properties:
+        runId:
+          type: string
+          format: uuid
+        kind:
+          type: string
+          enum: [jupyter, vscode, job]
+        title:
+          type: string
+        image:
+          type: string
+        command:
+          type: string
+        maxHours:
+          type: number
+        stop:
+          type: boolean
+    SandboxAgentPlan:
+      type: object
+      required: [nodeId, runs]
+      properties:
+        nodeId:
+          type: string
+          format: uuid
+        runs:
+          type: array
+          items:
+            $ref: "#/components/schemas/SandboxRunSpec"

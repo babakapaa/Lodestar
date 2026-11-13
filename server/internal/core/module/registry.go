@@ -35,7 +35,7 @@ var ErrForeignLinkSource = errors.New("module link source kind must start with t
 var namePattern = regexp.MustCompile(`^[a-z][a-z0-9]{1,29}$`)
 
 var reservedNames = []string{
-	"auth", "events", "files", "live", "lti", "me", "meta", "modules", "notifications", "overrides", "permissions",
+	"auth", "events", "files", "live", "lti", "me", "meta", "modules", "notifications", "open", "overrides", "permissions",
 	"preferences", "role-assignments", "roles", "search", "sessions", "settings", "units", "users",
 }
 
@@ -194,6 +194,11 @@ func (r *Registry) Mount(mux *http.ServeMux, gate Gate, k Kernel) {
 		gated := gate.Wrap(name, sub)
 		mux.Handle("/v1/"+name, gated)
 		mux.Handle("/v1/"+name+"/", gated)
+		if o, ok := m.(OpenMounting); ok {
+			open := http.NewServeMux()
+			o.MountOpen(open, k)
+			mux.Handle("/v1/open/"+name+"/", open)
+		}
 	}
 }
 

@@ -17,3 +17,11 @@ func (Module) Manifest() module.Manifest {
 func (Module) Mount(mux *http.ServeMux, k module.Kernel) {
 	Routes{Quotas: NewService(k)}.Mount(mux)
 }
+
+func (Module) MountOpen(mux *http.ServeMux, k module.Kernel) {
+	Routes{Quotas: NewService(k)}.MountOpen(mux)
+}
+
+func (Module) Workers(k module.Kernel) []module.Worker {
+	return []module.Worker{NewRunWorker(k)}
+}

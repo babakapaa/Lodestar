@@ -31,7 +31,11 @@ func (s Service) Transfer(ctx context.Context, p auth.Principal, in TransferInpu
 		if err != nil {
 			return err
 		}
-		if total(lines) < in.Hours {
+		reserved, err := s.runs.Reserved(ctx, tx, t.ID, OwnerUser, p.UserID)
+		if err != nil {
+			return err
+		}
+		if total(lines)-reserved < in.Hours {
 			return ErrNotEnoughHours
 		}
 		if err := s.ledger.Add(ctx, tx, t.ID, OwnerUser, p.UserID, EntryTransfer, -in.Hours, ref.Name, p.UserID); err != nil {

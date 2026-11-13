@@ -14,19 +14,22 @@ import (
 )
 
 type Service struct {
-	tenants  database.TenantTx
-	access   access.Service
-	settings module.Settings
-	notifier module.Notifier
-	briefs   module.Briefs
-	teams    module.TeamDirectory
-	grants   module.GPUSources
-	classes  ClassStore
-	terms    TermStore
-	ledger   LedgerStore
-	topups   TopupStore
-	people   identity.People
-	log      audit.Log
+	tenants   database.TenantTx
+	access    access.Service
+	settings  module.Settings
+	notifier  module.Notifier
+	briefs    module.Briefs
+	teams     module.TeamDirectory
+	grants    module.GPUSources
+	classes   ClassStore
+	terms     TermStore
+	ledger    LedgerStore
+	topups    TopupStore
+	templates TemplateStore
+	nodes     NodeStore
+	runs      RunStore
+	people    identity.People
+	log       audit.Log
 }
 
 func NewService(k module.Kernel) Service {

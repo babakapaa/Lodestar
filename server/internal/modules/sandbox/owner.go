@@ -8,4 +8,5 @@ const (
 const (
 	EntryTopup    = "topup"
 	EntryTransfer = "transfer"
+	EntryRun      = "run"
 )

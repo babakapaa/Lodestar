@@ -38,8 +38,25 @@ class ApiClient {
   Future<Object?> delete(String path, [Map<String, String>? query]) =>
       _send('DELETE', path, query: query);
 
-  Future<Uint8List> download(String path) => _authorized(
-    (token) => _transport.bytes(_address.resolve(path), accessToken: token),
+  Future<Uint8List> download(String path, [Map<String, String>? query]) =>
+      _authorized(
+        (token) =>
+            _transport.bytes(_address.resolve(path, query), accessToken: token),
+      );
+
+  Future<Object?> upload(
+    String path,
+    Uint8List bytes, {
+    required String contentType,
+    Set<int> accepted = const {},
+  }) => _authorized(
+    (token) => _transport.upload(
+      _address.resolve(path),
+      bytes,
+      contentType: contentType,
+      accessToken: token,
+      accepted: accepted,
+    ),
   );
 
   Future<Object?> _send(

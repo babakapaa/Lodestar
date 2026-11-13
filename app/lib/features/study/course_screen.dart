@@ -98,6 +98,14 @@ class CourseScreen extends ConsumerWidget {
                 subtitle: l10n.materialsHint,
                 route: AppRoutes.courseMaterials(courseId),
               ),
+              const SizedBox(height: Spacing.m),
+              NavigatorTile(
+                key: const ValueKey('course-lms'),
+                icon: Icons.table_chart_outlined,
+                title: l10n.courseTablesTitle,
+                subtitle: l10n.courseTablesHint,
+                route: AppRoutes.courseLms(courseId),
+              ),
             ],
             const SizedBox(height: Spacing.xl),
             AssignmentsSection(

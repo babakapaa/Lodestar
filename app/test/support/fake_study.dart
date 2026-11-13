@@ -44,6 +44,25 @@ class FakeStudy {
 
   bool get _teaches => role != 'student';
 
+  final List<String> imported = [];
+
+  http.Response _import(http.Request request) {
+    final rows = request.body.split('\n').skip(1).where((r) => r.isNotEmpty);
+    final errors = [
+      for (final (i, row) in rows.indexed)
+        if (!row.endsWith('@kaznu.kz')) {'line': i + 2, 'code': 'unknown_user'},
+    ];
+    if (errors.isNotEmpty) {
+      return _json(422, {'added': 0, 'existing': 0, 'errors': errors});
+    }
+    imported.addAll(rows);
+    return _json(200, {
+      'added': rows.length,
+      'existing': 0,
+      'errors': <Object?>[],
+    });
+  }
+
   http.Response handle(http.Request request) {
     final segments = request.url.pathSegments.skip(2).toList();
     return switch ((request.method, segments)) {
@@ -67,6 +86,11 @@ class FakeStudy {
           if (_teaches || a['publishedAt'] != null) _item(a),
       ]),
       ('POST', ['courses', 'c1', 'assignments']) => _create(request),
+      ('GET', ['courses', 'c1', 'gradebook']) => http.Response.bytes(
+        utf8.encode('name;email\n${request.url.queryParameters['format']}'),
+        200,
+      ),
+      ('POST', ['courses', 'c1', 'students', 'import']) => _import(request),
       ('GET', ['assignments', final id]) => _details(id),
       ('PUT', ['assignments', final id]) => _update(request, id),
       ('POST', ['assignments', final id, 'submissions']) => _submit(

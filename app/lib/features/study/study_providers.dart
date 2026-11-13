@@ -14,6 +14,7 @@ import 'lesson.dart';
 import 'search_map_draft.dart';
 import 'outbox_controller.dart';
 import 'student_work.dart';
+import 'gradebook_api.dart';
 import 'study_repository.dart';
 import 'submission.dart';
 import 'submission_draft.dart';
@@ -84,3 +85,7 @@ final weekProvider = FutureProvider.autoDispose
       (ref, range) =>
           ref.watch(studyRepositoryProvider).schedule(range.$1, range.$2),
     );
+
+final gradebookApiProvider = Provider<GradebookApi>(
+  (ref) => GradebookApi(ref.watch(apiClientProvider)),
+);

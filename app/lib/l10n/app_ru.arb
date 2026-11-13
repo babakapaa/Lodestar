@@ -1496,5 +1496,152 @@
   "errorLeagueDisputeOpen": "Спор уже ждёт ответа",
   "errorLeagueArchived": "Лига в архиве",
   "errorLeagueTaskClosed": "Задача закрыта",
-  "errorAwardGone": "Награды этого вида закончились"
+  "errorAwardGone": "Награды этого вида закончились",
+  "ltiTitle": "Вход из LMS",
+  "ltiFailed": "Не удалось войти из LMS. Откройте курс в LMS ещё раз.",
+  "ltiHome": "На главную",
+  "ltiConfirm": "LMS открывает Lodestar другого университета или под другой учётной записью. Войти под ней?",
+  "ltiEnter": "Войти",
+  "lmsTitle": "LMS",
+  "lmsHint": "Moodle, Canvas и другие системы курсов: вход и оценки",
+  "lmsToolTitle": "Адреса для LMS",
+  "lmsLoginUrl": "Адрес входа",
+  "lmsLaunchUrl": "Адрес запуска",
+  "lmsKeysUrl": "Ключи (JWKS)",
+  "lmsCopy": "Скопировать",
+  "lmsCopied": "Скопировано",
+  "lmsPlatforms": "Подключённые LMS",
+  "lmsNone": "LMS пока не подключены.",
+  "lmsNew": "Подключить LMS",
+  "lmsEdit": "Настройки LMS",
+  "lmsName": "Название",
+  "lmsIssuer": "Issuer (адрес LMS)",
+  "lmsClientId": "Client ID",
+  "lmsAuthUrl": "Адрес авторизации",
+  "lmsTokenUrl": "Адрес токенов",
+  "lmsJwksUrl": "Адрес ключей LMS",
+  "lmsDeployments": "ID развёртываний",
+  "lmsDeploymentsHint": "Через запятую. Их показывает LMS при подключении инструмента.",
+  "lmsMatchEmail": "Узнавать людей по почте",
+  "lmsMatchEmailHint": "Включайте, только если LMS проверяет почту пользователей.",
+  "lmsDelete": "Отключить LMS?",
+  "lmsDeleteBody": "«{name}» больше не сможет открывать Lodestar. Связи курсов будут удалены.",
+  "@lmsDeleteBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "lmsFrom": "Из {platform}",
+  "@lmsFrom": {
+    "placeholders": {
+      "platform": {
+        "type": "String"
+      }
+    }
+  },
+  "lmsNotLinked": "Курс LMS пока не связан с курсом Lodestar.",
+  "lmsLinkedTo": "Связан с «{title}»",
+  "@lmsLinkedTo": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "lmsUnlink": "Отвязать",
+  "lmsNoOptions": "Нет курсов, которые вы ведёте.",
+  "lmsLinkHint": "Связать с этим курсом",
+  "lmsSource": "Откуда задания",
+  "lmsSourceLodestar": "Lodestar",
+  "lmsSourceLms": "LMS",
+  "lmsSourceLodestarHint": "Задания создаются здесь, оценки уходят в журнал LMS.",
+  "lmsSourceLmsHint": "Задания приходят из LMS, оценки возвращаются туда.",
+  "lmsSyncFailed": "Последняя синхронизация не удалась. LMS не ответила.",
+  "lmsNeverSynced": "Ещё не синхронизирован",
+  "lmsSyncedAt": "Синхронизирован {time}",
+  "@lmsSyncedAt": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "lmsSync": "Синхронизировать",
+  "lmsSynced": "Людей в LMS: {members}, добавлено: {enrolled}, заданий: {works}, оценок отправлено: {scores}",
+  "@lmsSynced": {
+    "placeholders": {
+      "members": {
+        "type": "int"
+      },
+      "enrolled": {
+        "type": "int"
+      },
+      "works": {
+        "type": "int"
+      },
+      "scores": {
+        "type": "int"
+      }
+    }
+  },
+  "lmsCourseTitle": "Курс из LMS",
+  "lmsCourseTeacherHint": "Свяжите курс LMS с курсом Lodestar, чтобы состав и оценки совпадали.",
+  "lmsCourseStudentHint": "Преподаватель ещё не связал этот курс с Lodestar.",
+  "lmsCourseNone": "Курс не связан с LMS. Откройте Lodestar из курса в LMS, чтобы связать.",
+  "courseTablesTitle": "Ведомость и LMS",
+  "courseTablesHint": "Выгрузка оценок, загрузка списка студентов, связь с LMS",
+  "gradebookTitle": "Ведомость",
+  "gradebookHint": "Все студенты курса и их оценки по опубликованным заданиям.",
+  "importTitle": "Список студентов",
+  "importHint": "Таблица CSV или XLSX с колонкой email. Люди уже должны быть в Lodestar. Если в строке ошибка, ничего не добавится.",
+  "importAction": "Загрузить таблицу",
+  "importDone": "Добавлено: {added}, уже были в курсе: {existing}",
+  "@importDone": {
+    "placeholders": {
+      "added": {
+        "type": "int"
+      },
+      "existing": {
+        "type": "int"
+      }
+    }
+  },
+  "importRejected": "Ничего не добавлено. Ошибок: {count}",
+  "@importRejected": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "importLine": "Строка {line}: {reason}",
+  "@importLine": {
+    "placeholders": {
+      "line": {
+        "type": "int"
+      },
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "importMissingEmail": "нет почты",
+  "importUnknownUser": "такого человека нет в Lodestar",
+  "importAmbiguousUser": "эта почта у нескольких людей",
+  "permissionManageIntegrations": "Подключать LMS",
+  "settingLtiSource": "Откуда задания в курсах из LMS",
+  "settingLtiSourceLodestar": "из Lodestar",
+  "settingLtiSourceLms": "из LMS",
+  "settingLtiSourceUnits": "решают кафедры",
+  "errorLmsNotFound": "LMS не найдена",
+  "errorLmsInvalid": "Проверьте адреса и Client ID",
+  "errorLmsTaken": "Эта LMS уже подключена",
+  "errorLmsCourseNotFound": "Курс LMS не найден",
+  "errorLmsLinkTarget": "Курс для связи не найден",
+  "errorLmsNotLinked": "Сначала свяжите курс LMS с курсом Lodestar",
+  "errorLmsUnavailable": "LMS не ответила. Попробуйте позже.",
+  "errorLmsSourceFixed": "Источник заданий выбирает университет",
+  "errorBadImport": "Не удалось прочитать таблицу"
 }

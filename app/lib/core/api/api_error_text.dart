@@ -86,6 +86,15 @@ abstract final class ApiErrorText {
       'league_task_closed' => l10n.errorLeagueTaskClosed,
       'invalid_league_solution' => l10n.errorLeagueSolution,
       'league_award_gone' => l10n.errorAwardGone,
+      'lti_platform_not_found' => l10n.errorLmsNotFound,
+      'invalid_lti_platform' => l10n.errorLmsInvalid,
+      'lti_platform_taken' => l10n.errorLmsTaken,
+      'lti_context_not_found' => l10n.errorLmsCourseNotFound,
+      'link_target_not_found' || 'unknown_link_kind' => l10n.errorLmsLinkTarget,
+      'lti_context_not_linked' => l10n.errorLmsNotLinked,
+      'lms_unavailable' => l10n.errorLmsUnavailable,
+      'assignment_source_fixed' => l10n.errorLmsSourceFixed,
+      'bad_import' => l10n.errorBadImport,
       _ => l10n.errorGeneric,
     };
   }

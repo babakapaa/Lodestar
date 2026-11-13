@@ -92,6 +92,16 @@ class AdminScreen extends ConsumerWidget {
                     trailing: const Icon(Icons.chevron_right),
                     onTap: () => context.push(AppRoutes.awards),
                   ),
+                if (permissions.has(PermissionSet.manageIntegrations))
+                  ListTile(
+                    key: const ValueKey('admin-lms'),
+                    contentPadding: EdgeInsets.zero,
+                    leading: const Icon(Icons.hub_outlined),
+                    title: Text(l10n.lmsTitle),
+                    subtitle: Text(l10n.lmsHint),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => context.push(AppRoutes.ltiPlatforms),
+                  ),
               ],
             ),
           ),

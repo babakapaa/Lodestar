@@ -148,7 +148,7 @@ func (s LaunchService) complete(ctx context.Context, t tenant.Tenant, in Launch)
 	if err != nil {
 		return "", err
 	}
-	return s.appLink("ticket", ticket, "next", path), nil
+	return s.appLink("ticket", ticket, "next", path, "server", s.publicURL, "tenant", t.Slug), nil
 }
 
 func (s LaunchService) path(ctx context.Context, tx pgx.Tx, c Context) (string, error) {

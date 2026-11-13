@@ -16,7 +16,10 @@ abstract final class AppRoutes {
   static const awards = '/admin/awards';
   static const connect = '/connect';
   static const login = '/login';
+  static const ltiLaunch = '/lti';
+  static const ltiPlatforms = '/admin/lms';
   static const schedulePath = '/study/schedule';
+  static const todayPath = '/today';
   static const notesPath = '/notes';
   static const chatsPath = '/chats';
   static const courseChatsPath = '/chats/course';
@@ -30,6 +33,10 @@ abstract final class AppRoutes {
   static const teamProfile = '/teams/profile';
 
   static String role(String id) => '/admin/roles/$id';
+
+  static String ltiContext(String id) => '/lti/contexts/$id';
+
+  static String courseLms(String id) => '/study/courses/$id/lms';
 
   static String personRoles(String id) => '/admin/people/$id';
 

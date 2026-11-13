@@ -4,6 +4,7 @@ class Brief {
     required this.title,
     required this.course,
     required this.project,
+    required this.closed,
   });
 
   factory Brief.fromJson(Map<String, Object?> json) => Brief(
@@ -11,6 +12,7 @@ class Brief {
     title: json['title']! as String,
     course: json['course'] as String? ?? '',
     project: json['mode'] == 'project',
+    closed: json['mode'] == 'closed',
   );
 
   static Brief? maybe(Object? json) =>
@@ -20,6 +22,7 @@ class Brief {
   final String title;
   final String course;
   final bool project;
+  final bool closed;
 
   bool get isCourse => kind == 'course';
 }

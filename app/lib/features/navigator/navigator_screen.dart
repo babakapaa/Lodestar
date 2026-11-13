@@ -9,6 +9,7 @@ import '../../l10n/l10n_context.dart';
 import '../study/loaded_list_view.dart';
 import 'dialog_tile.dart';
 import 'navigator_providers.dart';
+import 'support_sheet.dart';
 
 class NavigatorScreen extends ConsumerWidget {
   const NavigatorScreen({super.key});
@@ -19,6 +20,18 @@ class NavigatorScreen extends ConsumerWidget {
     final value = ref.watch(dialogsProvider);
     return TabPage(
       title: l10n.tabNavigator,
+      actions: [
+        IconButton(
+          tooltip: l10n.supportTitle,
+          icon: const Icon(Icons.volunteer_activism_outlined),
+          onPressed: () => SupportSheet.show(context),
+        ),
+        IconButton(
+          tooltip: l10n.journalTitle,
+          icon: const Icon(Icons.history),
+          onPressed: () => context.push(AppRoutes.journal),
+        ),
+      ],
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => context.push(AppRoutes.newDialog()),
         icon: const Icon(Icons.add_comment_outlined),

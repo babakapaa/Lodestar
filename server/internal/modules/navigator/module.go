@@ -27,5 +27,8 @@ func (Module) Workers(k module.Kernel) []module.Worker {
 }
 
 func (Module) PrivacySections(k module.Kernel) []privacy.Section {
-	return []privacy.Section{PrivacySection{service: NewService(k)}}
+	return []privacy.Section{
+		PrivacySection{service: NewService(k)},
+		JournalPrivacySection{journal: JournalStore{sealer: Sealer{box: k.Secrets}}},
+	}
 }

@@ -6,6 +6,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../core/api/api_error_text.dart';
 import '../../core/api/api_exception.dart';
 import '../../core/files/files_providers.dart';
+import '../../core/navigator/journal_providers.dart';
 import '../../design/components/form_error.dart';
 import '../../design/components/lodestar_button.dart';
 import '../../design/components/lodestar_button_variant.dart';
@@ -63,6 +64,32 @@ class _SearchMapEditorState extends ConsumerState<SearchMapEditor> {
         if (line.trim().isNotEmpty) line.trim(),
     ],
   );
+
+  Future<void> _fromJournal() async {
+    final l10n = context.l10n;
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      final entries = await ref.read(
+        assignmentJournalProvider(widget.assignmentId).future,
+      );
+      final known = _current.queries.toSet();
+      final fresh = [
+        for (final entry in entries)
+          if (known.add(entry.query.trim())) entry.query.trim(),
+      ];
+      if (fresh.isEmpty) {
+        messenger.showSnackBar(SnackBar(content: Text(l10n.mapJournalEmpty)));
+        return;
+      }
+      setState(
+        () => _queries.text = [..._current.queries, ...fresh].join('\n'),
+      );
+    } on ApiException catch (error) {
+      messenger.showSnackBar(
+        SnackBar(content: Text(ApiErrorText.of(l10n, error))),
+      );
+    }
+  }
 
   Future<void> _add() async {
     final picked = await MapSourcePicker.show(context, _map.contains);
@@ -247,6 +274,15 @@ class _SearchMapEditorState extends ConsumerState<SearchMapEditor> {
                           alignLabelWithHint: true,
                         ),
                         onChanged: (_) => setState(() {}),
+                      ),
+                      const SizedBox(height: Spacing.s),
+                      Align(
+                        alignment: AlignmentDirectional.centerStart,
+                        child: TextButton.icon(
+                          onPressed: _busy ? null : _fromJournal,
+                          icon: const Icon(Icons.history),
+                          label: Text(l10n.mapFromJournal),
+                        ),
                       ),
                     ],
                   ),

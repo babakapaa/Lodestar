@@ -17,6 +17,9 @@ func TestAssignmentBriefFollowsCourseMode(t *testing.T) {
 	if err != nil || c.NavigatorMode != module.ModeProject {
 		t.Fatalf("course = %+v, %v", c, err)
 	}
+	if _, err := w.study.Create(w.ctx, w.admin, study.CourseInput{Title: "Экзамен", NavigatorMode: module.ModeClosed}); err != nil {
+		t.Fatalf("closed mode = %v", err)
+	}
 	if _, err := w.study.Create(w.ctx, w.admin, study.CourseInput{Title: "x", NavigatorMode: "exam"}); !errors.Is(err, study.ErrInvalidCourse) {
 		t.Fatalf("bad mode = %v", err)
 	}

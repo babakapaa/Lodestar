@@ -3,6 +3,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../design/tokens/spacing.dart';
 import '../../design/tokens/tokens_context.dart';
 import '../../l10n/l10n_context.dart';
+import 'navigator_intent.dart';
 import 'navigator_message.dart';
 
 class ReplyActions extends StatelessWidget {
@@ -20,6 +21,9 @@ class ReplyActions extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    if (reply.intent == NavigatorIntent.closed) {
+      return const SizedBox.shrink();
+    }
     return Wrap(
       spacing: Spacing.s,
       crossAxisAlignment: WrapCrossAlignment.center,

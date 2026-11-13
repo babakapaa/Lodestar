@@ -4,6 +4,8 @@ import 'package:http/http.dart' as http;
 
 class FakeNavigator {
   bool unavailable = false;
+  String support = '';
+  final List<Map<String, Object?>> journal = [];
   final Map<String, Map<String, Object?>> dialogs = {};
   final Map<String, List<Map<String, Object?>>> messages = {};
   final List<Map<String, Object?>> questions = [];
@@ -26,6 +28,14 @@ class FakeNavigator {
       ('GET', ['dialogs', final id]) => _details(id),
       ('DELETE', ['dialogs', final id]) => _delete(id),
       ('POST', ['dialogs', final id, 'messages']) => _ask(request, id),
+      ('GET', ['journal']) => _json(200, [
+        for (final e in journal)
+          if (request.url.queryParameters['scopeId'] == null ||
+              e['scopeId'] == request.url.queryParameters['scopeId'])
+            e,
+      ]),
+      ('DELETE', ['journal', final id]) => _forget(id),
+      ('GET', ['support']) => _json(200, {'contacts': support}),
       ('GET', ['courses', _, 'materials']) => _json(200, materials),
       ('POST', ['courses', final course, 'materials']) => _addMaterial(
         request,
@@ -109,10 +119,27 @@ class FakeNavigator {
       ..add(question)
       ..add(reply);
     final dialog = dialogs[id]!;
+    if (text.isNotEmpty) {
+      journal.add({
+        'id': 'j${_next++}',
+        'scopeKind': dialog['scopeKind'],
+        'scopeId': dialog['scopeId'],
+        'query': text,
+        'sources': [
+          {'title': 'Строение клетки', 'reference': '', 'url': ''},
+        ],
+        'createdAt': '2026-11-13T10:00:00Z',
+      });
+    }
     if ((dialog['title']! as String).isEmpty) {
       dialog['title'] = text;
     }
     return _json(201, {'question': question, 'reply': reply});
+  }
+
+  http.Response _forget(String id) {
+    journal.removeWhere((e) => e['id'] == id);
+    return http.Response('', 204);
   }
 
   http.Response _addMaterial(http.Request request, String course) {

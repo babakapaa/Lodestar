@@ -5,6 +5,7 @@ import "time"
 const (
 	ModeStudy   = "study"
 	ModeProject = "project"
+	ModeClosed  = "closed"
 )
 
 type Brief struct {

@@ -13,6 +13,7 @@ import '../../features/connect/connect_screen.dart';
 import '../../features/login/login_screen.dart';
 import '../../features/navigator/dialog_scope.dart';
 import '../../features/navigator/dialog_screen.dart';
+import '../../features/navigator/journal_screen.dart';
 import '../../features/navigator/material_form_screen.dart';
 import '../../features/navigator/materials_screen.dart';
 import '../../features/navigator/navigator_screen.dart';
@@ -173,6 +174,7 @@ class AppRouter {
             },
           ),
           _param(AppRoutes.dialog(':id'), (id) => DialogScreen(dialogId: id)),
+          _route(AppRoutes.journal, const JournalScreen()),
           _param(
             AppRoutes.courseMaterials(':id'),
             (id) => MaterialsScreen(courseId: id),

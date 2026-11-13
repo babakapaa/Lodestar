@@ -40,6 +40,14 @@ func (f *fakeSettings) ModuleEnabled(context.Context, string, string) (bool, err
 	return true, nil
 }
 
+type fakePreferences struct {
+	off []string
+}
+
+func (f *fakePreferences) Value(_ context.Context, _ pgx.Tx, userID, _ string) (json.RawMessage, error) {
+	return json.Marshal(!slices.Contains(f.off, userID))
+}
+
 const (
 	assignmentID = "5a6b7c8d-9e0f-4a1b-8c2d-3e4f5a6b7c8d"
 	courseID     = "1c2d3e4f-5a6b-4c7d-8e9f-0a1b2c3d4e5f"
@@ -169,6 +177,7 @@ type world struct {
 	materials navigator.MaterialService
 	model     *fakeModel
 	course    *course
+	prefs     *fakePreferences
 }
 
 func newWorld(t *testing.T) *world {
@@ -194,13 +203,14 @@ func newWorld(t *testing.T) *world {
 	}}
 	model := &fakeModel{intent: "understand", reply: "Что ты уже знаешь о клетке?"}
 	c := &course{mode: module.ModeStudy}
+	prefs := &fakePreferences{}
 	k := module.Kernel{
-		Pool: pool, Tenants: tx, Settings: settings, Secrets: box, Model: model, Embedder: fakeEmbedder{},
+		Pool: pool, Tenants: tx, Settings: settings, Preferences: prefs, Secrets: box, Model: model, Embedder: fakeEmbedder{},
 		Briefs: module.Briefs{fakeBriefer{kind: "assignment", course: c}, fakeBriefer{kind: "course", course: c}},
 	}
 	return &world{
 		t: t, ctx: ctx, tenant: created.ID, kernel: k, navigator: navigator.NewService(k),
-		materials: navigator.NewMaterialService(k), users: identity.NewStore(tx), model: model, course: c,
+		materials: navigator.NewMaterialService(k), users: identity.NewStore(tx), model: model, course: c, prefs: prefs,
 	}
 }
 
@@ -224,14 +234,24 @@ func (w *world) teach(teacher auth.Principal) {
 	w.course.teachers = append(w.course.teachers, teacher.UserID)
 }
 
+func (w *world) get(p auth.Principal, path string) *httptest.ResponseRecorder {
+	w.t.Helper()
+	return w.serve(p, httptest.NewRequest(http.MethodGet, path, nil))
+}
+
 func (w *world) post(p auth.Principal, path, body string, header map[string]string) *httptest.ResponseRecorder {
 	w.t.Helper()
-	mux := http.NewServeMux()
-	navigator.Routes{Service: w.navigator, Materials: w.materials}.Mount(mux)
 	req := httptest.NewRequest(http.MethodPost, path, strings.NewReader(body))
 	for k, v := range header {
 		req.Header.Set(k, v)
 	}
+	return w.serve(p, req)
+}
+
+func (w *world) serve(p auth.Principal, req *http.Request) *httptest.ResponseRecorder {
+	w.t.Helper()
+	mux := http.NewServeMux()
+	navigator.Routes{Service: w.navigator, Materials: w.materials}.Mount(mux)
 	req = req.WithContext(auth.WithPrincipal(req.Context(), p))
 	rec := httptest.NewRecorder()
 	mux.ServeHTTP(rec, req)

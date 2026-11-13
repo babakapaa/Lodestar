@@ -12,6 +12,7 @@ import 'brief.dart';
 import 'brief_banner.dart';
 import 'dialog_scope.dart';
 import 'intent_sheet.dart';
+import 'letter_sheet.dart';
 import 'message_bubble.dart';
 import 'message_composer.dart';
 import 'navigator_message.dart';
@@ -19,6 +20,7 @@ import 'navigator_providers.dart';
 import 'pending_bubble.dart';
 import 'question.dart';
 import 'reply_actions.dart';
+import 'teacher_letter.dart';
 
 class DialogScreen extends ConsumerStatefulWidget {
   const DialogScreen({this.dialogId, this.scope, super.key});
@@ -170,6 +172,13 @@ class _DialogScreenState extends ConsumerState<DialogScreen> {
     }
   }
 
+  void _letter() {
+    LetterSheet.show(
+      context,
+      TeacherLetter.compose(context.l10n, _brief, _messages),
+    );
+  }
+
   void _toBottom() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_scroll.hasClients) {
@@ -219,6 +228,12 @@ class _DialogScreenState extends ConsumerState<DialogScreen> {
           overflow: TextOverflow.ellipsis,
         ),
         actions: [
+          if (_brief != null && _messages.isNotEmpty)
+            IconButton(
+              tooltip: l10n.letterTitle,
+              icon: const Icon(Icons.mail_outline),
+              onPressed: _letter,
+            ),
           if (_created)
             IconButton(
               tooltip: l10n.navigatorDelete,

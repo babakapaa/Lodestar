@@ -129,6 +129,7 @@ class FakeServer {
           'core.quiet_hours',
           'core.quiet_from',
           'core.quiet_to',
+          'navigator.journal',
         ])
           {
             'key': key,
@@ -250,6 +251,7 @@ class FakeServer {
     'core.quiet_hours': false,
     'core.quiet_from': 1320,
     'core.quiet_to': 420,
+    'navigator.journal': true,
   };
 
   static const _settingDefaults = <String, Object?>{

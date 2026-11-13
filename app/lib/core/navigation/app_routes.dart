@@ -21,6 +21,7 @@ abstract final class AppRoutes {
   static const sourcesPath = '/notes/sources';
   static const sourceNew = '/notes/sources/new';
   static const dialogNew = '/navigator/new';
+  static const journal = '/navigator/journal';
 
   static String role(String id) => '/admin/roles/$id';
 

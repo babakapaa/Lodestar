@@ -20,11 +20,12 @@ import (
 	"github.com/babakapaa/lodestar/server/internal/modules/navigator"
 	"github.com/babakapaa/lodestar/server/internal/modules/notes"
 	"github.com/babakapaa/lodestar/server/internal/modules/study"
+	"github.com/babakapaa/lodestar/server/internal/modules/team"
 	"github.com/babakapaa/lodestar/server/internal/platform/database"
 )
 
 func Modules() []module.Module {
-	return []module.Module{study.Module{}, notes.Module{}, navigator.Module{}, chat.Module{}}
+	return []module.Module{study.Module{}, notes.Module{}, navigator.Module{}, chat.Module{}, team.Module{}}
 }
 
 func CoreMigrations() []database.Migrations {

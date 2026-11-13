@@ -17,7 +17,11 @@ type RosterSync struct {
 func (s RosterSync) Sync(ctx context.Context, tx pgx.Tx, tenantID string, r module.Roster) error {
 	origin := Origin{Kind: r.Kind, ID: r.ID}
 	if !r.Archived {
-		if _, _, err := s.chats.Insert(ctx, tx, KindChannel, r.Title, "", &origin, nil, nil); err != nil {
+		kind := KindChannel
+		if r.Group {
+			kind = KindGroup
+		}
+		if _, _, err := s.chats.Insert(ctx, tx, kind, r.Title, "", &origin, nil, nil); err != nil {
 			return err
 		}
 	}
@@ -36,6 +40,14 @@ func (s RosterSync) Sync(ctx context.Context, tx pgx.Tx, tenantID string, r modu
 		}
 		if r.Archived {
 			continue
+		}
+		if r.Group && ref.Title != r.Title {
+			if err := s.chats.Rename(ctx, tx, ref.ID, r.Title); err != nil {
+				return err
+			}
+			if err := s.announcer.Changed(ctx, tx, tenantID, ref.ID); err != nil {
+				return err
+			}
 		}
 		changed, err := s.members.Sync(ctx, tx, ref.ID, r.Leads, r.Members)
 		if err != nil {

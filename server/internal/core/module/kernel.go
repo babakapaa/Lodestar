@@ -25,4 +25,5 @@ type Kernel struct {
 	Reranker    llm.Reranker
 	Briefs      Briefs
 	Rosters     Rosters
+	TeamScopes  TeamScopes
 }

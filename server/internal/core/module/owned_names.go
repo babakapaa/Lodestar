@@ -46,3 +46,17 @@ func checkRosterKinds(m Module) error {
 	}
 	return nil
 }
+
+func checkTeamScopeKinds(m Module) error {
+	s, ok := m.(Teaming)
+	if !ok {
+		return nil
+	}
+	name := m.Manifest().Name
+	for _, src := range s.TeamScopeSources(Kernel{}) {
+		if !strings.HasPrefix(src.Kind(), name+".") {
+			return fmt.Errorf("%w: %s in module %s", ErrForeignTeamScope, src.Kind(), name)
+		}
+	}
+	return nil
+}

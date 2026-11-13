@@ -6,5 +6,6 @@ type Roster struct {
 	Title    string
 	Leads    []string
 	Members  []string
+	Group    bool
 	Archived bool
 }

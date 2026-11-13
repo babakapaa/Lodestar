@@ -16,6 +16,7 @@ type AssignmentInput struct {
 	SearchMap     *MapRules      `json:"searchMap"`
 	NavigatorMode *string        `json:"navigatorMode"`
 	Defense       *DefenseFormat `json:"defense"`
+	Team          *TeamRules     `json:"team"`
 	Files         []string       `json:"files"`
 	Published     bool           `json:"published"`
 }
@@ -27,7 +28,7 @@ func (in AssignmentInput) normalized() (AssignmentInput, error) {
 		in.Grading = GradingNone
 	}
 	if !in.Grading.valid() || len(in.Files) > maxAttachments || (in.SearchMap != nil && !in.SearchMap.valid()) ||
-		(in.Defense != nil && !in.Defense.valid()) {
+		(in.Defense != nil && !in.Defense.valid()) || (in.Team != nil && !in.Team.valid()) {
 		return in, ErrInvalidAssignment
 	}
 	if (in.Grading == GradingPoints) != (in.MaxPoints != nil) {

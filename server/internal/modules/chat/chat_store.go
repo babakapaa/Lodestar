@@ -32,6 +32,7 @@ type ChatStore struct {
 type chatRef struct {
 	ID       string
 	Kind     string
+	Title    string
 	Archived bool
 }
 
@@ -83,14 +84,14 @@ func (ChatStore) Insert(ctx context.Context, tx pgx.Tx, kind, title, about strin
 
 func (ChatStore) ByOrigin(ctx context.Context, tx pgx.Tx, origin Origin) ([]chatRef, error) {
 	rows, err := tx.Query(ctx, `
-		SELECT id::text, kind, archived_at IS NOT NULL FROM chat.chats
+		SELECT id::text, kind, title, archived_at IS NOT NULL FROM chat.chats
 		WHERE origin_kind = $1 AND origin_id = $2 ORDER BY kind`, origin.Kind, origin.ID)
 	if err != nil {
 		return nil, fmt.Errorf("chats by origin: %w", err)
 	}
 	return pgx.CollectRows(rows, func(row pgx.CollectableRow) (chatRef, error) {
 		var r chatRef
-		err := row.Scan(&r.ID, &r.Kind, &r.Archived)
+		err := row.Scan(&r.ID, &r.Kind, &r.Title, &r.Archived)
 		return r, err
 	})
 }
@@ -99,6 +100,13 @@ func (ChatStore) Update(ctx context.Context, tx pgx.Tx, id string, in ChatUpdate
 	_, err := tx.Exec(ctx, `UPDATE chat.chats SET title = $2, about = $3 WHERE id::text = $1`, id, in.Title, in.About)
 	if err != nil {
 		return fmt.Errorf("update chat: %w", err)
+	}
+	return nil
+}
+
+func (ChatStore) Rename(ctx context.Context, tx pgx.Tx, id, title string) error {
+	if _, err := tx.Exec(ctx, `UPDATE chat.chats SET title = $2 WHERE id::text = $1`, id, title); err != nil {
+		return fmt.Errorf("rename chat: %w", err)
 	}
 	return nil
 }

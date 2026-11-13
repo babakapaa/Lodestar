@@ -12,11 +12,12 @@ Future<void> openAssignment(WidgetTester tester) async {
   await tester.pumpAndSettle();
   await tester.tap(find.text('Биология'));
   await tester.pumpAndSettle();
-  await tester.scrollUntilVisible(
+  await tester.dragUntilVisible(
     find.text('Эссе о клетке'),
-    200,
-    scrollable: find.byType(Scrollable).last,
+    find.byType(ListView).last,
+    const Offset(0, -200),
   );
+  await tester.pumpAndSettle();
   await tester.tap(find.text('Эссе о клетке'));
   await tester.pumpAndSettle();
 }
@@ -175,10 +176,35 @@ void main() {
     expect(created['maxPoints'], isNull);
     expect(created['publishedAt'], isNotNull);
 
+    await tester.ensureVisible(find.text('Лабораторная 1'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Лабораторная 1'));
     await tester.pumpAndSettle();
     expect(find.text('Ерлан Ким'), findsOneWidget);
     expect(find.text('Не сдано'), findsOneWidget);
+  });
+
+  testWidgets('a teacher sees the course through a student\'s eyes', (
+    tester,
+  ) async {
+    final server = FakeServer();
+    server.study.role = 'teacher';
+    await pumpApp(tester, size: const Size(390, 1700), server: server);
+    await tester.tap(find.text('Учёба').first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Биология'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('course-preview')));
+    await tester.pumpAndSettle();
+    expect(find.text('Эссе о клетке'), findsOneWidget);
+    expect(server.study.previews, [null]);
+
+    await tester.tap(find.byKey(const ValueKey('preview-student')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Ерлан Ким').last);
+    await tester.pumpAndSettle();
+    expect(server.study.previews.last, 'u2');
+    expect(find.text('Эссе о клетке'), findsOneWidget);
   });
 
   testWidgets('a teacher builds the course schedule and changes a class', (

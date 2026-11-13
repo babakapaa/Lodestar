@@ -10,21 +10,30 @@ import 'study_labels_context.dart';
 import 'study_providers.dart';
 
 class AssignmentTile extends ConsumerWidget {
-  const AssignmentTile({required this.item, required this.teaches, super.key});
+  const AssignmentTile({
+    required this.item,
+    required this.teaches,
+    this.at,
+    super.key,
+  });
 
   final AssignmentItem item;
   final bool teaches;
+  final DateTime? at;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final labels = context.studyLabels;
     final assignment = item.assignment;
-    final waiting = ref.watch(
-      outboxProvider.select(
-        (drafts) => drafts.any((d) => d.assignmentId == assignment.id),
-      ),
-    );
+    final preview = at != null;
+    final waiting =
+        !preview &&
+        ref.watch(
+          outboxProvider.select(
+            (drafts) => drafts.any((d) => d.assignmentId == assignment.id),
+          ),
+        );
     final grade = item.grade;
     final counts = item.counts;
     final dueAt = assignment.dueAt;
@@ -33,7 +42,7 @@ class AssignmentTile extends ConsumerWidget {
         item.submittedAt == null &&
         !waiting &&
         dueAt != null &&
-        dueAt.isBefore(DateTime.now());
+        dueAt.isBefore(at ?? DateTime.now());
     final status = teaches
         ? [
             if (!assignment.published) l10n.assignmentDraft,
@@ -67,8 +76,10 @@ class AssignmentTile extends ConsumerWidget {
       title: Text(assignment.title),
       subtitle: Text([labels.due(dueAt), ...status].join('\n')),
       isThreeLine: status.isNotEmpty,
-      trailing: const Icon(Icons.chevron_right),
-      onTap: () => context.push(AppRoutes.assignment(assignment.id)),
+      trailing: preview ? null : const Icon(Icons.chevron_right),
+      onTap: preview
+          ? null
+          : () => context.push(AppRoutes.assignment(assignment.id)),
     );
   }
 }

@@ -25,6 +25,7 @@ func (r Routes) Mount(mux *http.ServeMux) {
 	mux.Handle("GET /v1/study/courses/{id}/gradebook", GradebookHandler{service: r.Gradebook})
 	a := r.Assignments
 	mux.Handle("GET /v1/study/courses/{id}/assignments", AssignmentsHandler{service: a})
+	mux.Handle("GET /v1/study/courses/{id}/preview", PreviewHandler{service: a})
 	mux.Handle("POST /v1/study/courses/{id}/assignments", CreateAssignmentHandler{service: a})
 	mux.Handle("GET /v1/study/assignments/{id}", AssignmentHandler{service: a})
 	mux.Handle("PUT /v1/study/assignments/{id}", UpdateAssignmentHandler{service: a})

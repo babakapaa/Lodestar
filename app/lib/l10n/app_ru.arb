@@ -2477,5 +2477,11 @@
   "callConsentDecline": "Против",
   "callConsentJoin": "Звонок записывается. Войти можно, только если вы согласны на запись.",
   "settingChatRecordingConsent": "Запись звонка только с согласия всех участников",
-  "errorRecordingConsent": "Звонок записывается, нужно согласие на запись"
+  "errorRecordingConsent": "Звонок записывается, нужно согласие на запись",
+  "previewTitle": "Глазами студента",
+  "previewHint": "Что увидит студент на выбранную дату",
+  "previewStudent": "Студент",
+  "previewAnyone": "Любой студент, без сданных работ",
+  "previewDate": "Дата",
+  "previewEmpty": "На эту дату студент не видит заданий"
 }

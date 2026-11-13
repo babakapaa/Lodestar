@@ -1378,5 +1378,11 @@
   "callConsentDecline": "I decline",
   "callConsentJoin": "This call is being recorded. You can join only if you agree to the recording.",
   "settingChatRecordingConsent": "Record calls only with everyone’s consent",
-  "errorRecordingConsent": "The call is being recorded, consent is needed"
+  "errorRecordingConsent": "The call is being recorded, consent is needed",
+  "previewTitle": "Through a student’s eyes",
+  "previewHint": "What a student will see on a chosen date",
+  "previewStudent": "Student",
+  "previewAnyone": "Any student, nothing submitted",
+  "previewDate": "Date",
+  "previewEmpty": "The student sees no assignments on this date"
 }

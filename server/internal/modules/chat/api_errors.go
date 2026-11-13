@@ -21,6 +21,11 @@ const (
 	CodeBlocked         = "blocked"
 	CodeInvalidReport   = "invalid_report"
 	CodeReportNotFound  = "report_not_found"
+	CodeCallsOff        = "calls_off"
+	CodeCallNotFound    = "call_not_found"
+	CodeCallFull        = "call_full"
+	CodeCallsDown       = "calls_unavailable"
+	CodeBadHook         = "bad_signature"
 )
 
 var errorCodes = []struct {
@@ -40,6 +45,10 @@ var errorCodes = []struct {
 	{ErrBlocked, http.StatusForbidden, CodeBlocked},
 	{ErrInvalidReport, http.StatusBadRequest, CodeInvalidReport},
 	{ErrReportNotFound, http.StatusNotFound, CodeReportNotFound},
+	{ErrCallsUnavailable, http.StatusServiceUnavailable, CodeCallsDown},
+	{ErrCallsOff, http.StatusForbidden, CodeCallsOff},
+	{ErrCallNotFound, http.StatusNotFound, CodeCallNotFound},
+	{ErrCallFull, http.StatusConflict, CodeCallFull},
 }
 
 func writeError(w http.ResponseWriter, err error) {

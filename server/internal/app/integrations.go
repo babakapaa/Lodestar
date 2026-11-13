@@ -3,6 +3,7 @@ package app
 import (
 	"github.com/babakapaa/lodestar/server/internal/core/delivery"
 	"github.com/babakapaa/lodestar/server/internal/core/files"
+	"github.com/babakapaa/lodestar/server/internal/platform/livekit"
 	"github.com/babakapaa/lodestar/server/internal/platform/llm"
 )
 
@@ -13,4 +14,5 @@ type Integrations struct {
 	Model    llm.Model
 	Embedder llm.Embedder
 	Reranker llm.Reranker
+	Calls    *livekit.Issuer
 }

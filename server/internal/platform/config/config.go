@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/babakapaa/lodestar/server/internal/platform/livekit"
 	"github.com/babakapaa/lodestar/server/internal/platform/llm"
 	"github.com/babakapaa/lodestar/server/internal/platform/mail"
 	"github.com/babakapaa/lodestar/server/internal/platform/objectstore"
@@ -27,6 +28,7 @@ type Config struct {
 	LLM             llm.Config
 	Embed           llm.Config
 	Rerank          llm.Config
+	LiveKit         livekit.Config
 	AccessTTL       time.Duration
 	RefreshTTL      time.Duration
 	ShutdownTimeout time.Duration
@@ -70,6 +72,11 @@ func Load() (Config, error) {
 			URL:   stringEnv("LODESTAR_RERANK_URL", ""),
 			Model: stringEnv("LODESTAR_RERANK_MODEL", ""),
 			Key:   stringEnv("LODESTAR_RERANK_KEY", ""),
+		},
+		LiveKit: livekit.Config{
+			URL:       stringEnv("LODESTAR_LIVEKIT_URL", ""),
+			APIKey:    stringEnv("LODESTAR_LIVEKIT_API_KEY", ""),
+			APISecret: stringEnv("LODESTAR_LIVEKIT_API_SECRET", ""),
 		},
 	}
 	cfg.AppURL = strings.TrimRight(stringEnv("LODESTAR_APP_URL", cfg.PublicURL), "/")

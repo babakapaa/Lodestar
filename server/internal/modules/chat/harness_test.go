@@ -27,14 +27,19 @@ import (
 	"github.com/babakapaa/lodestar/server/internal/modules/chat"
 	"github.com/babakapaa/lodestar/server/internal/platform/database"
 	"github.com/babakapaa/lodestar/server/internal/platform/database/dbtest"
+	"github.com/babakapaa/lodestar/server/internal/platform/livekit"
 	"github.com/babakapaa/lodestar/server/internal/platform/secretbox"
 )
 
 type fakeSettings struct {
 	retention int
+	values    map[string]any
 }
 
-func (f *fakeSettings) Value(context.Context, pgx.Tx, string) (json.RawMessage, error) {
+func (f *fakeSettings) Value(_ context.Context, _ pgx.Tx, key string) (json.RawMessage, error) {
+	if v, ok := f.values[key]; ok {
+		return json.Marshal(v)
+	}
 	return json.Marshal(f.retention)
 }
 
@@ -112,6 +117,7 @@ type world struct {
 	blocks   chat.BlockService
 	reports  chat.ReportService
 	purger   chat.Purger
+	calls    chat.CallService
 	rosters  *fakeRosters
 	sent     *outbox
 	settings *fakeSettings
@@ -146,15 +152,16 @@ func newWorld(t *testing.T) *world {
 	acc := access.NewService(tx, catalog, structure.Tree{})
 	rosters := &fakeRosters{list: map[string]module.Roster{}}
 	sent := &outbox{}
-	settings := &fakeSettings{}
+	settings := &fakeSettings{values: map[string]any{chat.CallsSetting: true, chat.ScreenShareSetting: chat.ShareAdmins}}
 	k := module.Kernel{
 		Pool: pool, Tenants: tx, Access: acc, Notifier: sent, Settings: settings, Secrets: box,
 		Rosters: module.Rosters{rosters},
+		Calls:   livekit.NewIssuer(livekit.Config{URL: "wss://calls.kaznu.kz", APIKey: "key", APISecret: callSecret}),
 	}
 	w := &world{
 		t: t, ctx: ctx, tenant: created.ID, tx: tx, users: identity.NewStore(tx), access: acc,
 		chats: chat.NewService(k), messages: chat.NewMessageService(k), worker: chat.NewRosterWorker(k),
-		blocks: chat.NewBlockService(k), reports: chat.NewReportService(k), purger: chat.NewPurger(k),
+		blocks: chat.NewBlockService(k), reports: chat.NewReportService(k), purger: chat.NewPurger(k), calls: chat.NewCallService(k),
 		rosters: rosters, sent: sent, settings: settings, pool: pool,
 	}
 	w.admin = w.user("admin")

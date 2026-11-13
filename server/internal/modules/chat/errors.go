@@ -25,3 +25,11 @@ var ErrBlocked = errors.New("this person does not accept your messages")
 var ErrInvalidReport = errors.New("report reason or messages are invalid")
 
 var ErrReportNotFound = errors.New("report not found")
+
+var ErrCallsUnavailable = errors.New("calls are not configured on this server")
+
+var ErrCallsOff = errors.New("calls are turned off by the university")
+
+var ErrCallNotFound = errors.New("call not found")
+
+var ErrCallFull = errors.New("call already has the most people allowed")

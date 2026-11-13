@@ -7,10 +7,12 @@ class MessageComposer extends StatefulWidget {
   const MessageComposer({
     required this.enabled,
     required this.onSend,
+    this.initial = '',
     super.key,
   });
 
   final bool enabled;
+  final String initial;
   final ValueChanged<String> onSend;
 
   @override
@@ -18,7 +20,7 @@ class MessageComposer extends StatefulWidget {
 }
 
 class _MessageComposerState extends State<MessageComposer> {
-  final _text = TextEditingController();
+  late final _text = TextEditingController(text: widget.initial);
 
   @override
   void dispose() {

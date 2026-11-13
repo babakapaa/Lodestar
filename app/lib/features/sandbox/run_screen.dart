@@ -17,6 +17,7 @@ import '../study/study_labels_context.dart';
 import '../team/team_action.dart';
 import 'hours_dialog.dart';
 import 'run_link.dart';
+import 'run_question.dart';
 import 'run_status.dart';
 import 'sandbox_labels_context.dart';
 import 'sandbox_providers.dart';
@@ -195,6 +196,21 @@ class _RunScreenState extends ConsumerState<RunScreen> {
                 onPressed: () => _rerun(run),
                 icon: const Icon(Icons.replay),
                 label: Text(l10n.sandboxRerun),
+              ),
+            if (run.status == RunStatus.failed || (run.exitCode ?? 0) != 0)
+              TextButton.icon(
+                key: const ValueKey('run-why'),
+                onPressed: () => context.push(
+                  AppRoutes.newDialog(
+                    scopeKind: run.workKind == 'assignment'
+                        ? 'assignment'
+                        : null,
+                    scopeId: run.workKind == 'assignment' ? run.workId : null,
+                    text: RunQuestion(l10n, context.sandboxLabels).of(run),
+                  ),
+                ),
+                icon: const Icon(Icons.help_outline),
+                label: Text(l10n.sandboxWhy),
               ),
             if (run.workKind != null)
               TextButton.icon(

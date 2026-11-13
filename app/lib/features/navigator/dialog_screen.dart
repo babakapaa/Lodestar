@@ -23,10 +23,11 @@ import 'reply_actions.dart';
 import 'teacher_letter.dart';
 
 class DialogScreen extends ConsumerStatefulWidget {
-  const DialogScreen({this.dialogId, this.scope, super.key});
+  const DialogScreen({this.dialogId, this.scope, this.draft = '', super.key});
 
   final String? dialogId;
   final DialogScope? scope;
+  final String draft;
 
   @override
   ConsumerState<DialogScreen> createState() => _DialogScreenState();
@@ -268,6 +269,7 @@ class _DialogScreenState extends ConsumerState<DialogScreen> {
                 ),
                 MessageComposer(
                   enabled: !_loading && loadError == null && _pending == null,
+                  initial: widget.draft,
                   onSend: _send,
                 ),
               ],

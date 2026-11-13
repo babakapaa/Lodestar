@@ -2443,5 +2443,20 @@
   "errorInvalidSeries": "Проверьте время, длительность и даты",
   "errorInvalidChange": "Изменение занятия заполнено неверно",
   "errorSeriesNotFound": "Занятие не найдено",
-  "setupDownloadPdf": "Скачать PDF"
+  "setupDownloadPdf": "Скачать PDF",
+  "setupLaunchAll": "Для всех",
+  "setupLaunchPilot": "Пилотом на выбранных курсах",
+  "setupLaunchPilotHint": "Приложение откроется только преподавателям и студентам этих курсов",
+  "setupPilotNoCourses": "Курсов пока нет. Сначала создайте курсы.",
+  "setupPilotTitle": "Пилот",
+  "setupPilotCourses": "{count, plural, one{Открыт на {count} курсе} few{Открыт на {count} курсах} other{Открыт на {count} курсах}}",
+  "@setupPilotCourses": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "setupExpand": "Открыть для всех",
+  "setupPilotBanner": "Lodestar пока работает пилотом на нескольких курсах. Ваших курсов среди них нет."
 }

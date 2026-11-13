@@ -1358,5 +1358,13 @@
   "errorInvalidSeries": "Check the time, length and dates",
   "errorInvalidChange": "The class change is not valid",
   "errorSeriesNotFound": "Class not found",
-  "setupDownloadPdf": "Download PDF"
+  "setupDownloadPdf": "Download PDF",
+  "setupLaunchAll": "For everyone",
+  "setupLaunchPilot": "As a pilot on chosen courses",
+  "setupLaunchPilotHint": "Only teachers and students of these courses will get the app",
+  "setupPilotNoCourses": "There are no courses yet. Create courses first.",
+  "setupPilotTitle": "Pilot",
+  "setupPilotCourses": "{count, plural, one{Open on {count} course} other{Open on {count} courses}}",
+  "setupExpand": "Open for everyone",
+  "setupPilotBanner": "Lodestar is running as a pilot on a few courses. Yours are not among them yet."
 }

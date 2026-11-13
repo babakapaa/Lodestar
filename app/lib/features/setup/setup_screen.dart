@@ -8,6 +8,8 @@ import '../../design/components/lodestar_button.dart';
 import '../../design/tokens/spacing.dart';
 import '../../l10n/l10n_context.dart';
 import '../team/team_action.dart';
+import 'launch_dialog.dart';
+import 'pilot_card.dart';
 import 'setup_overview.dart';
 import 'setup_problems.dart';
 import 'setup_providers.dart';
@@ -17,7 +19,14 @@ class SetupScreen extends ConsumerWidget {
   const SetupScreen({super.key});
 
   Future<void> _launch(BuildContext context, WidgetRef ref) async {
-    await TeamAction.run(context, () => ref.read(setupApiProvider).launch());
+    final pilot = await LaunchDialog.show(context);
+    if (pilot == null || !context.mounted) {
+      return;
+    }
+    await TeamAction.run(
+      context,
+      () => ref.read(setupApiProvider).launch(pilot),
+    );
     ref
       ..invalidate(setupOverviewProvider)
       ..invalidate(setupStatusProvider);
@@ -44,6 +53,10 @@ class SetupScreen extends ConsumerWidget {
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
                 const SizedBox(height: Spacing.l),
+                if (overview.pilot.isNotEmpty) ...[
+                  PilotCard(courses: overview.pilot.length),
+                  const SizedBox(height: Spacing.l),
+                ],
               ],
               Text(l10n.setupProgress(done, total)),
               const SizedBox(height: Spacing.s),

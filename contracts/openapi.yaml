@@ -8308,14 +8308,70 @@ paths:
           $ref: "#/components/responses/Error"
         default:
           $ref: "#/components/responses/Error"
+  /v1/setup/pilot/courses:
+    get:
+      tags: [setup]
+      operationId: setupPilotCourses
+      summary: Курсы для пилота
+      description: Нужно core.setup.manage.
+      security:
+        - bearer: []
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SetupPilotCourse"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/setup/expand:
+    post:
+      tags: [setup]
+      operationId: expandSetup
+      summary: Открыть вуз для всех после пилота
+      description: Нужно core.setup.manage. Если вуз не в пилоте, 409 setup_not_pilot.
+      security:
+        - bearer: []
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SetupOverview"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
   /v1/setup/launch:
     post:
       tags: [setup]
       operationId: launchSetup
-      summary: Запустить вуз для всех
-      description: Нужно core.setup.manage и пустой список проблем. Поручения снимаются.
+      summary: Запустить вуз
+      description: Нужно core.setup.manage и пустой список проблем. Поручения снимаются. С pilot вуз открывается только участникам выбранных курсов и тем, кто управляет мастером.
       security:
         - bearer: []
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SetupLaunchInput"
       responses:
         "200":
           description: Готово
@@ -13073,7 +13129,7 @@ components:
           type: number
     SetupStatus:
       type: object
-      required: [launched, manages, assigned]
+      required: [launched, manages, assigned, pilot, included]
       properties:
         launched:
           type: boolean
@@ -13083,6 +13139,32 @@ components:
           type: array
           items:
             type: string
+        pilot:
+          type: boolean
+          description: Вуз запущен пилотом на выбранных курсах
+        included:
+          type: boolean
+          description: Человеку открыто приложение
+    SetupLaunchInput:
+      type: object
+      properties:
+        pilot:
+          type: array
+          maxItems: 200
+          items:
+            type: string
+            format: uuid
+    SetupPilotCourse:
+      type: object
+      required: [id, title, code]
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        code:
+          type: [string, "null"]
     SetupSection:
       type: object
       required: [key, required, status, assigneeId, dueOn, note, settings, updatedAt]
@@ -13149,7 +13231,7 @@ components:
           type: integer
     SetupOverview:
       type: object
-      required: [launched, launchedAt, protocolVersion, signedBy, signedAt, sections, legal, problems]
+      required: [launched, launchedAt, protocolVersion, signedBy, signedAt, sections, legal, problems, pilot]
       properties:
         launched:
           type: boolean
@@ -13176,6 +13258,11 @@ components:
           type: [array, "null"]
           items:
             $ref: "#/components/schemas/SetupProblem"
+        pilot:
+          type: array
+          items:
+            type: string
+            format: uuid
     SetupProtocol:
       type: object
       required: [version, signedBy, signedAt, answers]

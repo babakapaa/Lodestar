@@ -15,4 +15,5 @@ type Overview struct {
 	Sections        []SectionState   `json:"sections"`
 	Legal           []LegalAnswer    `json:"legal"`
 	Problems        []module.Problem `json:"problems"`
+	Pilot           []string         `json:"pilot"`
 }

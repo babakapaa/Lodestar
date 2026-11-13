@@ -13,8 +13,8 @@ type Store struct{}
 func (Store) State(ctx context.Context, tx pgx.Tx) (State, bool, error) {
 	var s State
 	err := tx.QueryRow(ctx, `
-		SELECT protocol_version, signed_by::text, signed_at, launched_at FROM core.setup_state`).
-		Scan(&s.ProtocolVersion, &s.SignedBy, &s.SignedAt, &s.LaunchedAt)
+		SELECT protocol_version, signed_by::text, signed_at, launched_at, pilot_courses::text[] FROM core.setup_state`).
+		Scan(&s.ProtocolVersion, &s.SignedBy, &s.SignedAt, &s.LaunchedAt, &s.Pilot)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return State{}, false, nil
 	}
@@ -153,9 +153,20 @@ func (Store) Sign(ctx context.Context, tx pgx.Tx, by string) (int, error) {
 	return version, nil
 }
 
-func (Store) Launch(ctx context.Context, tx pgx.Tx, by string) error {
-	if _, err := tx.Exec(ctx, `UPDATE core.setup_state SET launched_by = $1::uuid, launched_at = now()`, by); err != nil {
+func (Store) Launch(ctx context.Context, tx pgx.Tx, by string, pilot []string) error {
+	if pilot == nil {
+		pilot = []string{}
+	}
+	_, err := tx.Exec(ctx, `UPDATE core.setup_state SET launched_by = $1::uuid, launched_at = now(), pilot_courses = $2::uuid[]`, by, pilot)
+	if err != nil {
 		return fmt.Errorf("launch: %w", err)
+	}
+	return nil
+}
+
+func (Store) Expand(ctx context.Context, tx pgx.Tx) error {
+	if _, err := tx.Exec(ctx, `UPDATE core.setup_state SET pilot_courses = '{}'`); err != nil {
+		return fmt.Errorf("expand pilot: %w", err)
 	}
 	return nil
 }

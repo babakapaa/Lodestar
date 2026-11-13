@@ -79,6 +79,10 @@ func (Module) StatsSources(module.Kernel) []module.StatsSource {
 	return []module.StatsSource{StudyStats{}}
 }
 
+func (Module) PilotSources(k module.Kernel) []module.PilotSource {
+	return []module.PilotSource{CoursePilot{settings: k.Settings}}
+}
+
 func (Module) ReadinessSources(k module.Kernel) []module.ReadinessSource {
 	return []module.ReadinessSource{CourseReadiness{settings: k.Settings}}
 }

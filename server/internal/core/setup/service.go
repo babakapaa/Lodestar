@@ -22,13 +22,14 @@ type Service struct {
 	access   access.Service
 	settings SettingsWriter
 	notifier module.Notifier
+	pilots   []module.PilotSource
 	sources  []module.ReadinessSource
 	store    Store
 	log      audit.Log
 }
 
-func NewService(tenants database.TenantTx, acc access.Service, settings SettingsWriter, notifier module.Notifier, sources ...module.ReadinessSource) Service {
-	return Service{tenants: tenants, access: acc, settings: settings, notifier: notifier, sources: sources}
+func NewService(tenants database.TenantTx, acc access.Service, settings SettingsWriter, notifier module.Notifier, pilots []module.PilotSource, sources ...module.ReadinessSource) Service {
+	return Service{tenants: tenants, access: acc, settings: settings, notifier: notifier, pilots: pilots, sources: sources}
 }
 
 func (s Service) Begin(ctx context.Context, tenantID string) error {
@@ -41,8 +42,12 @@ func (s Service) Allowed(ctx context.Context, p auth.Principal) (bool, error) {
 	var ok bool
 	err := s.tenants.Run(ctx, p.TenantID, func(tx pgx.Tx) error {
 		st, found, err := s.store.State(ctx, tx)
-		if err != nil || !found || st.LaunchedAt != nil {
+		if err != nil || !found || (st.LaunchedAt != nil && len(st.Pilot) == 0) {
 			ok = err == nil
+			return err
+		}
+		if st.LaunchedAt != nil {
+			ok, err = s.inPilot(ctx, tx, p, st)
 			return err
 		}
 		view, err := s.status(ctx, tx, p)
@@ -69,6 +74,15 @@ func (s Service) status(ctx context.Context, tx pgx.Tx, p auth.Principal) (Statu
 		return out, err
 	}
 	out.Launched = !found || st.LaunchedAt != nil
+	out.Included = out.Launched
+	if out.Launched && found && len(st.Pilot) > 0 {
+		out.Pilot = true
+		if out.Manages, err = s.allowed(ctx, tx, p, Manage); err != nil {
+			return out, err
+		}
+		out.Included, err = s.inPilot(ctx, tx, p, st)
+		return out, err
+	}
 	if out.Launched {
 		return out, nil
 	}
@@ -107,7 +121,7 @@ func (s Service) Overview(ctx context.Context, p auth.Principal) (Overview, erro
 		}
 		out = Overview{
 			Launched: st.LaunchedAt != nil, LaunchedAt: st.LaunchedAt, ProtocolVersion: st.ProtocolVersion,
-			SignedBy: st.SignedBy, SignedAt: st.SignedAt, Sections: []SectionState{}, Legal: []LegalAnswer{},
+			SignedBy: st.SignedBy, SignedAt: st.SignedAt, Sections: []SectionState{}, Legal: []LegalAnswer{}, Pilot: append([]string{}, st.Pilot...),
 		}
 		sections, err := s.sectionStates(ctx, tx)
 		if err != nil {
@@ -337,7 +351,7 @@ func (s Service) Sign(ctx context.Context, p auth.Principal) (Overview, error) {
 	return s.Overview(ctx, p)
 }
 
-func (s Service) Launch(ctx context.Context, p auth.Principal) (Overview, error) {
+func (s Service) Launch(ctx context.Context, p auth.Principal, in LaunchInput) (Overview, error) {
 	err := s.run(ctx, p, func(tx pgx.Tx, st State) error {
 		if err := s.require(ctx, tx, p, Manage); err != nil {
 			return err
@@ -349,7 +363,10 @@ func (s Service) Launch(ctx context.Context, p auth.Principal) (Overview, error)
 		if len(problems) > 0 {
 			return ErrNotReady
 		}
-		if err := s.store.Launch(ctx, tx, p.UserID); err != nil {
+		if err := s.validPilot(ctx, tx, p.TenantID, in.Pilot); err != nil {
+			return err
+		}
+		if err := s.store.Launch(ctx, tx, p.UserID, in.Pilot); err != nil {
 			return err
 		}
 		if err := s.store.ClearAssignees(ctx, tx); err != nil {

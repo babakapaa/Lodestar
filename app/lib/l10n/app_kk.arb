@@ -1358,5 +1358,13 @@
   "errorInvalidSeries": "Уақытты, ұзақтығын және күндерді тексеріңіз",
   "errorInvalidChange": "Сабақ өзгерісі дұрыс емес",
   "errorSeriesNotFound": "Сабақ табылмады",
-  "setupDownloadPdf": "PDF жүктеу"
+  "setupDownloadPdf": "PDF жүктеу",
+  "setupLaunchAll": "Барлығы үшін",
+  "setupLaunchPilot": "Таңдалған курстарда пилот ретінде",
+  "setupLaunchPilotHint": "Қосымша тек осы курстардың оқытушылары мен студенттеріне ашылады",
+  "setupPilotNoCourses": "Әзірге курстар жоқ. Алдымен курстар жасаңыз.",
+  "setupPilotTitle": "Пилот",
+  "setupPilotCourses": "{count} курста ашық",
+  "setupExpand": "Барлығына ашу",
+  "setupPilotBanner": "Lodestar әзірге бірнеше курста пилот ретінде жұмыс істейді. Сіздің курстарыңыз олардың арасында жоқ."
 }

@@ -14,6 +14,9 @@ import '../../features/chats/chat_screen.dart';
 import '../../features/chats/chats_screen.dart';
 import '../../features/chats/course_chats_screen.dart';
 import '../../features/connect/connect_screen.dart';
+import '../../features/defense/defense_booking_screen.dart';
+import '../../features/defense/defense_screen.dart';
+import '../../features/defense/defenses_screen.dart';
 import '../../features/login/login_screen.dart';
 import '../../features/navigator/dialog_scope.dart';
 import '../../features/navigator/dialog_screen.dart';
@@ -114,6 +117,24 @@ class AppRouter {
           _param(
             AppRoutes.searchMap(':id'),
             (id) => SearchMapScreen(assignmentId: id),
+          ),
+          _param(
+            AppRoutes.defenseBooking(':id'),
+            (id) => DefenseBookingScreen(assignmentId: id),
+          ),
+          _param(
+            AppRoutes.defenses(':id'),
+            (id) => DefensesScreen(assignmentId: id),
+          ),
+          GoRoute(
+            path: AppRoutes.defense(':id', ':student'),
+            pageBuilder: (context, state) => _fade(
+              state,
+              DefenseScreen(
+                assignmentId: state.pathParameters['id']!,
+                studentId: state.pathParameters['student']!,
+              ),
+            ),
           ),
           GoRoute(
             path: AppRoutes.grade(':id', ':student'),

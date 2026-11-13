@@ -2,6 +2,8 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
+import 'fake_defense.dart';
+
 class FakeStudy {
   String role = 'student';
   String? submitError;
@@ -22,6 +24,7 @@ class FakeStudy {
   final List<Map<String, Object?>> deadlines = [];
   final Map<String, Map<String, Object?>> grades = {};
   final Map<String, Map<String, Object?>> maps = {};
+  late final FakeDefense defense = FakeDefense(grades);
   int _next = 1;
 
   static const _student = {
@@ -89,6 +92,11 @@ class FakeStudy {
         'deadlines': deadlines,
       }),
       ('GET', ['schedule']) => _json(200, lessons),
+      ('DELETE', ['defense-slots', final id]) =>
+        defense.deleteSlot(id) ?? _json(404, {'code': 'not_found'}),
+      (_, ['assignments', final id, ...]) =>
+        defense.handle(request, segments, _assignment(id), _teaches) ??
+            _json(404, {'code': 'not_found'}),
       _ => _json(404, {'code': 'not_found'}),
     };
   }
@@ -149,6 +157,7 @@ class FakeStudy {
     'maxPoints': body['maxPoints'],
     'publishedAt': body['published'] == true ? '2026-11-12T10:00:00Z' : null,
     'searchMap': body['searchMap'],
+    'defense': body['defense'],
   };
 
   http.Response _create(http.Request request) {

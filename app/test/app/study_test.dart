@@ -131,10 +131,13 @@ void main() {
     await tester.tap(find.text('Зачёт'));
     await tester.tap(find.text('Опубликовать'));
     await tester.pumpAndSettle();
+    await tester.tap(find.text('Короткая беседа'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Сохранить'));
     await tester.pumpAndSettle();
 
     final created = server.study.assignments.last;
+    expect(created['defense'], 'short');
     expect(created['title'], 'Лабораторная 1');
     expect(created['grading'], 'pass');
     expect(created['maxPoints'], isNull);

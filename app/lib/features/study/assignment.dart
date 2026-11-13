@@ -1,3 +1,4 @@
+import 'defense_format.dart';
 import 'grading.dart';
 import 'map_rules.dart';
 import 'navigator_mode.dart';
@@ -14,6 +15,7 @@ class Assignment {
     required this.published,
     this.searchMap,
     this.navigatorMode = NavigatorMode.course,
+    this.defense = DefenseFormat.none,
   });
 
   factory Assignment.fromJson(Map<String, Object?> json) {
@@ -29,6 +31,7 @@ class Assignment {
       published: json['publishedAt'] != null,
       searchMap: MapRules.maybe(json['searchMap']),
       navigatorMode: NavigatorMode.parse(json['navigatorMode']),
+      defense: DefenseFormat.parse(json['defense']),
     );
   }
 
@@ -42,4 +45,5 @@ class Assignment {
   final bool published;
   final MapRules? searchMap;
   final NavigatorMode navigatorMode;
+  final DefenseFormat defense;
 }

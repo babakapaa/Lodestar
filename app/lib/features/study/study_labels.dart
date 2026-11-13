@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import '../../l10n/generated/app_localizations.dart';
 import 'assignment.dart';
 import 'course_role.dart';
+import 'defense_format.dart';
 import 'grade.dart';
 import 'grading.dart';
 import 'lesson_status.dart';
@@ -25,6 +26,13 @@ class StudyLabels {
     NavigatorMode.study => _l10n.navigatorModeStudyShort,
     NavigatorMode.project => _l10n.navigatorModeProjectShort,
     NavigatorMode.closed => _l10n.navigatorModeClosedShort,
+  };
+
+  String defenseFormat(DefenseFormat format) => switch (format) {
+    DefenseFormat.none => _l10n.defenseFormatNone,
+    DefenseFormat.full => _l10n.defenseFormatFull,
+    DefenseFormat.short => _l10n.defenseFormatShort,
+    DefenseFormat.sample => _l10n.defenseFormatSample,
   };
 
   String grading(Grading grading) => switch (grading) {

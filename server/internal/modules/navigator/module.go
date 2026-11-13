@@ -16,7 +16,7 @@ func (Module) Manifest() module.Manifest {
 }
 
 func (Module) Mount(mux *http.ServeMux, k module.Kernel) {
-	Routes{Service: NewService(k), Materials: NewMaterialService(k)}.Mount(mux)
+	Routes{Service: NewService(k), Materials: NewMaterialService(k), Topics: NewTopicService(k)}.Mount(mux)
 }
 
 func (Module) Workers(k module.Kernel) []module.Worker {

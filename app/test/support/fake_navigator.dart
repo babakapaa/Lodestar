@@ -10,6 +10,15 @@ class FakeNavigator {
   final Map<String, List<Map<String, Object?>>> messages = {};
   final List<Map<String, Object?>> questions = [];
   final List<Map<String, Object?>> materials = [];
+  Map<String, Object?> topics = {
+    'threshold': 5,
+    'weeks': 8,
+    'students': null,
+    'topics': <Object?>[],
+    'intents': <Object?>[],
+    'trend': <Object?>[],
+    'suggestion': null,
+  };
   int _next = 1;
 
   static const _steps = [
@@ -37,6 +46,7 @@ class FakeNavigator {
       ('DELETE', ['journal', final id]) => _forget(id),
       ('GET', ['support']) => _json(200, {'contacts': support}),
       ('GET', ['courses', _, 'materials']) => _json(200, materials),
+      ('GET', ['courses', _, 'topics']) => _json(200, topics),
       ('POST', ['courses', final course, 'materials']) => _addMaterial(
         request,
         course,

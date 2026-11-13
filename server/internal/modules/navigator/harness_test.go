@@ -175,6 +175,7 @@ type world struct {
 	navigator navigator.Service
 	users     identity.Store
 	materials navigator.MaterialService
+	topics    navigator.TopicService
 	model     *fakeModel
 	course    *course
 	prefs     *fakePreferences
@@ -210,7 +211,7 @@ func newWorld(t *testing.T) *world {
 	}
 	return &world{
 		t: t, ctx: ctx, tenant: created.ID, kernel: k, navigator: navigator.NewService(k),
-		materials: navigator.NewMaterialService(k), users: identity.NewStore(tx), model: model, course: c, prefs: prefs,
+		materials: navigator.NewMaterialService(k), topics: navigator.NewTopicService(k), users: identity.NewStore(tx), model: model, course: c, prefs: prefs,
 	}
 }
 
@@ -251,7 +252,7 @@ func (w *world) post(p auth.Principal, path, body string, header map[string]stri
 func (w *world) serve(p auth.Principal, req *http.Request) *httptest.ResponseRecorder {
 	w.t.Helper()
 	mux := http.NewServeMux()
-	navigator.Routes{Service: w.navigator, Materials: w.materials}.Mount(mux)
+	navigator.Routes{Service: w.navigator, Materials: w.materials, Topics: w.topics}.Mount(mux)
 	req = req.WithContext(auth.WithPrincipal(req.Context(), p))
 	rec := httptest.NewRecorder()
 	mux.ServeHTTP(rec, req)

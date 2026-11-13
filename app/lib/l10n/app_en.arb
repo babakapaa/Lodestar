@@ -1166,5 +1166,21 @@
   "settingAttendanceCode": "Attendance: check-in by code",
   "settingAttendanceNetworks": "Attendance: university networks, comma separated (empty means no check)",
   "settingAttendanceLate": "Attendance: minutes after start that count as late",
-  "settingAttendanceAlert": "Attendance: missed classes in a row to show the teacher"
+  "settingAttendanceAlert": "Attendance: missed classes in a row to show the teacher",
+  "insightsTitle": "Group insights",
+  "insightsHint": "What students ask, divisions and attendance. Summaries only, no names",
+  "insightsPrivacy": "This page shows group summaries only. A topic or week appears once at least 5 students asked about it, so nobody can tell who asked what.",
+  "insightsTopics": "What students ask the navigator",
+  "insightsHidden": "Fewer than {count} students have asked the navigator, so topics are hidden for now.",
+  "insightsAskers": "{count} students asked",
+  "insightsSuggestion": "Next class you could go over “{title}”: {count} students asked about it in the last 2 weeks.",
+  "insightsStudents": "{count} students",
+  "insightsNoTopics": "No topic has been asked about by {count} or more students yet.",
+  "insightsIntents": "What they asked for",
+  "insightsTrend": "By week",
+  "insightsWeekOf": "Week of {date}",
+  "insightsWeekHidden": "fewer than {count}",
+  "insightsDivisions": "League divisions",
+  "insightsAttendance": "Attendance by class",
+  "insightsUnavailable": "Could not load"
 }

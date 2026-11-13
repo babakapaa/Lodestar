@@ -2084,5 +2084,73 @@
   "settingAttendanceCode": "Посещаемость: отметка кодом",
   "settingAttendanceNetworks": "Посещаемость: сети вуза через запятую (пусто значит без проверки)",
   "settingAttendanceLate": "Посещаемость: через сколько минут после начала отметка считается опозданием",
-  "settingAttendanceAlert": "Посещаемость: сколько пропусков подряд показать преподавателю"
+  "settingAttendanceAlert": "Посещаемость: сколько пропусков подряд показать преподавателю",
+  "insightsTitle": "Аналитика группы",
+  "insightsHint": "О чём спрашивают, дивизионы и посещаемость. Только сводки, без имён",
+  "insightsPrivacy": "Здесь только сводки по группе. Тема или неделя появляются, когда о них спросили хотя бы 5 студентов, так что по ним нельзя понять, кто о чём спрашивал.",
+  "insightsTopics": "О чём спрашивают навигатор",
+  "insightsHidden": "Навигатор спрашивали меньше {count} студентов, поэтому темы пока скрыты.",
+  "@insightsHidden": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "insightsAskers": "Спрашивали {count} студентов",
+  "@insightsAskers": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "insightsSuggestion": "На следующем занятии можно разобрать «{title}»: за 2 недели об этом спрашивали {count} студентов.",
+  "@insightsSuggestion": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "insightsStudents": "{count} студ.",
+  "@insightsStudents": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "insightsNoTopics": "Ни одну тему пока не спрашивали {count} или больше студентов.",
+  "@insightsNoTopics": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "insightsIntents": "Что просили",
+  "insightsTrend": "По неделям",
+  "insightsWeekOf": "Неделя с {date}",
+  "@insightsWeekOf": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "insightsWeekHidden": "меньше {count}",
+  "@insightsWeekHidden": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "insightsDivisions": "Дивизионы лиги",
+  "insightsAttendance": "Посещаемость по занятиям",
+  "insightsUnavailable": "Не удалось загрузить"
 }

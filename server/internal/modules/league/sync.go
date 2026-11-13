@@ -47,7 +47,7 @@ func (s Service) sync(ctx context.Context, tx pgx.Tx, tenantID string, r module.
 }
 
 func (s Service) score(ctx context.Context, tx pgx.Tx, at synced, weights Weights) error {
-	existing, err := s.entries.Works(ctx, tx, at.league.ID)
+	existing, err := s.entries.Works(ctx, tx, at.league.ID, EntryWork)
 	if err != nil {
 		return err
 	}
@@ -74,7 +74,7 @@ func (s Service) score(ctx context.Context, tx pgx.Tx, at synced, weights Weight
 			}
 			kept[key] = true
 			next := Entry{
-				ID: old.ID, UserID: result.UserID, WorkKind: &work.Kind, WorkID: &work.ID, Title: work.Title,
+				ID: old.ID, UserID: result.UserID, Kind: EntryWork, WorkKind: &work.Kind, WorkID: &work.ID, Title: work.Title,
 				Score: &result.Score, Max: &result.Max, Weight: &weight, Points: points,
 			}
 			switch {
@@ -151,5 +151,5 @@ func (s Service) shift(ctx context.Context, tx pgx.Tx, tenantID string, at synce
 }
 
 func changed(old, next Entry) bool {
-	return old.Title != next.Title || old.Points != next.Points || *old.Score != *next.Score || *old.Max != *next.Max || *old.Weight != *next.Weight
+	return old.Title != next.Title || old.Reason != next.Reason || old.Points != next.Points || *old.Score != *next.Score || *old.Max != *next.Max || *old.Weight != *next.Weight
 }

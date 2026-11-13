@@ -7,18 +7,22 @@ import (
 
 	"github.com/jackc/pgx/v5"
 
+	"github.com/babakapaa/lodestar/server/internal/core/access"
 	"github.com/babakapaa/lodestar/server/internal/core/audit"
 	"github.com/babakapaa/lodestar/server/internal/core/auth"
 	"github.com/babakapaa/lodestar/server/internal/core/identity"
 	"github.com/babakapaa/lodestar/server/internal/core/module"
 	"github.com/babakapaa/lodestar/server/internal/platform/database"
+	"github.com/babakapaa/lodestar/server/internal/platform/llm"
 )
 
 type Service struct {
 	tenants     database.TenantTx
-	rosters     module.Rosters
 	scores      module.ScoreSources
 	notifier    module.Notifier
+	settings    module.Settings
+	access      access.Service
+	embedder    llm.Embedder
 	leagues     LeagueStore
 	weights     WeightStore
 	seasons     SeasonStore
@@ -26,12 +30,18 @@ type Service struct {
 	entries     EntryStore
 	transitions TransitionStore
 	disputes    DisputeStore
+	tasks       TaskStore
+	solutions   SolutionStore
+	awards      AwardStore
+	grants      GrantStore
 	people      identity.People
 	log         audit.Log
 }
 
 func NewService(k module.Kernel) Service {
-	return Service{tenants: k.Tenants, rosters: k.Rosters, scores: k.Scores, notifier: k.Notifier}
+	return Service{
+		tenants: k.Tenants, scores: k.Scores, notifier: k.Notifier, settings: k.Settings, access: k.Access, embedder: k.Embedder,
+	}
 }
 
 func (s Service) arena(ctx context.Context, tx pgx.Tx, kind, id string) (module.Roster, module.ScoreSource, error) {
@@ -39,11 +49,7 @@ func (s Service) arena(ctx context.Context, tx pgx.Tx, kind, id string) (module.
 	if !ok {
 		return module.Roster{}, nil, ErrLeagueNotFound
 	}
-	rosters, ok := s.rosters.Find(kind)
-	if !ok {
-		return module.Roster{}, nil, ErrLeagueNotFound
-	}
-	r, err := rosters.One(ctx, tx, id)
+	r, err := source.One(ctx, tx, id)
 	if errors.Is(err, module.ErrRosterNotFound) {
 		return r, nil, ErrLeagueNotFound
 	}

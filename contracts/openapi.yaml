@@ -5929,6 +5929,286 @@ paths:
           $ref: "#/components/responses/Error"
         default:
           $ref: "#/components/responses/Error"
+  /v1/league/leagues/{id}/tasks:
+    post:
+      tags: [league]
+      operationId: createLeagueTask
+      summary: Опубликовать задачу от вуза или партнёра
+      description: Только преподаватель курса. Команды собираются и сдают решение через модуль команд, область league.task.
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LeagueTaskInput"
+      responses:
+        "201":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LeagueTask"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/league/tasks/{id}:
+    get:
+      tags: [league]
+      operationId: getLeagueTask
+      summary: Задача и решения
+      description: Преподаватель видит все решения и похожие прошлые проекты. Студент видит решения своих команд.
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LeagueTaskDetails"
+        "401":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+    put:
+      tags: [league]
+      operationId: updateLeagueTask
+      summary: Изменить или закрыть задачу
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LeagueTaskInput"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LeagueTask"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/league/solutions/{id}/review:
+    post:
+      tags: [league]
+      operationId: reviewLeagueSolution
+      summary: Оценить решение после защиты
+      description: Баллы получает каждый участник, который сдал защиту. Повторная оценка заменяет баллы текущего сезона.
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LeagueReviewInput"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LeagueSolution"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/league/solutions/{id}/explanation:
+    put:
+      tags: [league]
+      operationId: explainLeagueSolution
+      summary: Объяснить, чем решение отличается от похожего
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LeagueExplanationInput"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LeagueSolution"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/league/awards:
+    get:
+      tags: [league]
+      operationId: listLeagueAwards
+      summary: Награды вуза
+      security:
+        - bearer: []
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/LeagueAward"
+        "401":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+    post:
+      tags: [league]
+      operationId: createLeagueAward
+      summary: Добавить награду
+      description: Нужно право league.awards.manage.
+      security:
+        - bearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LeagueAwardInput"
+      responses:
+        "201":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LeagueAward"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/league/awards/{id}:
+    put:
+      tags: [league]
+      operationId: updateLeagueAward
+      summary: Изменить или убрать награду
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LeagueAwardInput"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LeagueAward"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/league/leagues/{id}/grants:
+    post:
+      tags: [league]
+      operationId: grantLeagueAward
+      summary: Вручить награду студенту
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LeagueGrantInput"
+      responses:
+        "201":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LeagueGrant"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/league/grants/{id}:
+    delete:
+      tags: [league]
+      operationId: revokeLeagueAward
+      summary: Отозвать награду
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "204":
+          description: Готово
+        "401":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
 components:
   securitySchemes:
     bearer:
@@ -7703,6 +7983,10 @@ components:
           type: integer
           minimum: 0
           description: Сколько баллов за сезон нужно, первый дивизион начинается с 0
+        gpuHours:
+          type: integer
+          minimum: 0
+          description: Дополнительные часы GPU на свои проекты, не больше предела вуза league.division_gpu_hours
     LeagueSeason:
       type: object
       required: [id, number, startedAt, endedAt]
@@ -7736,7 +8020,7 @@ components:
           format: uuid
         kind:
           type: string
-          enum: [work, adjustment]
+          enum: [work, adjustment, task]
         workKind:
           type: [string, "null"]
         workId:
@@ -7838,7 +8122,7 @@ components:
           type: integer
     LeagueStanding:
       type: object
-      required: [points, division, toNext, growth, display, nickname]
+      required: [points, division, toNext, growth, display, nickname, gpuHours]
       properties:
         points:
           type: integer
@@ -7854,6 +8138,9 @@ components:
           $ref: "#/components/schemas/LeagueDisplay"
         nickname:
           type: string
+        gpuHours:
+          type: integer
+          description: Дополнительная квота дивизиона
     LeagueTableRow:
       type: object
       required: [place, name, display, points, growth, me, topGrowth]
@@ -7918,7 +8205,7 @@ components:
                 - type: "null"
     LeagueView:
       type: object
-      required: [id, kind, originId, title, role, season, divisions, confirm, formula, me, table, entries, transitions, disputes, players, pending, openDisputes]
+      required: [id, kind, originId, title, role, season, divisions, confirm, formula, me, table, entries, transitions, disputes, players, pending, openDisputes, tasks, grants]
       properties:
         id:
           type: string
@@ -7979,9 +8266,18 @@ components:
           type: [array, "null"]
           items:
             $ref: "#/components/schemas/LeagueDisputeRow"
+        tasks:
+          type: array
+          items:
+            $ref: "#/components/schemas/LeagueTask"
+        grants:
+          type: array
+          description: Студенту свои награды, преподавателю все в лиге
+          items:
+            $ref: "#/components/schemas/LeagueGrant"
     LeaguePlayer:
       type: object
-      required: [person, standing, entries, transitions, disputes]
+      required: [person, standing, entries, transitions, disputes, grants]
       properties:
         person:
           $ref: "#/components/schemas/Person"
@@ -7999,6 +8295,10 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/LeagueDispute"
+        grants:
+          type: array
+          items:
+            $ref: "#/components/schemas/LeagueGrant"
     LeagueWeightInput:
       type: object
       required: [kind, id, weight]
@@ -8086,6 +8386,292 @@ components:
         points:
           type: integer
           description: Только для принятого спора о начислении
+    LeagueTask:
+      type: object
+      required: [id, leagueId, title, about, partner, points, minSize, maxSize, selfFormed, dueAt, closedAt, createdAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        leagueId:
+          type: string
+          format: uuid
+        title:
+          type: string
+        about:
+          type: string
+        partner:
+          type: string
+          description: Кто дал задачу, пусто для задач вуза
+        points:
+          type: integer
+          description: Сколько баллов можно получить
+        minSize:
+          type: integer
+        maxSize:
+          type: integer
+        selfFormed:
+          type: boolean
+        dueAt:
+          type: [string, "null"]
+          format: date-time
+        closedAt:
+          type: [string, "null"]
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+    LeagueTaskInput:
+      type: object
+      required: [title, points, minSize, maxSize]
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        about:
+          type: string
+          maxLength: 10000
+        partner:
+          type: string
+          maxLength: 200
+        points:
+          type: integer
+          minimum: 1
+          maximum: 10000
+        minSize:
+          type: integer
+          minimum: 2
+          maximum: 12
+        maxSize:
+          type: integer
+          minimum: 2
+          maximum: 12
+        selfFormed:
+          type: boolean
+        dueAt:
+          type: [string, "null"]
+          format: date-time
+        closed:
+          type: boolean
+    LeagueSolutionWork:
+      type: object
+      description: Работа, которую команда предлагает сдать по задаче лиги
+      properties:
+        text:
+          type: string
+          maxLength: 20000
+        links:
+          type: array
+          maxItems: 10
+          items:
+            type: string
+            format: uri
+    LeagueSolution:
+      type: object
+      required: [id, taskId, teamId, teamName, proposedBy, members, work, votes, similarTo, similarity, explanation, points, passed, comment, reviewedAt, createdAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        taskId:
+          type: string
+          format: uuid
+        teamId:
+          type: string
+        teamName:
+          type: string
+        proposedBy:
+          type: [string, "null"]
+          format: uuid
+        members:
+          type: array
+          items:
+            type: string
+            format: uuid
+        work:
+          $ref: "#/components/schemas/LeagueSolutionWork"
+        votes:
+          type: array
+          items:
+            type: object
+            required: [userId, decision, comment]
+            properties:
+              userId:
+                type: string
+                format: uuid
+              decision:
+                type: string
+                enum: [agreed, objected, silent]
+              comment:
+                type: string
+        similarTo:
+          type: [string, "null"]
+          format: uuid
+        similarity:
+          type: [number, "null"]
+        explanation:
+          type: string
+          description: Чем решение отличается от похожего, пишет команда
+        points:
+          type: [integer, "null"]
+        passed:
+          type: array
+          description: Кто сдал защиту и получил баллы
+          items:
+            type: string
+            format: uuid
+        comment:
+          type: string
+        reviewedAt:
+          type: [string, "null"]
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+    LeagueSolutionRow:
+      allOf:
+        - $ref: "#/components/schemas/LeagueSolution"
+        - type: object
+          required: [similar]
+          properties:
+            similar:
+              description: Похожий прошлый проект, только преподавателю
+              oneOf:
+                - type: object
+                  required: [id, taskTitle, teamName, text]
+                  properties:
+                    id:
+                      type: string
+                      format: uuid
+                    taskTitle:
+                      type: string
+                    teamName:
+                      type: string
+                    text:
+                      type: string
+                - type: "null"
+    LeagueTaskDetails:
+      type: object
+      required: [task, league, role, solutions]
+      properties:
+        task:
+          $ref: "#/components/schemas/LeagueTask"
+        league:
+          type: string
+        role:
+          type: string
+          enum: [lead, student]
+        solutions:
+          type: array
+          items:
+            $ref: "#/components/schemas/LeagueSolutionRow"
+    LeagueReviewInput:
+      type: object
+      required: [points, passed]
+      properties:
+        points:
+          type: integer
+          minimum: 0
+        passed:
+          type: array
+          items:
+            type: string
+            format: uuid
+        comment:
+          type: string
+          maxLength: 2000
+    LeagueExplanationInput:
+      type: object
+      required: [text]
+      properties:
+        text:
+          type: string
+          minLength: 1
+          maxLength: 2000
+    LeagueAward:
+      type: object
+      required: [id, title, about, gpuHours, quantity, granted, archivedAt, createdAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        about:
+          type: string
+        gpuHours:
+          type: integer
+        quantity:
+          type: [integer, "null"]
+          description: Сколько всего можно вручить, null без предела
+        granted:
+          type: integer
+        archivedAt:
+          type: [string, "null"]
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+    LeagueAwardInput:
+      type: object
+      required: [title]
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        about:
+          type: string
+          maxLength: 2000
+        gpuHours:
+          type: integer
+          minimum: 0
+          maximum: 100000
+        quantity:
+          type: [integer, "null"]
+          minimum: 1
+        archived:
+          type: boolean
+    LeagueGrant:
+      type: object
+      required: [id, awardId, title, gpuHours, userId, seasonId, reason, grantedAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        awardId:
+          type: string
+          format: uuid
+        title:
+          type: string
+        gpuHours:
+          type: integer
+        userId:
+          type: string
+          format: uuid
+        seasonId:
+          type: string
+          format: uuid
+        reason:
+          type: string
+        grantedAt:
+          type: string
+          format: date-time
+    LeagueGrantInput:
+      type: object
+      required: [awardId, userId, reason]
+      properties:
+        awardId:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 1000
     StudentWork:
       type: object
       required: [student, latest, attempts, grade]

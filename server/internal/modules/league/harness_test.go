@@ -110,30 +110,62 @@ func (f *fakeCourse) grade(workID string, p auth.Principal, score, outOf float64
 	w.Results = append(w.Results, module.WorkResult{UserID: p.UserID, Score: score, Max: outOf, At: time.Now()})
 }
 
-type allOn struct{}
-
-func (allOn) Value(context.Context, pgx.Tx, string) (json.RawMessage, error) {
-	return json.RawMessage(`null`), nil
+type fakeSettings struct {
+	mu     sync.Mutex
+	values map[string]any
 }
 
-func (allOn) ModuleEnabled(context.Context, string, string) (bool, error) {
+func (f *fakeSettings) Value(_ context.Context, _ pgx.Tx, key string) (json.RawMessage, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	return json.Marshal(f.values[key])
+}
+
+func (*fakeSettings) ModuleEnabled(context.Context, string, string) (bool, error) {
 	return true, nil
 }
 
+func (f *fakeSettings) set(key string, value any) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	f.values[key] = value
+}
+
+type wordEmbedder struct{}
+
+func (wordEmbedder) Name() string {
+	return "words"
+}
+
+func (wordEmbedder) Embed(_ context.Context, texts []string) ([][]float32, error) {
+	out := make([][]float32, len(texts))
+	for i, text := range texts {
+		vector := make([]float32, 8)
+		for _, word := range strings.Fields(strings.ToLower(text)) {
+			vector[len(word)%8]++
+		}
+		out[i] = vector
+	}
+	return out, nil
+}
+
 type world struct {
-	t       *testing.T
-	ctx     context.Context
-	tenant  string
-	tx      database.TenantTx
-	users   identity.Store
-	leagues league.Service
-	worker  league.LeagueWorker
-	course  *fakeCourse
-	sent    *outbox
-	teacher auth.Principal
-	aigerim auth.Principal
-	erlan   auth.Principal
-	dana    auth.Principal
+	t        *testing.T
+	ctx      context.Context
+	tenant   string
+	tx       database.TenantTx
+	users    identity.Store
+	leagues  league.Service
+	worker   league.LeagueWorker
+	course   *fakeCourse
+	sent     *outbox
+	settings *fakeSettings
+	kernel   module.Kernel
+	admin    auth.Principal
+	teacher  auth.Principal
+	aigerim  auth.Principal
+	erlan    auth.Principal
+	dana     auth.Principal
 }
 
 func newWorld(t *testing.T) *world {
@@ -152,15 +184,24 @@ func newWorld(t *testing.T) *world {
 		t.Fatalf("tenant: %v", err)
 	}
 	tx := database.NewTenantTx(pool)
+	catalog, err := access.NewCatalog(append(structure.Permissions(), league.Module{}.Permissions()...)...)
+	if err != nil {
+		t.Fatalf("catalog: %v", err)
+	}
 	fake := &fakeCourse{works: map[string]*module.ScoredWork{}}
 	sent := &outbox{}
+	settings := &fakeSettings{values: map[string]any{}}
 	k := module.Kernel{
-		Pool: pool, Tenants: tx, Notifier: sent, Settings: allOn{},
-		Rosters: module.Rosters{fake}, Scores: module.ScoreSources{fake},
+		Pool: pool, Tenants: tx, Notifier: sent, Settings: settings, Access: access.NewService(tx, catalog, structure.Tree{}),
+		Embedder: wordEmbedder{}, Scores: module.ScoreSources{fake},
 	}
 	w := &world{
 		t: t, ctx: ctx, tenant: created.ID, tx: tx, users: identity.NewStore(tx),
-		leagues: league.NewService(k), worker: league.NewLeagueWorker(k), course: fake, sent: sent,
+		leagues: league.NewService(k), worker: league.NewLeagueWorker(k), course: fake, sent: sent, settings: settings, kernel: k,
+	}
+	w.admin = w.user("admin", "Ректорат")
+	if _, err := access.NewBootstrap(tx).GrantTopRole(ctx, w.tenant, w.admin.UserID); err != nil {
+		t.Fatalf("grant: %v", err)
 	}
 	w.teacher = w.user("teacher", "Преподаватель")
 	w.aigerim = w.user("aigerim", "Айгерим")

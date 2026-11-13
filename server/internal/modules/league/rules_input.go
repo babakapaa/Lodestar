@@ -6,8 +6,8 @@ type RulesInput struct {
 	Weights   []WeightInput `json:"weights"`
 }
 
-func (in RulesInput) normalized(works []WorkWeight) (RulesInput, error) {
-	divisions, err := in.Divisions.normalized()
+func (in RulesInput) normalized(works []WorkWeight, gpuCap int) (RulesInput, error) {
+	divisions, err := in.Divisions.normalized(gpuCap)
 	if err != nil {
 		return in, err
 	}

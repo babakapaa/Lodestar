@@ -1,6 +1,7 @@
 package league
 
 type Division struct {
-	Name string `json:"name"`
-	From int    `json:"from"`
+	Name     string `json:"name"`
+	From     int    `json:"from"`
+	GPUHours int    `json:"gpuHours"`
 }

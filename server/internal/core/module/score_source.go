@@ -7,6 +7,6 @@ import (
 )
 
 type ScoreSource interface {
-	Kind() string
+	RosterSource
 	ScoredWorks(ctx context.Context, tx pgx.Tx, rosterID string) ([]ScoredWork, error)
 }

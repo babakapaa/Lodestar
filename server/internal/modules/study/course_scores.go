@@ -9,12 +9,9 @@ import (
 )
 
 type CourseScores struct {
+	CourseRosters
 	assignments AssignmentStore
 	results     ResultStore
-}
-
-func (CourseScores) Kind() string {
-	return RosterCourse
 }
 
 func (s CourseScores) ScoredWorks(ctx context.Context, tx pgx.Tx, courseID string) ([]module.ScoredWork, error) {

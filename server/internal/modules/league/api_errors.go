@@ -19,6 +19,15 @@ const (
 	CodeDisputeTarget      = "league_dispute_target"
 	CodeDisputeOpen        = "league_dispute_open"
 	CodeLeagueArchived     = "league_archived"
+	CodeInvalidTask        = "invalid_league_task"
+	CodeTaskNotFound       = "league_task_not_found"
+	CodeTaskClosed         = "league_task_closed"
+	CodeInvalidSolution    = "invalid_league_solution"
+	CodeSolutionNotFound   = "league_solution_not_found"
+	CodeInvalidAward       = "invalid_league_award"
+	CodeAwardNotFound      = "league_award_not_found"
+	CodeAwardGone          = "league_award_gone"
+	CodeGrantNotFound      = "league_grant_not_found"
 )
 
 var errorCodes = []struct {
@@ -35,6 +44,15 @@ var errorCodes = []struct {
 	{ErrDisputeTarget, http.StatusBadRequest, CodeDisputeTarget},
 	{ErrDisputeOpen, http.StatusConflict, CodeDisputeOpen},
 	{ErrLeagueArchived, http.StatusConflict, CodeLeagueArchived},
+	{ErrInvalidTask, http.StatusBadRequest, CodeInvalidTask},
+	{ErrTaskNotFound, http.StatusNotFound, CodeTaskNotFound},
+	{ErrTaskClosed, http.StatusConflict, CodeTaskClosed},
+	{ErrInvalidSolution, http.StatusBadRequest, CodeInvalidSolution},
+	{ErrSolutionNotFound, http.StatusNotFound, CodeSolutionNotFound},
+	{ErrInvalidAward, http.StatusBadRequest, CodeInvalidAward},
+	{ErrAwardNotFound, http.StatusNotFound, CodeAwardNotFound},
+	{ErrAwardGone, http.StatusConflict, CodeAwardGone},
+	{ErrGrantNotFound, http.StatusNotFound, CodeGrantNotFound},
 }
 
 func writeError(w http.ResponseWriter, err error) {

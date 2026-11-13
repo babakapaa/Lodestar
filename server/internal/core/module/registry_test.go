@@ -269,6 +269,14 @@ func (scoreKind) ScoredWorks(context.Context, pgx.Tx, string) ([]ScoredWork, err
 	return nil, nil
 }
 
+func (scoreKind) All(context.Context, pgx.Tx) ([]Roster, error) {
+	return nil, nil
+}
+
+func (scoreKind) One(context.Context, pgx.Tx, string) (Roster, error) {
+	return Roster{}, ErrRosterNotFound
+}
+
 func TestRegistryRequiresOwnScoreKinds(t *testing.T) {
 	if _, err := NewRegistry(scoringModule{stubModule{name: "league"}, "study.course"}); !errors.Is(err, ErrForeignScoreSource) {
 		t.Fatalf("err = %v, want ErrForeignScoreSource", err)

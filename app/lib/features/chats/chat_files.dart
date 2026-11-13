@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/files/file_download.dart';
 import '../../core/files/files_providers.dart';
 import '../../core/files/uploaded_file.dart';
 import 'chat_file.dart';
@@ -25,16 +26,6 @@ class ChatFiles {
     size: file.size,
   );
 
-  Future<void> save(ChatFile file) async {
-    final bytes = await _ref.read(fileTransferProvider).download(file.id);
-    final dot = file.name.lastIndexOf('.');
-    final named = dot > 0;
-    await _ref
-        .read(exportSaverProvider)
-        .save(
-          named ? file.name.substring(0, dot) : file.name,
-          bytes,
-          extension: named ? file.name.substring(dot + 1) : 'bin',
-        );
-  }
+  Future<void> save(ChatFile file) =>
+      FileDownload(_ref).save(file.id, file.name);
 }

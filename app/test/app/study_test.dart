@@ -1,4 +1,7 @@
+import 'dart:typed_data';
+
 import 'package:flutter_test/flutter_test.dart';
+import 'package:lodestar/core/files/opened_file.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../support/fake_server.dart';
@@ -9,6 +12,11 @@ Future<void> openAssignment(WidgetTester tester) async {
   await tester.pumpAndSettle();
   await tester.tap(find.text('Биология'));
   await tester.pumpAndSettle();
+  await tester.scrollUntilVisible(
+    find.text('Эссе о клетке'),
+    200,
+    scrollable: find.byType(Scrollable).last,
+  );
   await tester.tap(find.text('Эссе о клетке'));
   await tester.pumpAndSettle();
 }
@@ -35,6 +43,30 @@ void main() {
     expect(submission['clientId'], isNotEmpty);
     expect(find.text('Клетка состоит из ядра'), findsOneWidget);
     expect(find.text('Сдать заново'), findsOneWidget);
+  });
+
+  testWidgets('a student attaches files to work and downloads them', (
+    tester,
+  ) async {
+    final app = await pumpApp(tester, size: const Size(390, 1400));
+    await openAssignment(tester);
+
+    app.opener.next = [
+      OpenedFile('cell.pdf', Uint8List.fromList([4, 2])),
+    ];
+    await tester.tap(find.byKey(const ValueKey('submit-attach')));
+    await tester.pumpAndSettle();
+    expect(find.text('cell.pdf'), findsOneWidget);
+
+    await tester.tap(find.text('Сдать работу'));
+    await tester.pumpAndSettle();
+    final submission = app.server.study.submissions.single;
+    expect(submission['body'], '');
+    expect(((submission['files']! as List).single as Map)['name'], 'cell.pdf');
+
+    await tester.tap(find.text('cell.pdf'));
+    await tester.pumpAndSettle();
+    expect(app.saver.saved['cell.pdf'], Uint8List.fromList([4, 2]));
   });
 
   testWidgets('work written offline is sent when the network returns', (
@@ -147,6 +179,58 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Ерлан Ким'), findsOneWidget);
     expect(find.text('Не сдано'), findsOneWidget);
+  });
+
+  testWidgets('a teacher builds the course schedule and changes a class', (
+    tester,
+  ) async {
+    final server = FakeServer();
+    server.study.role = 'teacher';
+    await pumpApp(tester, size: const Size(390, 1700), server: server);
+    await tester.tap(find.text('Учёба').first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Биология'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('course-schedule')));
+    await tester.pumpAndSettle();
+    expect(find.text('Занятий пока нет. Добавьте первое.'), findsOneWidget);
+
+    await tester.tap(find.byKey(const ValueKey('series-add')));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byKey(const ValueKey('series-time')), '9:00');
+    await tester.tap(find.byKey(const ValueKey('series-save')));
+    await tester.pumpAndSettle();
+    expect(find.text('Проверьте время, длительность и даты'), findsOneWidget);
+    await tester.enterText(find.byKey(const ValueKey('series-time')), '09:00');
+    await tester.enterText(find.byKey(const ValueKey('series-room')), 'А-204');
+    await tester.tap(find.byKey(const ValueKey('series-save')));
+    await tester.pumpAndSettle();
+
+    final created = server.study.series.single;
+    expect(created['startTime'], '09:00');
+    expect(created['room'], 'А-204');
+    expect(created['minutes'], 90);
+    expect(find.byKey(ValueKey('series-${created['id']}')), findsOneWidget);
+
+    final lessonKey = ValueKey('lesson-${created['id']}-2026-11-16');
+    await tester.tap(find.byKey(lessonKey));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('lesson-cancel')));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const ValueKey('team-text')),
+      'Конференция',
+    );
+    await tester.tap(find.text('Отменить занятие').last);
+    await tester.pumpAndSettle();
+    expect(server.study.courseLessons.single['status'], 'cancelled');
+    expect(find.textContaining('Конференция'), findsOneWidget);
+
+    await tester.tap(find.byKey(lessonKey));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('lesson-revert')));
+    await tester.pumpAndSettle();
+    expect(server.study.courseLessons.single['status'], 'planned');
   });
 
   testWidgets('a teacher grades submitted work', (tester) async {

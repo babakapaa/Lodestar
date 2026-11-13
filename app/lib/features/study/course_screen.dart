@@ -102,6 +102,14 @@ class CourseScreen extends ConsumerWidget {
               ),
               const SizedBox(height: Spacing.m),
               NavigatorTile(
+                key: const ValueKey('course-schedule'),
+                icon: Icons.edit_calendar_outlined,
+                title: l10n.scheduleEditTitle,
+                subtitle: l10n.scheduleEditHint,
+                route: AppRoutes.courseSchedule(courseId),
+              ),
+              const SizedBox(height: Spacing.m),
+              NavigatorTile(
                 key: const ValueKey('course-lms'),
                 icon: Icons.table_chart_outlined,
                 title: l10n.courseTablesTitle,

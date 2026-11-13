@@ -6,6 +6,7 @@ import 'package:drift/drift.dart';
 import '../../core/offline/client_id.dart';
 import 'chat.dart';
 import 'chat_entry.dart';
+import 'chat_file.dart';
 import 'chat_message.dart';
 import 'chats_database.dart';
 import 'outgoing.dart';
@@ -199,7 +200,13 @@ class ChatsStore {
     await _saveChat(_chat(row).read(seq));
   }
 
-  Future<String> queue(String chatId, String text, {int? replyTo}) async {
+  Future<String> queue(
+    String chatId,
+    String text, {
+    int? replyTo,
+    List<String> mentions = const [],
+    List<ChatFile> files = const [],
+  }) async {
     final id = ClientId.generate();
     await _db
         .into(_db.outboxRows)
@@ -209,6 +216,8 @@ class ChatsStore {
             chatId: chatId,
             body: text,
             replyTo: Value(replyTo),
+            mentions: Value(jsonEncode(mentions)),
+            files: Value(jsonEncode([for (final file in files) file.toJson()])),
             createdAt: DateTime.now().toUtc(),
           ),
         );
@@ -272,6 +281,13 @@ class ChatsStore {
     chatId: row.chatId,
     text: row.body,
     replyTo: row.replyTo,
+    mentions: [
+      for (final id in jsonDecode(row.mentions) as List<Object?>) id! as String,
+    ],
+    files: [
+      for (final item in jsonDecode(row.files) as List<Object?>)
+        ChatFile.fromJson(item! as Map<String, Object?>),
+    ],
     createdAt: row.createdAt,
     error: row.error,
   );

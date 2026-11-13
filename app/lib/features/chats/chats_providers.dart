@@ -3,9 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/auth/auth_providers.dart';
 import '../../core/offline/offline_providers.dart';
+import 'blocked_user.dart';
 import 'chat.dart';
 import 'chat_details.dart';
 import 'chat_entry.dart';
+import 'chat_report.dart';
 import 'chats_api.dart';
 import 'chats_database.dart';
 import 'chats_store.dart';
@@ -72,4 +74,12 @@ final chatDetailsProvider = FutureProvider.autoDispose
 
 final myIdProvider = StreamProvider<String?>(
   (ref) => ref.watch(chatsStoreProvider).watchMe(),
+);
+
+final chatBlocksProvider = FutureProvider.autoDispose<List<BlockedUser>>(
+  (ref) => ref.watch(chatsApiProvider).blocks(),
+);
+
+final chatReportsProvider = FutureProvider.autoDispose<List<ChatReport>>(
+  (ref) => ref.watch(chatsApiProvider).reports(),
 );

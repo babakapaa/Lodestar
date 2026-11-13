@@ -812,5 +812,42 @@
   "chatsChannel": "Канал",
   "chatsReplyTo": "Ответ на сообщение",
   "chatsUnknown": "Удалённый аккаунт",
-  "chatsEmpty": "Сообщений пока нет"
+  "chatsEmpty": "Сообщений пока нет",
+  "chatsAttach": "Прикрепить файл",
+  "chatsReport": "Пожаловаться",
+  "chatsReportTitle": "Жалоба на сообщение",
+  "chatsReportHint": "Модераторы увидят только это сообщение, без остальной переписки.",
+  "chatsReportReason": "Что не так",
+  "chatsReportSend": "Отправить жалобу",
+  "chatsReported": "Жалоба отправлена",
+  "chatsInfo": "О чате",
+  "chatsEditInfo": "Изменить чат",
+  "chatsTitleLabel": "Название",
+  "chatsAboutLabel": "Описание",
+  "chatsRoleOwner": "Владелец",
+  "chatsRoleAdmin": "Администратор",
+  "chatsSynced": "из расписания",
+  "chatsYou": "вы",
+  "chatsRemoveMember": "Исключить",
+  "chatsAddMember": "Добавить участника",
+  "chatsLeave": "Выйти из чата",
+  "chatsBlock": "Заблокировать",
+  "chatsUnblock": "Разблокировать",
+  "chatsCourseTitle": "Чаты курса",
+  "chatsCourseEmptyTitle": "Чатов пока нет",
+  "chatsCourseEmptyBody": "Канал курса появится сам, как только курс будет в расписании.",
+  "chatsCourseGroup": "Создать группу курса",
+  "chatReportsTitle": "Жалобы в чатах",
+  "chatReportsBody": "Сообщения, на которые пожаловались",
+  "chatReportsReason": "Причина: {reason}",
+  "@chatReportsReason": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "chatReportsResolve": "Разобрано",
+  "chatReportsEmptyTitle": "Жалоб нет",
+  "chatReportsEmptyBody": "Новые жалобы появятся здесь."
 }

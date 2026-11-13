@@ -73,6 +73,15 @@ class AdminScreen extends ConsumerWidget {
                     trailing: const Icon(Icons.chevron_right),
                     onTap: () => context.push(AppRoutes.adminAudit),
                   ),
+                if (permissions.has(PermissionSet.reviewChatReports))
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: const Icon(Icons.flag_outlined),
+                    title: Text(l10n.chatReportsTitle),
+                    subtitle: Text(l10n.chatReportsBody),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => context.push(AppRoutes.chatReports),
+                  ),
               ],
             ),
           ),

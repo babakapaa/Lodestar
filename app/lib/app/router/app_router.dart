@@ -8,8 +8,11 @@ import '../../design/tokens/motion.dart';
 import '../../features/admin/admin_screen.dart';
 import '../../features/admin/audit_screen.dart';
 import '../../features/admin/tenant_settings_screen.dart';
+import '../../features/chats/chat_info_screen.dart';
+import '../../features/chats/chat_reports_screen.dart';
 import '../../features/chats/chat_screen.dart';
 import '../../features/chats/chats_screen.dart';
+import '../../features/chats/course_chats_screen.dart';
 import '../../features/connect/connect_screen.dart';
 import '../../features/login/login_screen.dart';
 import '../../features/navigator/dialog_scope.dart';
@@ -84,6 +87,7 @@ class AppRouter {
           _route(AppRoutes.admin, const AdminScreen()),
           _route(AppRoutes.adminSettings, const TenantSettingsScreen()),
           _route(AppRoutes.adminAudit, const AuditScreen()),
+          _route(AppRoutes.chatReports, const ChatReportsScreen()),
           _route(AppRoutes.roles, const RolesScreen()),
           _route(AppRoutes.roleNew, const RoleEditScreen()),
           _param(AppRoutes.role(':id'), (id) => RoleEditScreen(roleId: id)),
@@ -177,6 +181,17 @@ class AppRouter {
           _param(AppRoutes.dialog(':id'), (id) => DialogScreen(dialogId: id)),
           _route(AppRoutes.journal, const JournalScreen()),
           _param(AppRoutes.chat(':id'), (id) => ChatScreen(chatId: id)),
+          GoRoute(
+            path: '${AppRoutes.courseChatsPath}/:id',
+            pageBuilder: (context, state) => _fade(
+              state,
+              CourseChatsScreen(
+                courseId: state.pathParameters['id']!,
+                teaches: state.uri.queryParameters['teach'] == '1',
+              ),
+            ),
+          ),
+          _param(AppRoutes.chatInfo(':id'), (id) => ChatInfoScreen(chatId: id)),
           _param(
             AppRoutes.courseMaterials(':id'),
             (id) => MaterialsScreen(courseId: id),

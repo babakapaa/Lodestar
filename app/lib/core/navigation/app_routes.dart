@@ -12,10 +12,13 @@ abstract final class AppRoutes {
   static const roleNew = '/admin/roles/new';
   static const people = '/admin/people';
   static const units = '/admin/units';
+  static const chatReports = '/admin/chat-reports';
   static const connect = '/connect';
   static const login = '/login';
   static const schedulePath = '/study/schedule';
   static const notesPath = '/notes';
+  static const chatsPath = '/chats';
+  static const courseChatsPath = '/chats/course';
   static const notesTrash = '/notes/trash';
   static const notesGraph = '/notes/graph';
   static const sourcesPath = '/notes/sources';
@@ -59,6 +62,13 @@ abstract final class AppRoutes {
   static String dialog(String id) => '/navigator/dialogs/$id';
 
   static String chat(String id) => '/chats/$id';
+
+  static String chatInfo(String id) => '/chats/$id/info';
+
+  static String courseChats(String courseId, {bool teach = false}) => Uri(
+    path: '$courseChatsPath/$courseId',
+    queryParameters: teach ? {'teach': '1'} : null,
+  ).toString();
 
   static String newDialog({String? scopeKind, String? scopeId}) => Uri(
     path: dialogNew,

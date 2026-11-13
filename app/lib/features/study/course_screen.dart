@@ -73,6 +73,15 @@ class CourseScreen extends ConsumerWidget {
                 scopeId: courseId,
               ),
             ),
+            const SizedBox(height: Spacing.m),
+            NavigatorTile(
+              icon: Icons.forum_outlined,
+              title: l10n.chatsCourseTitle,
+              route: AppRoutes.courseChats(
+                courseId,
+                teach: details.course.role.teaches,
+              ),
+            ),
             if (details.course.role.teaches) ...[
               const SizedBox(height: Spacing.m),
               NavigatorTile(

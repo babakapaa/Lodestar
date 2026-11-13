@@ -1,1 +1,1 @@
-enum MessageAction { reply, edit, delete, copy }
+enum MessageAction { reply, edit, delete, copy, report }

@@ -699,6 +699,28 @@ class $OutboxRowsTable extends OutboxRows
     type: DriftSqlType.int,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _mentionsMeta = const VerificationMeta(
+    'mentions',
+  );
+  @override
+  late final GeneratedColumn<String> mentions = GeneratedColumn<String>(
+    'mentions',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('[]'),
+  );
+  static const VerificationMeta _filesMeta = const VerificationMeta('files');
+  @override
+  late final GeneratedColumn<String> files = GeneratedColumn<String>(
+    'files',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('[]'),
+  );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
   );
@@ -725,6 +747,8 @@ class $OutboxRowsTable extends OutboxRows
     chatId,
     body,
     replyTo,
+    mentions,
+    files,
     createdAt,
     error,
   ];
@@ -770,6 +794,18 @@ class $OutboxRowsTable extends OutboxRows
         replyTo.isAcceptableOrUnknown(data['reply_to']!, _replyToMeta),
       );
     }
+    if (data.containsKey('mentions')) {
+      context.handle(
+        _mentionsMeta,
+        mentions.isAcceptableOrUnknown(data['mentions']!, _mentionsMeta),
+      );
+    }
+    if (data.containsKey('files')) {
+      context.handle(
+        _filesMeta,
+        files.isAcceptableOrUnknown(data['files']!, _filesMeta),
+      );
+    }
     if (data.containsKey('created_at')) {
       context.handle(
         _createdAtMeta,
@@ -809,6 +845,14 @@ class $OutboxRowsTable extends OutboxRows
         DriftSqlType.int,
         data['${effectivePrefix}reply_to'],
       ),
+      mentions: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}mentions'],
+      )!,
+      files: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}files'],
+      )!,
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}created_at'],
@@ -831,6 +875,8 @@ class OutboxRow extends DataClass implements Insertable<OutboxRow> {
   final String chatId;
   final String body;
   final int? replyTo;
+  final String mentions;
+  final String files;
   final DateTime createdAt;
   final String? error;
   const OutboxRow({
@@ -838,6 +884,8 @@ class OutboxRow extends DataClass implements Insertable<OutboxRow> {
     required this.chatId,
     required this.body,
     this.replyTo,
+    required this.mentions,
+    required this.files,
     required this.createdAt,
     this.error,
   });
@@ -850,6 +898,8 @@ class OutboxRow extends DataClass implements Insertable<OutboxRow> {
     if (!nullToAbsent || replyTo != null) {
       map['reply_to'] = Variable<int>(replyTo);
     }
+    map['mentions'] = Variable<String>(mentions);
+    map['files'] = Variable<String>(files);
     map['created_at'] = Variable<DateTime>(createdAt);
     if (!nullToAbsent || error != null) {
       map['error'] = Variable<String>(error);
@@ -865,6 +915,8 @@ class OutboxRow extends DataClass implements Insertable<OutboxRow> {
       replyTo: replyTo == null && nullToAbsent
           ? const Value.absent()
           : Value(replyTo),
+      mentions: Value(mentions),
+      files: Value(files),
       createdAt: Value(createdAt),
       error: error == null && nullToAbsent
           ? const Value.absent()
@@ -882,6 +934,8 @@ class OutboxRow extends DataClass implements Insertable<OutboxRow> {
       chatId: serializer.fromJson<String>(json['chatId']),
       body: serializer.fromJson<String>(json['body']),
       replyTo: serializer.fromJson<int?>(json['replyTo']),
+      mentions: serializer.fromJson<String>(json['mentions']),
+      files: serializer.fromJson<String>(json['files']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       error: serializer.fromJson<String?>(json['error']),
     );
@@ -894,6 +948,8 @@ class OutboxRow extends DataClass implements Insertable<OutboxRow> {
       'chatId': serializer.toJson<String>(chatId),
       'body': serializer.toJson<String>(body),
       'replyTo': serializer.toJson<int?>(replyTo),
+      'mentions': serializer.toJson<String>(mentions),
+      'files': serializer.toJson<String>(files),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'error': serializer.toJson<String?>(error),
     };
@@ -904,6 +960,8 @@ class OutboxRow extends DataClass implements Insertable<OutboxRow> {
     String? chatId,
     String? body,
     Value<int?> replyTo = const Value.absent(),
+    String? mentions,
+    String? files,
     DateTime? createdAt,
     Value<String?> error = const Value.absent(),
   }) => OutboxRow(
@@ -911,6 +969,8 @@ class OutboxRow extends DataClass implements Insertable<OutboxRow> {
     chatId: chatId ?? this.chatId,
     body: body ?? this.body,
     replyTo: replyTo.present ? replyTo.value : this.replyTo,
+    mentions: mentions ?? this.mentions,
+    files: files ?? this.files,
     createdAt: createdAt ?? this.createdAt,
     error: error.present ? error.value : this.error,
   );
@@ -920,6 +980,8 @@ class OutboxRow extends DataClass implements Insertable<OutboxRow> {
       chatId: data.chatId.present ? data.chatId.value : this.chatId,
       body: data.body.present ? data.body.value : this.body,
       replyTo: data.replyTo.present ? data.replyTo.value : this.replyTo,
+      mentions: data.mentions.present ? data.mentions.value : this.mentions,
+      files: data.files.present ? data.files.value : this.files,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       error: data.error.present ? data.error.value : this.error,
     );
@@ -932,6 +994,8 @@ class OutboxRow extends DataClass implements Insertable<OutboxRow> {
           ..write('chatId: $chatId, ')
           ..write('body: $body, ')
           ..write('replyTo: $replyTo, ')
+          ..write('mentions: $mentions, ')
+          ..write('files: $files, ')
           ..write('createdAt: $createdAt, ')
           ..write('error: $error')
           ..write(')'))
@@ -939,8 +1003,16 @@ class OutboxRow extends DataClass implements Insertable<OutboxRow> {
   }
 
   @override
-  int get hashCode =>
-      Object.hash(clientId, chatId, body, replyTo, createdAt, error);
+  int get hashCode => Object.hash(
+    clientId,
+    chatId,
+    body,
+    replyTo,
+    mentions,
+    files,
+    createdAt,
+    error,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -949,6 +1021,8 @@ class OutboxRow extends DataClass implements Insertable<OutboxRow> {
           other.chatId == this.chatId &&
           other.body == this.body &&
           other.replyTo == this.replyTo &&
+          other.mentions == this.mentions &&
+          other.files == this.files &&
           other.createdAt == this.createdAt &&
           other.error == this.error);
 }
@@ -958,6 +1032,8 @@ class OutboxRowsCompanion extends UpdateCompanion<OutboxRow> {
   final Value<String> chatId;
   final Value<String> body;
   final Value<int?> replyTo;
+  final Value<String> mentions;
+  final Value<String> files;
   final Value<DateTime> createdAt;
   final Value<String?> error;
   final Value<int> rowid;
@@ -966,6 +1042,8 @@ class OutboxRowsCompanion extends UpdateCompanion<OutboxRow> {
     this.chatId = const Value.absent(),
     this.body = const Value.absent(),
     this.replyTo = const Value.absent(),
+    this.mentions = const Value.absent(),
+    this.files = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.error = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -975,6 +1053,8 @@ class OutboxRowsCompanion extends UpdateCompanion<OutboxRow> {
     required String chatId,
     required String body,
     this.replyTo = const Value.absent(),
+    this.mentions = const Value.absent(),
+    this.files = const Value.absent(),
     required DateTime createdAt,
     this.error = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -987,6 +1067,8 @@ class OutboxRowsCompanion extends UpdateCompanion<OutboxRow> {
     Expression<String>? chatId,
     Expression<String>? body,
     Expression<int>? replyTo,
+    Expression<String>? mentions,
+    Expression<String>? files,
     Expression<DateTime>? createdAt,
     Expression<String>? error,
     Expression<int>? rowid,
@@ -996,6 +1078,8 @@ class OutboxRowsCompanion extends UpdateCompanion<OutboxRow> {
       if (chatId != null) 'chat_id': chatId,
       if (body != null) 'body': body,
       if (replyTo != null) 'reply_to': replyTo,
+      if (mentions != null) 'mentions': mentions,
+      if (files != null) 'files': files,
       if (createdAt != null) 'created_at': createdAt,
       if (error != null) 'error': error,
       if (rowid != null) 'rowid': rowid,
@@ -1007,6 +1091,8 @@ class OutboxRowsCompanion extends UpdateCompanion<OutboxRow> {
     Value<String>? chatId,
     Value<String>? body,
     Value<int?>? replyTo,
+    Value<String>? mentions,
+    Value<String>? files,
     Value<DateTime>? createdAt,
     Value<String?>? error,
     Value<int>? rowid,
@@ -1016,6 +1102,8 @@ class OutboxRowsCompanion extends UpdateCompanion<OutboxRow> {
       chatId: chatId ?? this.chatId,
       body: body ?? this.body,
       replyTo: replyTo ?? this.replyTo,
+      mentions: mentions ?? this.mentions,
+      files: files ?? this.files,
       createdAt: createdAt ?? this.createdAt,
       error: error ?? this.error,
       rowid: rowid ?? this.rowid,
@@ -1037,6 +1125,12 @@ class OutboxRowsCompanion extends UpdateCompanion<OutboxRow> {
     if (replyTo.present) {
       map['reply_to'] = Variable<int>(replyTo.value);
     }
+    if (mentions.present) {
+      map['mentions'] = Variable<String>(mentions.value);
+    }
+    if (files.present) {
+      map['files'] = Variable<String>(files.value);
+    }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
@@ -1056,6 +1150,8 @@ class OutboxRowsCompanion extends UpdateCompanion<OutboxRow> {
           ..write('chatId: $chatId, ')
           ..write('body: $body, ')
           ..write('replyTo: $replyTo, ')
+          ..write('mentions: $mentions, ')
+          ..write('files: $files, ')
           ..write('createdAt: $createdAt, ')
           ..write('error: $error, ')
           ..write('rowid: $rowid')
@@ -1687,6 +1783,8 @@ typedef $$OutboxRowsTableCreateCompanionBuilder = OutboxRowsCompanion Function({
   required String chatId,
   required String body,
   Value<int?> replyTo,
+  Value<String> mentions,
+  Value<String> files,
   required DateTime createdAt,
   Value<String?> error,
   Value<int> rowid,
@@ -1696,6 +1794,8 @@ typedef $$OutboxRowsTableUpdateCompanionBuilder = OutboxRowsCompanion Function({
   Value<String> chatId,
   Value<String> body,
   Value<int?> replyTo,
+  Value<String> mentions,
+  Value<String> files,
   Value<DateTime> createdAt,
   Value<String?> error,
   Value<int> rowid,
@@ -1727,6 +1827,16 @@ class $$OutboxRowsTableFilterComposer
 
   ColumnFilters<int> get replyTo => $composableBuilder(
     column: $table.replyTo,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get mentions => $composableBuilder(
+    column: $table.mentions,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get files => $composableBuilder(
+    column: $table.files,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -1770,6 +1880,16 @@ class $$OutboxRowsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get mentions => $composableBuilder(
+    column: $table.mentions,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get files => $composableBuilder(
+    column: $table.files,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
     builder: (column) => ColumnOrderings(column),
@@ -1801,6 +1921,12 @@ class $$OutboxRowsTableAnnotationComposer
 
   GeneratedColumn<int> get replyTo =>
       $composableBuilder(column: $table.replyTo, builder: (column) => column);
+
+  GeneratedColumn<String> get mentions =>
+      $composableBuilder(column: $table.mentions, builder: (column) => column);
+
+  GeneratedColumn<String> get files =>
+      $composableBuilder(column: $table.files, builder: (column) => column);
 
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
@@ -1844,6 +1970,8 @@ class $$OutboxRowsTableTableManager
                 Value<String> chatId = const Value.absent(),
                 Value<String> body = const Value.absent(),
                 Value<int?> replyTo = const Value.absent(),
+                Value<String> mentions = const Value.absent(),
+                Value<String> files = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<String?> error = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -1852,6 +1980,8 @@ class $$OutboxRowsTableTableManager
                 chatId: chatId,
                 body: body,
                 replyTo: replyTo,
+                mentions: mentions,
+                files: files,
                 createdAt: createdAt,
                 error: error,
                 rowid: rowid,
@@ -1862,6 +1992,8 @@ class $$OutboxRowsTableTableManager
                 required String chatId,
                 required String body,
                 Value<int?> replyTo = const Value.absent(),
+                Value<String> mentions = const Value.absent(),
+                Value<String> files = const Value.absent(),
                 required DateTime createdAt,
                 Value<String?> error = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -1870,6 +2002,8 @@ class $$OutboxRowsTableTableManager
                 chatId: chatId,
                 body: body,
                 replyTo: replyTo,
+                mentions: mentions,
+                files: files,
                 createdAt: createdAt,
                 error: error,
                 rowid: rowid,

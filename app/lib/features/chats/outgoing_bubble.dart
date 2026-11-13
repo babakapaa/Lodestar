@@ -3,6 +3,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../design/tokens/spacing.dart';
 import '../../design/tokens/tokens_context.dart';
 import '../../l10n/l10n_context.dart';
+import 'chat_file_link.dart';
 import 'outgoing.dart';
 
 class OutgoingBubble extends StatelessWidget {
@@ -40,7 +41,12 @@ class OutgoingBubble extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.end,
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(outgoing.text),
+                if (outgoing.text.isNotEmpty) Text(outgoing.text),
+                for (final file in outgoing.files)
+                  Padding(
+                    padding: const EdgeInsets.only(top: Spacing.xs),
+                    child: ChatFileLink(file: file),
+                  ),
                 const SizedBox(height: Spacing.xs),
                 if (failed)
                   Row(

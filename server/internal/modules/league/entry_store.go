@@ -13,8 +13,8 @@ const entryColumns = `e.id::text, e.season_id::text, e.user_id::text, e.kind, e.
 
 type EntryStore struct{}
 
-func (EntryStore) Works(ctx context.Context, tx pgx.Tx, leagueID string) (map[string]Entry, error) {
-	rows, err := tx.Query(ctx, `SELECT `+entryColumns+` FROM league.entries e WHERE e.league_id::text = $1 AND e.kind = 'work'`, leagueID)
+func (EntryStore) Works(ctx context.Context, tx pgx.Tx, leagueID string, kind EntryKind) (map[string]Entry, error) {
+	rows, err := tx.Query(ctx, `SELECT `+entryColumns+` FROM league.entries e WHERE e.league_id::text = $1 AND e.kind = $2`, leagueID, kind)
 	if err != nil {
 		return nil, fmt.Errorf("list work entries: %w", err)
 	}
@@ -31,9 +31,9 @@ func (EntryStore) Works(ctx context.Context, tx pgx.Tx, leagueID string) (map[st
 
 func (EntryStore) InsertWork(ctx context.Context, tx pgx.Tx, leagueID, seasonID string, e Entry) error {
 	_, err := tx.Exec(ctx, `
-		INSERT INTO league.entries (league_id, season_id, user_id, kind, work_kind, work_id, title, score, max, weight, points)
-		VALUES ($1, $2, $3, 'work', $4, $5, $6, $7, $8, $9, $10)`,
-		leagueID, seasonID, e.UserID, e.WorkKind, e.WorkID, e.Title, e.Score, e.Max, e.Weight, e.Points)
+		INSERT INTO league.entries (league_id, season_id, user_id, kind, work_kind, work_id, title, score, max, weight, points, reason)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
+		leagueID, seasonID, e.UserID, e.Kind, e.WorkKind, e.WorkID, e.Title, e.Score, e.Max, e.Weight, e.Points, e.Reason)
 	if err != nil {
 		return fmt.Errorf("add work entry: %w", err)
 	}
@@ -42,8 +42,8 @@ func (EntryStore) InsertWork(ctx context.Context, tx pgx.Tx, leagueID, seasonID 
 
 func (EntryStore) UpdateWork(ctx context.Context, tx pgx.Tx, e Entry) error {
 	_, err := tx.Exec(ctx, `
-		UPDATE league.entries SET title = $2, score = $3, max = $4, weight = $5, points = $6, updated_at = now()
-		WHERE id::text = $1`, e.ID, e.Title, e.Score, e.Max, e.Weight, e.Points)
+		UPDATE league.entries SET title = $2, score = $3, max = $4, weight = $5, points = $6, reason = $7, updated_at = now()
+		WHERE id::text = $1`, e.ID, e.Title, e.Score, e.Max, e.Weight, e.Points, e.Reason)
 	if err != nil {
 		return fmt.Errorf("update work entry: %w", err)
 	}

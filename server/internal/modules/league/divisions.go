@@ -17,14 +17,14 @@ func defaultDivisions() Divisions {
 	return Divisions{{From: 0}, {From: 150}, {From: 300}}
 }
 
-func (d Divisions) normalized() (Divisions, error) {
+func (d Divisions) normalized(gpuCap int) (Divisions, error) {
 	if len(d) == 0 || len(d) > maxDivisions || d[0].From != 0 {
 		return nil, ErrInvalidRules
 	}
 	out := make(Divisions, len(d))
 	for i, div := range d {
 		div.Name = strings.TrimSpace(div.Name)
-		if utf8.RuneCountInString(div.Name) > 40 || div.From > maxBoundary || (i > 0 && div.From <= d[i-1].From) {
+		if utf8.RuneCountInString(div.Name) > 40 || div.From > maxBoundary || div.GPUHours < 0 || div.GPUHours > gpuCap || (i > 0 && div.From <= d[i-1].From) {
 			return nil, ErrInvalidRules
 		}
 		out[i] = div

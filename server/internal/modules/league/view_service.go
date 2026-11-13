@@ -49,6 +49,9 @@ func (s Service) view(ctx context.Context, tx pgx.Tx, p auth.Principal, role Rol
 		ID: at.league.ID, Kind: at.roster.Kind, OriginID: at.roster.ID, Title: at.roster.Title, Role: role,
 		Season: at.season, Divisions: at.league.Divisions, Confirm: at.league.Confirm, Formula: weights.formula(at.works),
 	}
+	if v.Tasks, err = s.tasks.ByLeague(ctx, tx, at.league.ID); err != nil {
+		return v, err
+	}
 	board, err := s.board(ctx, tx, at)
 	if err != nil {
 		return v, err
@@ -60,6 +63,10 @@ func (s Service) view(ctx context.Context, tx pgx.Tx, p auth.Principal, role Rol
 }
 
 func (s Service) lead(ctx context.Context, tx pgx.Tx, v LeagueView, at synced, b board) (LeagueView, error) {
+	var err error
+	if v.Grants, err = s.grants.Of(ctx, tx, at.league.ID, nil); err != nil {
+		return v, err
+	}
 	v.Players = make([]PlayerRow, 0, len(b.rows))
 	for _, row := range b.rows {
 		v.Players = append(v.Players, PlayerRow{
@@ -100,10 +107,13 @@ func (s Service) student(ctx context.Context, tx pgx.Tx, p auth.Principal, v Lea
 	}
 	v.Me = &Standing{
 		Points: me.Points, Division: me.Division, ToNext: at.league.Divisions.toNext(me.Division, me.Points),
-		Growth: me.Growth, Display: me.Display, Nickname: me.Nickname,
+		Growth: me.Growth, Display: me.Display, Nickname: me.Nickname, GPUHours: at.league.Divisions[me.Division].GPUHours,
 	}
 	v.Table = b.table(me.Division, p.UserID)
 	var err error
+	if v.Grants, err = s.grants.Of(ctx, tx, at.league.ID, &p.UserID); err != nil {
+		return v, err
+	}
 	if v.Entries, err = s.entries.Of(ctx, tx, at.season.ID, p.UserID); err != nil {
 		return v, err
 	}

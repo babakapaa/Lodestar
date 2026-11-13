@@ -8,6 +8,10 @@ const (
 	NotifyQueued    = "league.queued"
 	NotifyDisputed  = "league.disputed"
 	NotifyAnswered  = "league.answered"
+	NotifyTask      = "league.task"
+	NotifySolution  = "league.solution"
+	NotifyReviewed  = "league.reviewed"
+	NotifyAwarded   = "league.awarded"
 )
 
 func (Module) NotificationTypes() []module.NotificationType {
@@ -55,6 +59,42 @@ func (Module) NotificationTypes() []module.NotificationType {
 				"ru": {Title: "{league}", Body: "Преподаватель ответил на ваш спор"},
 				"kk": {Title: "{league}", Body: "Оқытушы дауыңызға жауап берді"},
 				"en": {Title: "{league}", Body: "Your teacher answered your dispute"},
+			},
+		},
+		{
+			Key: NotifyTask, InApp: true, Push: true,
+			Names: map[string]string{"ru": "Новые задачи лиги", "kk": "Лиганың жаңа тапсырмалары", "en": "New league tasks"},
+			Texts: map[string]module.NotificationText{
+				"ru": {Title: "{league}", Body: "Новая задача: {task}"},
+				"kk": {Title: "{league}", Body: "Жаңа тапсырма: {task}"},
+				"en": {Title: "{league}", Body: "New task: {task}"},
+			},
+		},
+		{
+			Key: NotifySolution, InApp: true, Push: true,
+			Names: map[string]string{"ru": "Решения задач лиги", "kk": "Лига тапсырмаларының шешімдері", "en": "League task solutions"},
+			Texts: map[string]module.NotificationText{
+				"ru": {Title: "{task}", Body: "Команда «{team}» сдала решение"},
+				"kk": {Title: "{task}", Body: "«{team}» командасы шешімді тапсырды"},
+				"en": {Title: "{task}", Body: "Team “{team}” handed in a solution"},
+			},
+		},
+		{
+			Key: NotifyReviewed, InApp: true, Push: true,
+			Names: map[string]string{"ru": "Оценки решений задач лиги", "kk": "Лига тапсырмаларының бағалары", "en": "League task reviews"},
+			Texts: map[string]module.NotificationText{
+				"ru": {Title: "{league}", Body: "Преподаватель оценил решение задачи «{task}»"},
+				"kk": {Title: "{league}", Body: "Оқытушы «{task}» тапсырмасының шешімін бағалады"},
+				"en": {Title: "{league}", Body: "Your teacher reviewed the solution to “{task}”"},
+			},
+		},
+		{
+			Key: NotifyAwarded, InApp: true, Push: true,
+			Names: map[string]string{"ru": "Награды лиги", "kk": "Лига марапаттары", "en": "League awards"},
+			Texts: map[string]module.NotificationText{
+				"ru": {Title: "{league}", Body: "Вам вручена награда: {award}"},
+				"kk": {Title: "{league}", Body: "Сізге марапат берілді: {award}"},
+				"en": {Title: "{league}", Body: "You received an award: {award}"},
 			},
 		},
 	}

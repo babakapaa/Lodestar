@@ -26,7 +26,11 @@ func (s Service) SetRules(ctx context.Context, p auth.Principal, leagueID string
 		if err != nil {
 			return err
 		}
-		if in, err = in.normalized(weights.formula(at.works)); err != nil {
+		gpuCap, err := s.gpuCap(ctx, tx)
+		if err != nil {
+			return err
+		}
+		if in, err = in.normalized(weights.formula(at.works), gpuCap); err != nil {
 			return err
 		}
 		if err := s.leagues.SetRules(ctx, tx, at.league.ID, in.Divisions, in.Confirm); err != nil {

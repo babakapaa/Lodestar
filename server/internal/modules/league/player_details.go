@@ -8,4 +8,5 @@ type PlayerDetails struct {
 	Entries     []Entry         `json:"entries"`
 	Transitions []Transition    `json:"transitions"`
 	Disputes    []Dispute       `json:"disputes"`
+	Grants      []Grant         `json:"grants"`
 }

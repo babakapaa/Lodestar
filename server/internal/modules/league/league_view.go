@@ -18,4 +18,6 @@ type LeagueView struct {
 	Players     []PlayerRow     `json:"players"`
 	Pending     []TransitionRow `json:"pending"`
 	Open        []DisputeRow    `json:"openDisputes"`
+	Tasks       []Task          `json:"tasks"`
+	Grants      []Grant         `json:"grants"`
 }

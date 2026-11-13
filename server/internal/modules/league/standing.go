@@ -7,4 +7,5 @@ type Standing struct {
 	Growth   int     `json:"growth"`
 	Display  Display `json:"display"`
 	Nickname string  `json:"nickname"`
+	GPUHours int     `json:"gpuHours"`
 }

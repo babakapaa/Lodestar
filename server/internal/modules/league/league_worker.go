@@ -64,14 +64,10 @@ func (w LeagueWorker) SyncTenant(ctx context.Context, tenantID string) error {
 		return err
 	}
 	for _, source := range w.service.scores {
-		rosters, ok := w.service.rosters.Find(source.Kind())
-		if !ok {
-			continue
-		}
 		var all []module.Roster
 		err := w.tenants.Run(ctx, tenantID, func(tx pgx.Tx) error {
 			var err error
-			all, err = rosters.All(ctx, tx)
+			all, err = source.All(ctx, tx)
 			return err
 		})
 		if err != nil {

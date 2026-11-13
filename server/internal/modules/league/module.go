@@ -26,3 +26,7 @@ func (Module) PrivacySections(module.Kernel) []privacy.Section {
 func (Module) Workers(k module.Kernel) []module.Worker {
 	return []module.Worker{NewLeagueWorker(k)}
 }
+
+func (Module) TeamScopeSources(k module.Kernel) []module.TeamScopeSource {
+	return []module.TeamScopeSource{TaskScopes{service: NewService(k)}}
+}

@@ -87,5 +87,45 @@ func (PrivacySection) Export(ctx context.Context, tx pgx.Tx, userID string) (any
 	if err != nil {
 		return nil, fmt.Errorf("export league disputes: %w", err)
 	}
-	return map[string]any{"leagues": leagues, "points": points, "moves": moves, "disputes": disputes}, nil
+	rows, err = tx.Query(ctx, `
+		SELECT a.title, a.gpu_hours, g.reason, g.granted_at FROM league.grants g JOIN league.awards a ON a.id = g.award_id
+		WHERE g.user_id::text = $1 ORDER BY g.granted_at`, userID)
+	if err != nil {
+		return nil, fmt.Errorf("export league awards: %w", err)
+	}
+	awards, err := pgx.CollectRows(rows, func(row pgx.CollectableRow) (map[string]any, error) {
+		var title, reason string
+		var hours int
+		var at time.Time
+		err := row.Scan(&title, &hours, &reason, &at)
+		return map[string]any{"award": title, "gpuHours": hours, "reason": reason, "at": at}, err
+	})
+	if err != nil {
+		return nil, fmt.Errorf("export league awards: %w", err)
+	}
+	rows, err = tx.Query(ctx, `
+		SELECT t.title, s.team_name, s.work, s.explanation, s.points, $1::uuid = ANY(s.passed), s.comment, s.created_at
+		FROM league.solutions s JOIN league.tasks t ON t.id = s.task_id
+		WHERE $1::uuid = ANY(s.members) ORDER BY s.created_at`, userID)
+	if err != nil {
+		return nil, fmt.Errorf("export league solutions: %w", err)
+	}
+	solutions, err := pgx.CollectRows(rows, func(row pgx.CollectableRow) (map[string]any, error) {
+		var task, team, explanation, comment string
+		var work SolutionWork
+		var value *int
+		var passed bool
+		var at time.Time
+		err := row.Scan(&task, &team, &work, &explanation, &value, &passed, &comment, &at)
+		return map[string]any{
+			"task": task, "team": team, "work": work, "explanation": explanation,
+			"points": value, "passed": passed, "comment": comment, "at": at,
+		}, err
+	})
+	if err != nil {
+		return nil, fmt.Errorf("export league solutions: %w", err)
+	}
+	return map[string]any{
+		"leagues": leagues, "points": points, "moves": moves, "disputes": disputes, "awards": awards, "solutions": solutions,
+	}, nil
 }

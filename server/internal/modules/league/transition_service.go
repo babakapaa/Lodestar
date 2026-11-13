@@ -117,8 +117,11 @@ func (s Service) details(ctx context.Context, tx pgx.Tx, at synced, userID strin
 		Person: b.person(userID),
 		Standing: Standing{
 			Points: row.Points, Division: row.Division, ToNext: at.league.Divisions.toNext(row.Division, row.Points),
-			Growth: row.Growth, Display: row.Display, Nickname: row.Nickname,
+			Growth: row.Growth, Display: row.Display, Nickname: row.Nickname, GPUHours: at.league.Divisions[row.Division].GPUHours,
 		},
+	}
+	if d.Grants, err = s.grants.Of(ctx, tx, at.league.ID, &userID); err != nil {
+		return d, err
 	}
 	if d.Entries, err = s.entries.Of(ctx, tx, at.season.ID, userID); err != nil {
 		return d, err

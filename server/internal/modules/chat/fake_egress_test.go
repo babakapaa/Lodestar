@@ -16,6 +16,7 @@ type fakeEgress struct {
 	mu      sync.Mutex
 	started []map[string]any
 	stopped []string
+	broken  bool
 }
 
 func newFakeEgress(t *testing.T) *fakeEgress {
@@ -31,6 +32,10 @@ func (f *fakeEgress) serve(w http.ResponseWriter, r *http.Request) {
 	_ = json.Unmarshal(body, &in)
 	f.mu.Lock()
 	defer f.mu.Unlock()
+	if f.broken {
+		w.WriteHeader(http.StatusServiceUnavailable)
+		return
+	}
 	switch {
 	case strings.HasSuffix(r.URL.Path, "/StartRoomCompositeEgress"):
 		f.started = append(f.started, in)

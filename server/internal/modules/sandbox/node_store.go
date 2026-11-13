@@ -123,3 +123,27 @@ func scanNode(row pgx.CollectableRow) (Node, error) {
 	err := row.Scan(&n.ID, &n.Name, &n.ClassID, &n.ClassName, &n.GPUs, &n.Busy, &n.SeenAt, &n.Online, &n.CreatedAt)
 	return n, err
 }
+
+func (NodeStore) Load(ctx context.Context, tx pgx.Tx) (map[string]classLoad, error) {
+	rows, err := tx.Query(ctx, `
+		SELECT c.id::text,
+		       coalesce((SELECT sum(greatest(n.gpus - (SELECT count(*) FROM sandbox.runs r
+		                    WHERE r.node_id = n.id AND r.status IN ('starting', 'running', 'held', 'stopping')), 0))
+		                 FROM sandbox.nodes n WHERE n.class_id = c.id AND n.seen_at > now() - make_interval(secs => $1)), 0)::int,
+		       (SELECT count(*) FROM sandbox.runs r WHERE r.class_id = c.id AND r.status = 'queued')::int
+		FROM sandbox.gpu_classes c`, nodeTimeout.Seconds())
+	if err != nil {
+		return nil, fmt.Errorf("class load: %w", err)
+	}
+	defer rows.Close()
+	out := map[string]classLoad{}
+	for rows.Next() {
+		var id string
+		var l classLoad
+		if err := rows.Scan(&id, &l.free, &l.queued); err != nil {
+			return nil, fmt.Errorf("class load: %w", err)
+		}
+		out[id] = l
+	}
+	return out, rows.Err()
+}

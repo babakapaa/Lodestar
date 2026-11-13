@@ -9,14 +9,14 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 )
 
-const templateColumns = `t.id::text, t.name, t.about, t.image, t.archived_at IS NOT NULL, t.created_at`
+const templateColumns = `t.id::text, t.name, t.about, t.image, t.archived_at IS NOT NULL, t.created_at, t.starter`
 
 type TemplateStore struct{}
 
 func (TemplateStore) Insert(ctx context.Context, tx pgx.Tx, in TemplateInput) (Template, error) {
 	rows, err := tx.Query(ctx, `
-		INSERT INTO sandbox.templates AS t (name, about, image, archived_at)
-		VALUES ($1, $2, $3, CASE WHEN $4 THEN now() END) RETURNING `+templateColumns, in.Name, in.About, in.Image, in.Archived)
+		INSERT INTO sandbox.templates AS t (name, about, image, archived_at, starter)
+		VALUES ($1, $2, $3, CASE WHEN $4 THEN now() END, $5) RETURNING `+templateColumns, in.Name, in.About, in.Image, in.Archived, in.Starter)
 	if err != nil {
 		return Template{}, fmt.Errorf("create template: %w", err)
 	}
@@ -27,8 +27,8 @@ func (TemplateStore) Insert(ctx context.Context, tx pgx.Tx, in TemplateInput) (T
 func (TemplateStore) Update(ctx context.Context, tx pgx.Tx, id string, in TemplateInput) (Template, error) {
 	rows, err := tx.Query(ctx, `
 		UPDATE sandbox.templates t SET name = $2, about = $3, image = $4,
-		       archived_at = CASE WHEN $5 THEN coalesce(t.archived_at, now()) END
-		WHERE t.id::text = $1 RETURNING `+templateColumns, id, in.Name, in.About, in.Image, in.Archived)
+		       archived_at = CASE WHEN $5 THEN coalesce(t.archived_at, now()) END, starter = $6
+		WHERE t.id::text = $1 RETURNING `+templateColumns, id, in.Name, in.About, in.Image, in.Archived, in.Starter)
 	if err != nil {
 		return Template{}, fmt.Errorf("update template: %w", err)
 	}
@@ -61,7 +61,7 @@ func (TemplateStore) All(ctx context.Context, tx pgx.Tx) ([]Template, error) {
 
 func scanTemplate(row pgx.CollectableRow) (Template, error) {
 	var t Template
-	err := row.Scan(&t.ID, &t.Name, &t.About, &t.Image, &t.Archived, &t.CreatedAt)
+	err := row.Scan(&t.ID, &t.Name, &t.About, &t.Image, &t.Archived, &t.CreatedAt, &t.Starter)
 	return t, err
 }
 

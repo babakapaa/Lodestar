@@ -9,4 +9,5 @@ type Template struct {
 	Image     string    `json:"image"`
 	Archived  bool      `json:"archived"`
 	CreatedAt time.Time `json:"createdAt"`
+	Starter   bool      `json:"starter"`
 }

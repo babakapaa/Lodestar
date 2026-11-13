@@ -12,49 +12,74 @@ import (
 )
 
 func (s Service) StartRun(ctx context.Context, p auth.Principal, in RunInput) (Run, error) {
-	in, err := in.normalized()
-	if err != nil {
-		return Run{}, err
-	}
 	var r Run
-	err = s.tenants.Run(ctx, p.TenantID, func(tx pgx.Tx) error {
-		t, err := s.current(ctx, tx)
-		if err != nil {
-			return err
-		}
-		n := newRun{termID: t.ID, userID: p.UserID, in: in}
-		if err := s.environment(ctx, tx, in, &n); err != nil {
-			return err
-		}
-		if err := s.workOf(ctx, tx, p, in, &n); err != nil {
-			return err
-		}
-		ownerKind, ownerID := OwnerUser, p.UserID
-		if in.TeamID != "" {
-			ref, err := s.team(ctx, tx, p.UserID, in.TeamID)
-			if err != nil {
-				return err
-			}
-			n.teamID, n.teamName = &ref.ID, ref.Name
-			ownerKind, ownerID = OwnerTeam, ref.ID
-		}
-		if n.weight, err = s.weight(ctx, tx, t, p.UserID); err != nil {
-			return err
-		}
-		if err := s.afford(ctx, tx, t, ownerKind, ownerID, p.UserID, in.cost(n.rate)); err != nil {
-			return err
-		}
-		id, err := s.runs.Insert(ctx, tx, n)
-		if err != nil {
-			return err
-		}
-		r, err = s.view(ctx, tx, id)
+	err := s.tenants.Run(ctx, p.TenantID, func(tx pgx.Tx) error {
+		var err error
+		r, err = s.start(ctx, tx, p, in)
 		return err
 	})
 	return r, err
 }
 
-func (s Service) environment(ctx context.Context, tx pgx.Tx, in RunInput, n *newRun) error {
+func (s Service) RerunRun(ctx context.Context, p auth.Principal, id string) (Run, error) {
+	var r Run
+	err := s.tenants.Run(ctx, p.TenantID, func(tx pgx.Tx) error {
+		old, err := s.runs.ByID(ctx, tx, id, false)
+		if err != nil {
+			return err
+		}
+		if old.UserID != p.UserID {
+			return ErrRunNotFound
+		}
+		if old.EndedAt == nil {
+			return ErrRunActive
+		}
+		r, err = s.start(ctx, tx, p, old.input())
+		return err
+	})
+	return r, err
+}
+
+func (s Service) start(ctx context.Context, tx pgx.Tx, p auth.Principal, in RunInput) (Run, error) {
+	in, err := in.normalized()
+	if err != nil {
+		return Run{}, err
+	}
+	t, err := s.current(ctx, tx)
+	if err != nil {
+		return Run{}, err
+	}
+	n := newRun{termID: t.ID, userID: p.UserID, in: in}
+	if err := s.environment(ctx, tx, &n); err != nil {
+		return Run{}, err
+	}
+	if err := s.workOf(ctx, tx, p, in, &n); err != nil {
+		return Run{}, err
+	}
+	ownerKind, ownerID := OwnerUser, p.UserID
+	if in.TeamID != "" {
+		ref, err := s.team(ctx, tx, p.UserID, in.TeamID)
+		if err != nil {
+			return Run{}, err
+		}
+		n.teamID, n.teamName = &ref.ID, ref.Name
+		ownerKind, ownerID = OwnerTeam, ref.ID
+	}
+	if n.weight, err = s.weight(ctx, tx, t, p.UserID); err != nil {
+		return Run{}, err
+	}
+	if err := s.afford(ctx, tx, t, ownerKind, ownerID, p.UserID, n.in.cost(n.rate)); err != nil {
+		return Run{}, err
+	}
+	id, err := s.runs.Insert(ctx, tx, n)
+	if err != nil {
+		return Run{}, err
+	}
+	return s.view(ctx, tx, id)
+}
+
+func (s Service) environment(ctx context.Context, tx pgx.Tx, n *newRun) error {
+	in := n.in
 	tpl, err := s.templates.ByID(ctx, tx, in.TemplateID)
 	if err != nil {
 		return err
@@ -71,8 +96,24 @@ func (s Service) environment(ctx context.Context, tx pgx.Tx, in RunInput, n *new
 		return ErrClassNotFound
 	}
 	n.rate = classes[i].Rate
+	if !tpl.Starter {
+		return nil
+	}
+	if in.TeamID != "" {
+		return ErrInvalidRun
+	}
+	busy, err := s.runs.StarterActive(ctx, tx, n.userID)
+	if err != nil {
+		return err
+	}
+	if busy {
+		return ErrStarterBusy
+	}
+	n.rate, n.in.MaxHours = 0, min(in.MaxHours, starterHours)
 	return nil
 }
+
+const starterHours = 0.25
 
 func (s Service) workOf(ctx context.Context, tx pgx.Tx, p auth.Principal, in RunInput, n *newRun) error {
 	if in.WorkKind == "" {

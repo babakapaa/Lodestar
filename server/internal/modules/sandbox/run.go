@@ -65,8 +65,28 @@ func (r Run) used(end time.Time) time.Duration {
 	return max(end.Sub(*r.StartedAt)-time.Duration(r.HeldSecs*float64(time.Second)), 0)
 }
 
-func (r Run) cost(end time.Time) float64 {
-	return min(hours(r.used(end).Hours()*r.Rate), r.reserve())
+func (r Run) cost(end time.Time, t tariff) float64 {
+	if r.StartedAt == nil {
+		return 0
+	}
+	last := end
+	if r.HeldAt != nil && last.After(*r.HeldAt) {
+		last = *r.HeldAt
+	}
+	return min(hours(r.used(end).Hours()*r.Rate*t.factor(*r.StartedAt, last)), r.reserve())
+}
+
+func (r Run) input() RunInput {
+	in := RunInput{
+		Kind: r.Kind, Title: r.Title, Command: r.Command, TemplateID: r.TemplateID, ClassID: r.ClassID, MaxHours: r.MaxHours,
+	}
+	if r.WorkKind != nil && r.WorkID != nil {
+		in.WorkKind, in.WorkID = *r.WorkKind, *r.WorkID
+	}
+	if r.TeamID != nil {
+		in.TeamID = *r.TeamID
+	}
+	return in
 }
 
 func (r Run) interactive() bool {

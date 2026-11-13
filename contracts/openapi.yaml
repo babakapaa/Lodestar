@@ -7445,6 +7445,97 @@ paths:
           $ref: "#/components/responses/Error"
         default:
           $ref: "#/components/responses/Error"
+  /v1/sandbox/estimate:
+    post:
+      tags: [sandbox]
+      operationId: estimateSandboxRun
+      summary: Оценка стоимости до запуска
+      description: Цена по каждому классу карт, свободные карты, очередь, ночная цена и класс, который подобран за студента. Выбор идёт из тех, на что хватает часов, сначала со свободной картой, потом с короткой очередью, потом дешевле.
+      security:
+        - bearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SandboxEstimateInput"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SandboxEstimate"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/sandbox/runs/export:
+    get:
+      tags: [sandbox]
+      operationId: exportSandboxRuns
+      summary: Выгрузка истории своих запусков
+      security:
+        - bearer: []
+      parameters:
+        - name: format
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [csv, xlsx]
+      responses:
+        "200":
+          description: Таблица
+          content:
+            text/csv:
+              schema:
+                type: string
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema:
+                type: string
+                format: binary
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/sandbox/runs/{id}/rerun:
+    post:
+      tags: [sandbox]
+      operationId: rerunSandboxRun
+      summary: Запустить снова
+      description: Новый запуск с теми же настройками и той же папкой. Так продолжают работу после остановки. Только свой завершённый запуск.
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "201":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SandboxRun"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "409":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
 components:
   securitySchemes:
     bearer:
@@ -11173,7 +11264,7 @@ components:
             $ref: "#/components/schemas/SandboxQuotaLine"
     SandboxQuota:
       type: object
-      required: [term, lines, hours, reserved, teams]
+      required: [term, lines, hours, reserved, spent, forecast, teams]
       properties:
         term:
           oneOf:
@@ -11189,6 +11280,12 @@ components:
         reserved:
           type: number
           description: Зарезервировано под идущие и ждущие запуски
+        spent:
+          type: number
+          description: Потрачено на запуски в этом семестре
+        forecast:
+          type: number
+          description: Сколько останется к концу семестра при нынешнем темпе, может быть меньше нуля
         teams:
           type: array
           items:
@@ -11304,7 +11401,7 @@ components:
           type: boolean
     SandboxTemplate:
       type: object
-      required: [id, name, about, image, archived, createdAt]
+      required: [id, name, about, image, archived, createdAt, starter]
       properties:
         id:
           type: string
@@ -11320,6 +11417,9 @@ components:
         createdAt:
           type: string
           format: date-time
+        starter:
+          type: boolean
+          description: Стартовый мини-проект. Запуск бесплатный, до 15 минут, один за раз
     SandboxTemplateInput:
       type: object
       required: [name, image]
@@ -11334,6 +11434,8 @@ components:
           type: string
           maxLength: 300
         archived:
+          type: boolean
+        starter:
           type: boolean
     GpuNode:
       type: object
@@ -11389,14 +11491,14 @@ components:
       properties:
         kind:
           type: string
-          enum: [jupyter, vscode, job]
+          enum: [jupyter, vscode, job, demo]
         title:
           type: string
           maxLength: 200
         command:
           type: string
           maxLength: 2000
-          description: Только для job
+          description: Только для job и demo. demo должен слушать порт 8000
         templateId:
           type: string
           format: uuid
@@ -11407,7 +11509,7 @@ components:
           type: number
           exclusiveMinimum: 0
           maximum: 168
-          description: Для сеансов по умолчанию 4, для job обязательно
+          description: Для сеансов по умолчанию 4, для demo 2, для job обязательно
         workKind:
           type: string
         workId:
@@ -11433,7 +11535,7 @@ components:
           type: string
         kind:
           type: string
-          enum: [jupyter, vscode, job]
+          enum: [jupyter, vscode, job, demo]
         title:
           type: string
         command:
@@ -11557,7 +11659,7 @@ components:
           format: uuid
         kind:
           type: string
-          enum: [jupyter, vscode, job]
+          enum: [jupyter, vscode, job, demo]
         title:
           type: string
         image:
@@ -11590,4 +11692,78 @@ components:
       required: [release]
       properties:
         release:
+          type: boolean
+    SandboxEstimateInput:
+      type: object
+      required: [kind, templateId]
+      properties:
+        kind:
+          type: string
+          enum: [jupyter, vscode, job, demo]
+        templateId:
+          type: string
+          format: uuid
+        maxHours:
+          type: number
+        teamId:
+          type: string
+    SandboxEstimate:
+      type: object
+      required: [maxHours, starter, available, night, options, suggested]
+      properties:
+        maxHours:
+          type: number
+        starter:
+          type: boolean
+        available:
+          type: number
+          description: Часы, которые можно потратить сейчас, с учётом резерва
+        night:
+          oneOf:
+            - type: "null"
+            - $ref: "#/components/schemas/SandboxNightWindow"
+        options:
+          type: array
+          items:
+            $ref: "#/components/schemas/SandboxEstimateOption"
+        suggested:
+          type: [string, "null"]
+          format: uuid
+    SandboxNightWindow:
+      type: object
+      required: [from, to, discount, timeZone]
+      properties:
+        from:
+          type: integer
+        to:
+          type: integer
+        discount:
+          type: integer
+          description: Скидка в процентах
+        timeZone:
+          type: string
+    SandboxEstimateOption:
+      type: object
+      required: [classId, className, memoryGb, rate, cost, nightCost, freeGpus, queued, enough]
+      properties:
+        classId:
+          type: string
+          format: uuid
+        className:
+          type: string
+        memoryGb:
+          type: integer
+        rate:
+          type: number
+        cost:
+          type: number
+          description: Наибольшая цена, она же резерв
+        nightCost:
+          type: number
+          description: Цена, если весь запуск придётся на ночь
+        freeGpus:
+          type: integer
+        queued:
+          type: integer
+        enough:
           type: boolean

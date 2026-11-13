@@ -53,3 +53,7 @@ var ErrRunNotFound = errors.New("run not found")
 var ErrRunEnded = errors.New("run has already ended")
 
 var ErrRunNotHeld = errors.New("run is not held")
+
+var ErrRunActive = errors.New("run is still active")
+
+var ErrStarterBusy = errors.New("a starter project already runs")

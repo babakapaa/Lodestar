@@ -12,6 +12,7 @@ import (
 var ports = map[string]string{
 	sandbox.RunJupyter: "8888/tcp",
 	sandbox.RunVSCode:  "3000/tcp",
+	sandbox.RunDemo:    "8000/tcp",
 }
 
 func command(spec sandbox.RunSpec, token string) []string {
@@ -36,6 +37,8 @@ func link(scheme, host string, c Container) string {
 		return base + "/lab?token=" + c.Token
 	case sandbox.RunVSCode:
 		return base + "/?tkn=" + c.Token
+	case sandbox.RunDemo:
+		return base + "/"
 	default:
 		return ""
 	}

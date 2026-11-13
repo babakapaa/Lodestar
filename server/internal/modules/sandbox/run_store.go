@@ -228,6 +228,25 @@ func (RunStore) Release(ctx context.Context, tx pgx.Tx, id string) error {
 	return nil
 }
 
+func (RunStore) StarterActive(ctx context.Context, tx pgx.Tx, userID string) (bool, error) {
+	var busy bool
+	err := tx.QueryRow(ctx, `
+		SELECT EXISTS (SELECT 1 FROM sandbox.runs r JOIN sandbox.templates t ON t.id = r.template_id
+		               WHERE r.user_id::text = $1 AND t.starter AND `+runActive+`)`, userID).Scan(&busy)
+	if err != nil {
+		return false, fmt.Errorf("starter runs: %w", err)
+	}
+	return busy, nil
+}
+
+func (RunStore) History(ctx context.Context, tx pgx.Tx, userID string) ([]Run, error) {
+	rows, err := tx.Query(ctx, `SELECT `+runColumns+runFrom+` WHERE r.user_id::text = $1 ORDER BY r.queued_at DESC, r.id`, userID)
+	if err != nil {
+		return nil, fmt.Errorf("run history: %w", err)
+	}
+	return pgx.CollectRows(rows, scanRun)
+}
+
 func (RunStore) Held(ctx context.Context, tx pgx.Tx) ([]Run, error) {
 	rows, err := tx.Query(ctx, `SELECT `+runColumns+runFrom+` WHERE r.status = 'held' ORDER BY r.held_at, r.id`)
 	if err != nil {

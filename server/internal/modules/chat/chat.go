@@ -11,6 +11,7 @@ type Chat struct {
 	PeerID      *string    `json:"peerId"`
 	Role        string     `json:"role"`
 	Muted       bool       `json:"muted"`
+	Request     bool       `json:"request"`
 	Seq         int64      `json:"seq"`
 	Rev         int64      `json:"rev"`
 	ReadSeq     int64      `json:"readSeq"`

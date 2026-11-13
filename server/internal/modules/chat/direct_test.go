@@ -35,20 +35,23 @@ func TestDirectChatDeliversMessagesAndReadState(t *testing.T) {
 	if w.events(erlan, chat.MessageEvent) != 1 {
 		t.Fatal("erlan got no live event")
 	}
+	list, err := w.chats.List(w.ctx, erlan)
+	if err != nil || len(list) != 1 || !list[0].Request || list[0].Unread != 1 || list[0].Last == nil || list[0].Last.Text != m.Text {
+		t.Fatalf("list = %+v, %v", list, err)
+	}
+	if _, err := w.chats.Accept(w.ctx, erlan, d.ID); err != nil {
+		t.Fatalf("accept: %v", err)
+	}
+	w.send(aigerim, d.ID, "c2", "Жду ответа")
 	if n := w.sent.last(); n.Type != chat.NotifyMessage || len(n.UserIDs) != 1 || n.UserIDs[0] != erlan.UserID || n.Params["chat"] != "aigerim" {
 		t.Fatalf("notification = %+v", n)
 	}
-
-	list, err := w.chats.List(w.ctx, erlan)
-	if err != nil || len(list) != 1 || list[0].Unread != 1 || list[0].Last == nil || list[0].Last.Text != m.Text {
-		t.Fatalf("list = %+v, %v", list, err)
-	}
 	read, err := w.chats.Read(w.ctx, erlan, d.ID, chat.ReadInput{Seq: 99})
-	if err != nil || read.Unread != 0 || read.ReadSeq != 1 {
+	if err != nil || read.Unread != 0 || read.ReadSeq != 2 {
 		t.Fatalf("read = %+v, %v", read, err)
 	}
 	mine, err := w.chats.Get(w.ctx, aigerim, d.ID)
-	if err != nil || mine.PeerReadSeq == nil || *mine.PeerReadSeq != 1 {
+	if err != nil || mine.PeerReadSeq == nil || *mine.PeerReadSeq != 2 {
 		t.Fatalf("peer read = %+v, %v", mine, err)
 	}
 	if w.events(aigerim, chat.ReadEvent) != 1 {

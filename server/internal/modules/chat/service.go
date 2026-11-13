@@ -15,12 +15,14 @@ import (
 )
 
 type Service struct {
-	k         module.Kernel
-	chats     ChatStore
-	members   MemberStore
-	people    identity.People
-	announcer Announcer
-	sync      RosterSync
+	k           module.Kernel
+	chats       ChatStore
+	members     MemberStore
+	blocks      BlockStore
+	attachments AttachmentStore
+	people      identity.People
+	announcer   Announcer
+	sync        RosterSync
 }
 
 func NewService(k module.Kernel) Service {
@@ -36,6 +38,9 @@ func (s Service) List(ctx context.Context, p auth.Principal) ([]Chat, error) {
 	err := s.k.Tenants.Run(ctx, p.TenantID, func(tx pgx.Tx) error {
 		var err error
 		if list, err = s.chats.List(ctx, tx, p.UserID); err != nil {
+			return err
+		}
+		if err := s.fillLast(ctx, tx, list); err != nil {
 			return err
 		}
 		return s.titleDirects(ctx, tx, list)
@@ -158,12 +163,26 @@ func (s Service) Direct(ctx context.Context, p auth.Principal, in DirectInput) (
 		if !exists {
 			return access.ErrUserNotFound
 		}
+		blocked, err := s.blocks.Blocks(ctx, tx, in.UserID, p.UserID)
+		if err != nil {
+			return err
+		}
+		if blocked {
+			return ErrBlocked
+		}
 		var id string
 		if id, created, err = s.chats.Insert(ctx, tx, KindDirect, "", "", nil, &key, &p.UserID); err != nil {
 			return err
 		}
 		if created {
 			if _, err := s.members.Add(ctx, tx, id, pair, RoleMember); err != nil {
+				return err
+			}
+			known, err := s.members.Acquainted(ctx, tx, p.UserID, in.UserID)
+			if err != nil {
+				return err
+			}
+			if err := s.members.Pending(ctx, tx, id, in.UserID, !known); err != nil {
 				return err
 			}
 			if err := s.announcer.Changed(ctx, tx, p.TenantID, id); err != nil {
@@ -251,6 +270,18 @@ func (s Service) RemoveMember(ctx context.Context, p auth.Principal, id, userID 
 func (s Service) Mute(ctx context.Context, p auth.Principal, id string, in MuteInput) (Chat, error) {
 	return s.own(ctx, p, id, func(tx pgx.Tx, _ Chat) error {
 		return s.members.Mute(ctx, tx, id, p.UserID, in.Muted)
+	})
+}
+
+func (s Service) Accept(ctx context.Context, p auth.Principal, id string) (Chat, error) {
+	return s.own(ctx, p, id, func(tx pgx.Tx, c Chat) error {
+		if !c.Request {
+			return nil
+		}
+		if err := s.members.Pending(ctx, tx, id, p.UserID, false); err != nil {
+			return err
+		}
+		return s.announcer.ChangedFor(ctx, tx, p.TenantID, id, []string{p.UserID})
 	})
 }
 
@@ -348,6 +379,26 @@ func (s Service) name(ctx context.Context, tx pgx.Tx, members []Member) error {
 	}
 	for i := range members {
 		members[i].DisplayName = names[members[i].UserID]
+	}
+	return nil
+}
+
+func (s Service) fillLast(ctx context.Context, tx pgx.Tx, list []Chat) error {
+	var last []Message
+	for _, c := range list {
+		if c.Last != nil {
+			last = append(last, *c.Last)
+		}
+	}
+	if err := s.attachments.Fill(ctx, tx, last); err != nil {
+		return err
+	}
+	j := 0
+	for i := range list {
+		if list[i].Last != nil {
+			list[i].Last = &last[j]
+			j++
+		}
 	}
 	return nil
 }

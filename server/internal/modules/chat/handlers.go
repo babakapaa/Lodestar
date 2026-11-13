@@ -94,6 +94,13 @@ func (h MuteHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	writeOK(w, c, err)
 }
 
+type AcceptHandler struct{ service Service }
+
+func (h AcceptHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	c, err := h.service.Accept(r.Context(), principal(r), r.PathValue("id"))
+	writeOK(w, c, err)
+}
+
 type ReadHandler struct{ service Service }
 
 func (h ReadHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {

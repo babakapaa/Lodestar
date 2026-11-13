@@ -183,6 +183,29 @@ void main() {
     expect(find.text('В очереди, 1-й в очереди, T4'), findsOneWidget);
   });
 
+  testWidgets('a failed run can be discussed with the navigator', (
+    tester,
+  ) async {
+    final server = sandboxServer();
+    server.sandbox.runs.add(
+      server.sandbox.run('f2', 'job', 'failed')
+        ..['exitCode'] = 1
+        ..['log'] = 'ModuleNotFoundError: torchvision',
+    );
+    await pumpApp(tester, size: const Size(390, 2400), server: server);
+    await go(tester, '/sandbox/runs/f2');
+
+    await tester.tap(find.byKey(const ValueKey('run-why')));
+    await tester.pumpAndSettle();
+    final field = tester.widget<TextField>(find.byType(TextField).last);
+    expect(field.controller!.text, contains('Помоги понять почему'));
+    expect(
+      field.controller!.text,
+      contains('ModuleNotFoundError: torchvision'),
+    );
+    expect(field.controller!.text, contains('Код выхода: 1'));
+  });
+
   testWidgets('a teacher adds requested hours', (tester) async {
     final server = sandboxServer();
     server.sandbox.topups.add({

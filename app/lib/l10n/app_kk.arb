@@ -1328,6 +1328,8 @@
   "errorRecordingUnavailable": "Серверде қоңырауларды жазу бапталмаған",
   "errorRecordingState": "Жазу қосулы немесе тоқтатылған",
   "statsOfUnit": "Статистика: {name}",
+  "sandboxWhy": "Неге құлады?",
+  "sandboxWhyPrompt": "Құмсалғыштағы іске қосуым қатемен аяқталды. Кодты мен үшін түзетпей, себебін түсінуге көмектес.",
   "submitAttach": "Файл тіркеу",
   "scheduleEditTitle": "Курс кестесі",
   "scheduleEditHint": "Қайталанатын сабақтар, ауыстыру және болдырмау",

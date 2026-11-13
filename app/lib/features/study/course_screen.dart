@@ -108,6 +108,14 @@ class CourseScreen extends ConsumerWidget {
                 subtitle: l10n.courseTablesHint,
                 route: AppRoutes.courseLms(courseId),
               ),
+              const SizedBox(height: Spacing.m),
+              NavigatorTile(
+                key: const ValueKey('course-insights'),
+                icon: Icons.insights_outlined,
+                title: l10n.insightsTitle,
+                subtitle: l10n.insightsHint,
+                route: AppRoutes.courseInsights(courseId),
+              ),
               if (attendance) ...[
                 const SizedBox(height: Spacing.m),
                 NavigatorTile(

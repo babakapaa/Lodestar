@@ -1166,5 +1166,21 @@
   "settingAttendanceCode": "Қатысу: кодпен белгілеу",
   "settingAttendanceNetworks": "Қатысу: университет желілері үтір арқылы (бос болса тексерілмейді)",
   "settingAttendanceLate": "Қатысу: басталғаннан кейін неше минуттан соң кешігу саналады",
-  "settingAttendanceAlert": "Қатысу: оқытушыға көрсетілетін қатарынан жіберілген сабақтар саны"
+  "settingAttendanceAlert": "Қатысу: оқытушыға көрсетілетін қатарынан жіберілген сабақтар саны",
+  "insightsTitle": "Топ аналитикасы",
+  "insightsHint": "Не сұрайды, дивизиондар және қатысу. Тек жиынтық, атсыз",
+  "insightsPrivacy": "Мұнда тек топ бойынша жиынтық. Тақырып не апта кемінде 5 студент сұрағанда ғана шығады, сондықтан кімнің не сұрағаны белгісіз.",
+  "insightsTopics": "Навигатордан не сұрайды",
+  "insightsHidden": "Навигатордан {count} студенттен аз сұрады, сондықтан тақырыптар әзірге жасырын.",
+  "insightsAskers": "{count} студент сұрады",
+  "insightsSuggestion": "Келесі сабақта «{title}» тақырыбын талдауға болады: соңғы 2 аптада {count} студент сұрады.",
+  "insightsStudents": "{count} студ.",
+  "insightsNoTopics": "Әзірге бірде-бір тақырыпты {count} не одан көп студент сұраған жоқ.",
+  "insightsIntents": "Не сұрады",
+  "insightsTrend": "Апталар бойынша",
+  "insightsWeekOf": "{date} басталған апта",
+  "insightsWeekHidden": "{count}-тен аз",
+  "insightsDivisions": "Лига дивизиондары",
+  "insightsAttendance": "Сабақтар бойынша қатысу",
+  "insightsUnavailable": "Жүктеу мүмкін болмады"
 }

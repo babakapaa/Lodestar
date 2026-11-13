@@ -77,6 +77,8 @@ abstract final class AppRoutes {
 
   static String attendanceCourse(String id) => '/attendance/courses/$id';
 
+  static String courseInsights(String id) => '/study/courses/$id/insights';
+
   static String sandboxNewFor(String kind, String id, String title) => Uri(
     path: sandboxNew,
     queryParameters: {'workKind': kind, 'workId': id, 'workTitle': title},

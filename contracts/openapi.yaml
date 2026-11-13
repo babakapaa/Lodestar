@@ -7894,6 +7894,39 @@ paths:
           $ref: "#/components/responses/Error"
         default:
           $ref: "#/components/responses/Error"
+  /v1/navigator/courses/{id}/topics:
+    get:
+      tags: [navigator]
+      operationId: courseTopics
+      summary: О чём студенты курса спрашивают навигатор
+      description: Только для преподавателей курса. Тема, тип вопроса или неделя показываются, только если о них спросили не меньше 5 разных студентов. Тексты вопросов и имена не раскрываются.
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+        - name: weeks
+          in: query
+          required: false
+          description: За сколько недель, по умолчанию 8, не больше 52
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CourseTopics"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
 components:
   securitySchemes:
     bearer:
@@ -12354,3 +12387,59 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/AttendanceStudent"
+    TopicCount:
+      type: object
+      required: [materialId, title, students, recent]
+      properties:
+        materialId:
+          type: string
+        title:
+          type: string
+          description: Название материала курса, к которому относились вопросы
+        students:
+          type: integer
+        recent:
+          type: integer
+          description: Студентов за последние 14 дней
+    CourseTopics:
+      type: object
+      required: [threshold, weeks, students, topics, intents, trend, suggestion]
+      properties:
+        threshold:
+          type: integer
+          description: Порог приватности, сейчас 5
+        weeks:
+          type: integer
+        students:
+          type: [integer, "null"]
+          description: Сколько разных студентов спрашивали, null если меньше порога
+        topics:
+          type: array
+          items:
+            $ref: "#/components/schemas/TopicCount"
+        intents:
+          type: array
+          items:
+            type: object
+            required: [intent, students]
+            properties:
+              intent:
+                type: string
+              students:
+                type: integer
+        trend:
+          type: array
+          items:
+            type: object
+            required: [week, students]
+            properties:
+              week:
+                type: string
+                format: date
+              students:
+                type: [integer, "null"]
+        suggestion:
+          oneOf:
+            - $ref: "#/components/schemas/TopicCount"
+            - type: "null"
+          description: Тема, о которой больше всего спрашивали за 2 недели. Её можно разобрать на следующем занятии

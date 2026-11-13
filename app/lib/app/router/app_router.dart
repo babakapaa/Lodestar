@@ -71,6 +71,7 @@ import '../../features/team/team_screen.dart';
 import '../../features/attendance/attend_screen.dart';
 import '../../features/attendance/attendance_session_screen.dart';
 import '../../features/attendance/course_journal_screen.dart';
+import '../../features/insights/group_insights_screen.dart';
 import '../../features/sandbox/run_launch_screen.dart';
 import '../../features/sandbox/run_screen.dart';
 import '../../features/sandbox/run_work.dart';
@@ -302,6 +303,10 @@ class AppRouter {
           _param(
             AppRoutes.attendanceSession(':id'),
             (id) => AttendanceSessionScreen(sessionId: id),
+          ),
+          _param(
+            AppRoutes.courseInsights(':id'),
+            (id) => GroupInsightsScreen(courseId: id),
           ),
           _param(
             AppRoutes.attendanceCourse(':id'),

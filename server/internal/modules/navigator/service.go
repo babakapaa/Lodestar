@@ -26,6 +26,7 @@ type Service struct {
 	journal   JournalStore
 	retriever Retriever
 	verifier  Verifier
+	topics    TopicStore
 }
 
 func NewService(k module.Kernel) Service {
@@ -174,6 +175,11 @@ func (s Service) Ask(ctx context.Context, p auth.Principal, id string, in Messag
 		}
 		if journal && in.Text != "" && body.Intent != IntentClosed {
 			if err := s.journal.Insert(ctx, tx, p.UserID, dialog, journalBody{Query: in.Text, Sources: sources(body.Citations)}); err != nil {
+				return err
+			}
+		}
+		if b := prompt.Brief; b != nil && b.CourseID != "" && !b.Teaches && body.Intent != IntentClosed {
+			if err := s.topics.Record(ctx, tx, b.CourseID, p.UserID, body.Intent, materialIDs(body.Citations), time.Now().UTC()); err != nil {
 				return err
 			}
 		}

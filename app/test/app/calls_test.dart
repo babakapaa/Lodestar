@@ -125,13 +125,43 @@ void main() {
     expect(find.text('Вуз выключил звонки'), findsOneWidget);
   });
 
-  testWidgets('channels have no call button', (tester) async {
+  testWidgets('only channel admins start a call', (tester) async {
     final server = FakeServer();
     server.chats.addChat(id: 'ch1', kind: 'channel', title: 'Новости');
+    server.chats.addChat(
+      id: 'ch2',
+      kind: 'channel',
+      title: 'Биология',
+      role: 'owner',
+    );
     await pumpApp(tester, size: const Size(390, 1400), server: server);
     await openChats(tester);
     await tester.tap(find.text('Новости'));
     await settleSync(tester);
     expect(find.byKey(const ValueKey('chat-call')), findsNothing);
+    await tester.tap(find.byTooltip('Назад'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Биология'));
+    await settleSync(tester);
+    expect(find.byKey(const ValueKey('chat-call')), findsOneWidget);
+  });
+
+  testWidgets('a channel member joins the call with the microphone off', (
+    tester,
+  ) async {
+    final server = FakeServer();
+    server.chats.addChat(id: 'ch1', kind: 'channel', title: 'Биология');
+    server.chats.startCall('ch1', ['u3']);
+    final app = await pumpApp(
+      tester,
+      size: const Size(390, 1400),
+      server: server,
+    );
+    await openChats(tester);
+    await tester.tap(find.text('Биология'));
+    await settleSync(tester);
+    await tester.tap(find.text('Войти'));
+    await tester.pumpAndSettle();
+    expect(app.calls.single.microphone, isFalse);
   });
 }

@@ -60,7 +60,7 @@ class _CallScreenState extends ConsumerState<CallScreen> {
         _recording = ticket.call.recording;
       });
       await _engine.connect(ticket.url, ticket.token);
-      await _engine.setMicrophone(on: true);
+      await _engine.setMicrophone(on: !ticket.muted);
     } on ApiException catch (error) {
       if (mounted) {
         setState(() => _error = ApiErrorText.of(l10n, error));

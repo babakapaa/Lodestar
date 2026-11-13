@@ -34,6 +34,8 @@ var ErrCallNotFound = errors.New("call not found")
 
 var ErrCallFull = errors.New("call already has the most people allowed")
 
+var ErrCallNotStarted = errors.New("only channel admins start a call")
+
 var ErrRecordingOff = errors.New("call recording is not allowed")
 
 var ErrRecordingUnavailable = errors.New("call recording is not configured on this server")

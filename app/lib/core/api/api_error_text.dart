@@ -107,6 +107,7 @@ abstract final class ApiErrorText {
       'calls_off' => l10n.errorCallsOff,
       'calls_unavailable' => l10n.errorCallsUnavailable,
       'call_full' => l10n.errorCallFull,
+      'call_not_started' => l10n.errorCallNotStarted,
       'call_not_found' => l10n.errorCallNotFound,
       'recording_off' => l10n.errorRecordingOff,
       'recording_unavailable' => l10n.errorRecordingUnavailable,

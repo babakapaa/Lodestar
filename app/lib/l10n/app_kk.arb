@@ -1318,5 +1318,13 @@
   "settingChatCalls": "Чаттардағы қоңыраулар",
   "settingChatScreenShare": "Қоңырауда экранды кім көрсете алады",
   "settingScreenShareEveryone": "Барлық қатысушылар",
-  "settingScreenShareAdmins": "Тек чат әкімшілері"
+  "settingScreenShareAdmins": "Тек чат әкімшілері",
+  "callRecordStart": "Жазуды бастау",
+  "callRecordStop": "Жазуды тоқтату",
+  "callRecording": "Жазылып жатыр. Жазба чатта пайда болады.",
+  "settingChatRecording": "Қоңырауларды кім жаза алады",
+  "settingRecordingOff": "Ешкім",
+  "errorRecordingOff": "Университет сізге қоңырауларды жазуға рұқсат бермеген",
+  "errorRecordingUnavailable": "Серверде қоңырауларды жазу бапталмаған",
+  "errorRecordingState": "Жазу қосулы немесе тоқтатылған"
 }

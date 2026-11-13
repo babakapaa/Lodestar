@@ -102,3 +102,17 @@ func (FileStore) DeleteOwned(ctx context.Context, tx pgx.Tx, ownerID string) err
 	_, err := tx.Exec(ctx, `DELETE FROM core.files WHERE owner_id::text = $1`, ownerID)
 	return err
 }
+
+func (FileStore) Finish(ctx context.Context, tx pgx.Tx, id string, size int64) (File, error) {
+	row := tx.QueryRow(ctx, `
+		UPDATE core.files SET status = 'ready', size = $2, uploaded_at = now()
+		WHERE id::text = $1 AND status = 'pending' RETURNING `+fileColumns, id, size)
+	f, err := scanFile(row)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return File{}, ErrNotFound
+	}
+	if err != nil {
+		return File{}, fmt.Errorf("finish file: %w", err)
+	}
+	return f, nil
+}

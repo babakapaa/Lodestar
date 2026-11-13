@@ -30,6 +30,17 @@ class CallsApi {
   Future<void> leave(String callId) =>
       _api.post('/v1/chat/calls/${Uri.encodeComponent(callId)}/leave');
 
+  Future<Call> startRecording(String callId) async => Call.fromJson(
+    (await _api.post(_recording(callId)))! as Map<String, Object?>,
+  );
+
+  Future<Call> stopRecording(String callId) async => Call.fromJson(
+    (await _api.delete(_recording(callId)))! as Map<String, Object?>,
+  );
+
+  static String _recording(String callId) =>
+      '/v1/chat/calls/${Uri.encodeComponent(callId)}/recording';
+
   static String _call(String chatId) =>
       '/v1/chat/chats/${Uri.encodeComponent(chatId)}/call';
 }

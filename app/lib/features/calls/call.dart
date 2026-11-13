@@ -5,6 +5,7 @@ class Call {
     required this.startedBy,
     required this.startedAt,
     required this.people,
+    required this.recording,
   });
 
   factory Call.fromJson(Map<String, Object?> json) => Call(
@@ -16,6 +17,7 @@ class Call {
       for (final item in json['people'] as List<Object?>? ?? const [])
         item! as String,
     ],
+    recording: json['recording'] as bool? ?? false,
   );
 
   final String id;
@@ -23,4 +25,5 @@ class Call {
   final String? startedBy;
   final DateTime startedAt;
   final List<String> people;
+  final bool recording;
 }

@@ -26,6 +26,7 @@ services:
       LODESTAR_MAIL_FROM: ${LODESTAR_MAIL_FROM:-}
       LODESTAR_FCM_CREDENTIALS_FILE: ${LODESTAR_FCM_CREDENTIALS_FILE:-}
       LODESTAR_LIVEKIT_URL: ${LODESTAR_LIVEKIT_URL:-}
+      LODESTAR_LIVEKIT_API_URL: ${LODESTAR_LIVEKIT_API_URL:-http://livekit:7880}
       LODESTAR_LIVEKIT_API_KEY: ${LIVEKIT_API_KEY:-}
       LODESTAR_LIVEKIT_API_SECRET: ${LIVEKIT_API_SECRET:-}
     ports:
@@ -63,6 +64,8 @@ services:
           port_range_start: 50000
           port_range_end: 50200
           use_external_ip: true
+        redis:
+          address: livekit-redis:6379
         keys:
           ${LIVEKIT_API_KEY:-lodestar}: ${LIVEKIT_API_SECRET:-}
         webhook:
@@ -73,6 +76,30 @@ services:
       - "${LIVEKIT_PORT:-7880}:7880"
       - "7881:7881"
       - "50000-50200:50000-50200/udp"
+    depends_on:
+      - livekit-redis
+    restart: unless-stopped
+
+  livekit-redis:
+    profiles: ["calls"]
+    image: redis:7.4-alpine
+    restart: unless-stopped
+
+  livekit-egress:
+    profiles: ["calls"]
+    image: livekit/egress:v1.9.0
+    cap_add:
+      - SYS_ADMIN
+    environment:
+      EGRESS_CONFIG_BODY: |
+        api_key: ${LIVEKIT_API_KEY:-lodestar}
+        api_secret: ${LIVEKIT_API_SECRET:-}
+        ws_url: ws://livekit:7880
+        redis:
+          address: livekit-redis:6379
+    depends_on:
+      - livekit
+      - livekit-redis
     restart: unless-stopped
 
   postgres:

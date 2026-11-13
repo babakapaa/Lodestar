@@ -82,6 +82,38 @@ void main() {
     expect(find.byKey(const ValueKey('call-screen')), findsNothing);
   });
 
+  testWidgets('everyone in the call sees that it is recorded', (tester) async {
+    final server = grouped()..chats.record = true;
+    await pumpApp(tester, size: const Size(390, 1400), server: server);
+    await openGroup(tester);
+    await tester.tap(find.byKey(const ValueKey('chat-call')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('call-recording')), findsNothing);
+
+    await tester.tap(find.byKey(const ValueKey('call-record')));
+    await tester.pumpAndSettle();
+    expect(server.chats.calls['g1']!['recording'], isTrue);
+    expect(find.byKey(const ValueKey('call-recording')), findsOneWidget);
+
+    await tester.tap(find.byKey(const ValueKey('call-record')));
+    await tester.pumpAndSettle();
+    expect(server.chats.calls['g1']!['recording'], isFalse);
+    expect(find.byKey(const ValueKey('call-recording')), findsNothing);
+  });
+
+  testWidgets('joining a recorded call shows the mark without a button', (
+    tester,
+  ) async {
+    final server = grouped();
+    server.chats.startCall('g1', ['u2'])['recording'] = true;
+    await pumpApp(tester, size: const Size(390, 1400), server: server);
+    await openGroup(tester);
+    await tester.tap(find.text('Войти'));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('call-recording')), findsOneWidget);
+    expect(find.byKey(const ValueKey('call-record')), findsNothing);
+  });
+
   testWidgets('a call explains why it cannot start', (tester) async {
     final server = grouped()..chats.callError = 'calls_off';
     await pumpApp(tester, size: const Size(390, 1400), server: server);

@@ -2382,5 +2382,13 @@
   "settingChatCalls": "Звонки в чатах",
   "settingChatScreenShare": "Кто показывает экран в звонке",
   "settingScreenShareEveryone": "Все участники",
-  "settingScreenShareAdmins": "Только администраторы чата"
+  "settingScreenShareAdmins": "Только администраторы чата",
+  "callRecordStart": "Начать запись",
+  "callRecordStop": "Остановить запись",
+  "callRecording": "Идёт запись. Запись появится в чате.",
+  "settingChatRecording": "Кто может записывать звонки",
+  "settingRecordingOff": "Никто",
+  "errorRecordingOff": "Вуз не разрешил вам записывать звонки",
+  "errorRecordingUnavailable": "Запись звонков не настроена на сервере",
+  "errorRecordingState": "Запись уже включена или уже остановлена"
 }

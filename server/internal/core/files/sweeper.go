@@ -55,7 +55,7 @@ func (s Sweeper) SweepAll(ctx context.Context) error {
 				return err
 			}
 			for _, fileID := range abandoned {
-				if err := s.storage.Delete(ctx, objectKey(tenantID, fileID)); err != nil {
+				if err := s.storage.Delete(ctx, ObjectKey(tenantID, fileID)); err != nil {
 					return err
 				}
 			}

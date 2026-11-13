@@ -6,4 +6,5 @@ type CallTicket struct {
 	Room        string `json:"room"`
 	Token       string `json:"token"`
 	ScreenShare bool   `json:"screenShare"`
+	Record      bool   `json:"record"`
 }

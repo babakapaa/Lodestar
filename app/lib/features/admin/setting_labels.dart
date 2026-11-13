@@ -22,6 +22,7 @@ class SettingLabels {
     'chat.retention_days' => l10n.settingChatRetention,
     'chat.calls' => l10n.settingChatCalls,
     'chat.screen_share' => l10n.settingChatScreenShare,
+    'chat.call_recording' => l10n.settingChatRecording,
     'core.lti_assignment_source' => l10n.settingLtiSource,
     'sandbox.base_hours' => l10n.settingSandboxBaseHours,
     'sandbox.deadline_days' => l10n.settingSandboxDeadlineDays,
@@ -51,6 +52,14 @@ class SettingLabels {
   };
 
   String option(String key, String option) {
+    if (key == 'chat.call_recording') {
+      return switch (option) {
+        'off' => l10n.settingRecordingOff,
+        'admins' => l10n.settingScreenShareAdmins,
+        'everyone' => l10n.settingScreenShareEveryone,
+        _ => option,
+      };
+    }
     if (key == 'chat.screen_share') {
       return switch (option) {
         'everyone' => l10n.settingScreenShareEveryone,

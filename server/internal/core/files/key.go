@@ -1,5 +1,5 @@
 package files
 
-func objectKey(tenantID, fileID string) string {
+func ObjectKey(tenantID, fileID string) string {
 	return tenantID + "/" + fileID
 }

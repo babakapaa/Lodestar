@@ -45,7 +45,10 @@ func (h LeaveCallHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
-type CallHookHandler struct{ service CallService }
+type CallHookHandler struct {
+	service    CallService
+	recordings RecordingService
+}
 
 func (h CallHookHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	issuer := h.service.k.Calls
@@ -67,15 +70,46 @@ func (h CallHookHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		badRequest(w)
 		return
 	}
-	tenantID, _, ok := strings.Cut(e.Room.Name, "_")
+	room := e.Room.Name
+	if e.EgressInfo != nil && room == "" {
+		room = e.EgressInfo.RoomName
+	}
+	tenantID, _, ok := strings.Cut(room, "_")
 	if !ok || !validID(tenantID) {
 		w.WriteHeader(http.StatusNoContent)
 		return
 	}
-	if err := h.service.Hook(r.Context(), tenantID, e); err != nil {
+	if e.Event == livekit.EgressEnded && e.EgressInfo != nil {
+		err = h.recordings.Finish(r.Context(), tenantID, *e.EgressInfo)
+	} else {
+		err = h.service.Hook(r.Context(), tenantID, e)
+	}
+	if err != nil {
 		slog.Error("call hook", "error", err)
 		apierror.Write(w, http.StatusInternalServerError, apierror.CodeInternal)
 		return
 	}
 	w.WriteHeader(http.StatusNoContent)
+}
+
+type StartRecordingHandler struct{ service RecordingService }
+
+func (h StartRecordingHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	c, err := h.service.Start(r.Context(), principal(r), r.PathValue("id"))
+	if err != nil {
+		writeError(w, err)
+		return
+	}
+	jsonhttp.Write(w, http.StatusOK, c)
+}
+
+type StopRecordingHandler struct{ service RecordingService }
+
+func (h StopRecordingHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	c, err := h.service.Stop(r.Context(), principal(r), r.PathValue("id"))
+	if err != nil {
+		writeError(w, err)
+		return
+	}
+	jsonhttp.Write(w, http.StatusOK, c)
 }

@@ -3,11 +3,12 @@ package chat
 import "net/http"
 
 type Routes struct {
-	Chats    Service
-	Messages MessageService
-	Blocks   BlockService
-	Reports  ReportService
-	Calls    CallService
+	Chats      Service
+	Messages   MessageService
+	Blocks     BlockService
+	Reports    ReportService
+	Calls      CallService
+	Recordings RecordingService
 }
 
 func (r Routes) Mount(mux *http.ServeMux) {
@@ -35,8 +36,10 @@ func (r Routes) Mount(mux *http.ServeMux) {
 	mux.Handle("GET /v1/chat/chats/{id}/call", CallHandler{service: r.Calls})
 	mux.Handle("POST /v1/chat/chats/{id}/call", JoinCallHandler{service: r.Calls})
 	mux.Handle("POST /v1/chat/calls/{id}/leave", LeaveCallHandler{service: r.Calls})
+	mux.Handle("POST /v1/chat/calls/{id}/recording", StartRecordingHandler{service: r.Recordings})
+	mux.Handle("DELETE /v1/chat/calls/{id}/recording", StopRecordingHandler{service: r.Recordings})
 }
 
 func (r Routes) MountOpen(mux *http.ServeMux) {
-	mux.Handle("POST /v1/open/chat/livekit", CallHookHandler{service: r.Calls})
+	mux.Handle("POST /v1/open/chat/livekit", CallHookHandler{service: r.Calls, recordings: r.Recordings})
 }

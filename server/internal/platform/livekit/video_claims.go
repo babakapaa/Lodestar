@@ -1,10 +1,11 @@
 package livekit
 
 type videoClaims struct {
-	Room              string   `json:"room"`
-	RoomJoin          bool     `json:"roomJoin"`
-	CanPublish        bool     `json:"canPublish"`
-	CanSubscribe      bool     `json:"canSubscribe"`
-	CanPublishData    bool     `json:"canPublishData"`
-	CanPublishSources []string `json:"canPublishSources"`
+	Room              string   `json:"room,omitempty"`
+	RoomJoin          bool     `json:"roomJoin,omitempty"`
+	RoomRecord        bool     `json:"roomRecord,omitempty"`
+	CanPublish        bool     `json:"canPublish,omitempty"`
+	CanSubscribe      bool     `json:"canSubscribe,omitempty"`
+	CanPublishData    bool     `json:"canPublishData,omitempty"`
+	CanPublishSources []string `json:"canPublishSources,omitempty"`
 }

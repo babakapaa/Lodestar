@@ -28,6 +28,7 @@ import (
 	"github.com/babakapaa/lodestar/server/internal/platform/database"
 	"github.com/babakapaa/lodestar/server/internal/platform/database/dbtest"
 	"github.com/babakapaa/lodestar/server/internal/platform/livekit"
+	"github.com/babakapaa/lodestar/server/internal/platform/objectstore"
 	"github.com/babakapaa/lodestar/server/internal/platform/secretbox"
 )
 
@@ -118,6 +119,8 @@ type world struct {
 	reports  chat.ReportService
 	purger   chat.Purger
 	calls    chat.CallService
+	records  chat.RecordingService
+	egress   *fakeEgress
 	rosters  *fakeRosters
 	sent     *outbox
 	settings *fakeSettings
@@ -152,16 +155,21 @@ func newWorld(t *testing.T) *world {
 	acc := access.NewService(tx, catalog, structure.Tree{})
 	rosters := &fakeRosters{list: map[string]module.Roster{}}
 	sent := &outbox{}
-	settings := &fakeSettings{values: map[string]any{chat.CallsSetting: true, chat.ScreenShareSetting: chat.ShareAdmins}}
+	egress := newFakeEgress(t)
+	settings := &fakeSettings{values: map[string]any{chat.CallsSetting: true, chat.ScreenShareSetting: chat.ShareAdmins, chat.RecordingSetting: chat.RecordOff}}
 	k := module.Kernel{
 		Pool: pool, Tenants: tx, Access: acc, Notifier: sent, Settings: settings, Secrets: box,
 		Rosters: module.Rosters{rosters},
-		Calls:   livekit.NewIssuer(livekit.Config{URL: "wss://calls.kaznu.kz", APIKey: "key", APISecret: callSecret}),
+		Calls: livekit.NewIssuer(livekit.Config{
+			URL: "wss://calls.kaznu.kz", APIURL: egress.server.URL, APIKey: "key", APISecret: callSecret,
+			Storage: objectstore.Config{Endpoint: "http://minio:9000", Bucket: "lodestar", AccessKey: "a", SecretKey: "s"},
+		}),
 	}
 	w := &world{
 		t: t, ctx: ctx, tenant: created.ID, tx: tx, users: identity.NewStore(tx), access: acc,
 		chats: chat.NewService(k), messages: chat.NewMessageService(k), worker: chat.NewRosterWorker(k),
 		blocks: chat.NewBlockService(k), reports: chat.NewReportService(k), purger: chat.NewPurger(k), calls: chat.NewCallService(k),
+		records: chat.NewRecordingService(k), egress: egress,
 		rosters: rosters, sent: sent, settings: settings, pool: pool,
 	}
 	w.admin = w.user("admin")

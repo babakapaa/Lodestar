@@ -14,6 +14,7 @@ class FakeChats {
   final Map<String, Map<String, Object?>> calls = {};
   String callError = '';
   bool screenShare = true;
+  bool record = false;
 
   final Map<String, Map<String, Object?>> chats = {};
   final Map<String, List<Map<String, Object?>>> messages = {};
@@ -98,6 +99,8 @@ class FakeChats {
             : _json(200, calls[id]),
       ('POST', ['chats', final id, 'call']) => _joinCall(id),
       ('POST', ['calls', final id, 'leave']) => _leaveCall(id),
+      ('POST', ['calls', final id, 'recording']) => _recording(id, true),
+      ('DELETE', ['calls', final id, 'recording']) => _recording(id, false),
       ('GET', ['blocks']) => _json(200, [
         for (final id in blocked) {'userId': id, 'displayName': id},
       ]),
@@ -120,6 +123,7 @@ class FakeChats {
       'startedBy': people.isEmpty ? null : people.first,
       'startedAt': '2026-11-13T10:00:00Z',
       'people': people,
+      'recording': false,
     };
     calls[chatId] = call;
     return call;
@@ -137,7 +141,17 @@ class FakeChats {
       'room': 'kaznu_${call['id']}',
       'token': 'room-token',
       'screenShare': screenShare,
+      'record': record,
     });
+  }
+
+  http.Response _recording(String callId, bool on) {
+    final call = calls.values.firstWhere((call) => call['id'] == callId);
+    if (!record) {
+      return _json(403, {'code': 'recording_off'});
+    }
+    call['recording'] = on;
+    return _json(200, call);
   }
 
   http.Response _leaveCall(String callId) {

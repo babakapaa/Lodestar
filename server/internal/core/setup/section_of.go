@@ -13,6 +13,7 @@ var exactSections = map[string]string{
 	"core.files.max_file_mb":     SectionPrivacy,
 	"chat.retention_days":        SectionPrivacy,
 	"study.defense_recording":    SectionLegal,
+	"chat.call_recording":        SectionLegal,
 	"navigator.support_contacts": SectionLegal,
 	"sandbox.watch_processes":    SectionLegal,
 }

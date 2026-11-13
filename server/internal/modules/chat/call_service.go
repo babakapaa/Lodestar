@@ -108,6 +108,10 @@ func (s CallService) Join(ctx context.Context, p auth.Principal, chatID string) 
 		if err != nil {
 			return err
 		}
+		record, err := s.canRecord(ctx, tx, c)
+		if err != nil {
+			return err
+		}
 		person, err := s.person(ctx, tx, p.UserID)
 		if err != nil {
 			return err
@@ -117,7 +121,7 @@ func (s CallService) Join(ctx context.Context, p auth.Principal, chatID string) 
 		if err != nil {
 			return err
 		}
-		out = CallTicket{Call: call, URL: s.k.Calls.URL(), Room: room, Token: token, ScreenShare: share}
+		out = CallTicket{Call: call, URL: s.k.Calls.URL(), Room: room, Token: token, ScreenShare: share, Record: record}
 		return s.announce(ctx, tx, p.TenantID, chatID, call.ID, true)
 	})
 	return out, err
@@ -216,6 +220,23 @@ func (s CallService) canShare(ctx context.Context, tx pgx.Tx, c Chat) (bool, err
 		return false, err
 	}
 	return policy == ShareEveryone || c.Kind == KindDirect || manages(c.Role), nil
+}
+
+func (s CallService) canRecord(ctx context.Context, tx pgx.Tx, c Chat) (bool, error) {
+	if s.k.Calls == nil || !s.k.Calls.Records() {
+		return false, nil
+	}
+	var policy string
+	if err := s.setting(ctx, tx, RecordingSetting, &policy); err != nil {
+		return false, err
+	}
+	switch policy {
+	case RecordEveryone:
+		return true, nil
+	case RecordAdmins:
+		return c.Kind != KindDirect && manages(c.Role), nil
+	}
+	return false, nil
 }
 
 func (s CallService) person(ctx context.Context, tx pgx.Tx, userID string) (string, error) {

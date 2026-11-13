@@ -45,7 +45,7 @@ func (s Service) Sync(ctx context.Context, raw string, report AgentReport) (Agen
 		for _, r := range runs {
 			plan.Runs = append(plan.Runs, RunSpec{
 				RunID: r.ID, Kind: r.Kind, Title: r.Title, Image: r.Image, Command: r.Command,
-				MaxHours: r.MaxHours, Stop: r.Status == RunStopping,
+				MaxHours: r.MaxHours, Workspace: r.workspace(), Stop: r.Status == RunStopping,
 			})
 		}
 		return nil

@@ -40,7 +40,8 @@ func TestRunGoesThroughQueueNodeAndQuota(t *testing.T) {
 	}
 
 	plan := w.sync(f.node.Token)
-	if len(plan.Runs) != 1 || plan.Runs[0].RunID != run.ID || plan.Runs[0].Image != f.template.Image || plan.Runs[0].Stop {
+	if len(plan.Runs) != 1 || plan.Runs[0].RunID != run.ID || plan.Runs[0].Image != f.template.Image || plan.Runs[0].Stop ||
+		plan.Runs[0].Workspace != "user-"+w.aigerim.UserID {
 		t.Fatalf("plan = %+v", plan)
 	}
 	w.sync(f.node.Token, sandbox.RunReport{RunID: run.ID, Phase: sandbox.PhaseRunning, URL: "https://gpu-01.kaznu.kz/s/abc"})

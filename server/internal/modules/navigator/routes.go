@@ -3,7 +3,8 @@ package navigator
 import "net/http"
 
 type Routes struct {
-	Service Service
+	Service   Service
+	Materials MaterialService
 }
 
 func (r Routes) Mount(mux *http.ServeMux) {
@@ -13,4 +14,7 @@ func (r Routes) Mount(mux *http.ServeMux) {
 	mux.Handle("GET /v1/navigator/dialogs/{id}", DialogHandler{service: s})
 	mux.Handle("DELETE /v1/navigator/dialogs/{id}", DeleteHandler{service: s})
 	mux.Handle("POST /v1/navigator/dialogs/{id}/messages", AskHandler{service: s})
+	mux.Handle("GET /v1/navigator/courses/{id}/materials", MaterialsHandler{service: r.Materials})
+	mux.Handle("POST /v1/navigator/courses/{id}/materials", AddMaterialHandler{service: r.Materials})
+	mux.Handle("DELETE /v1/navigator/materials/{id}", DeleteMaterialHandler{service: r.Materials})
 }

@@ -20,5 +20,7 @@ type Kernel struct {
 	Secrets  secretbox.Box
 	Outbound *http.Client
 	Model    llm.Model
+	Embedder llm.Embedder
+	Reranker llm.Reranker
 	Briefs   Briefs
 }

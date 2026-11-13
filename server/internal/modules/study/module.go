@@ -46,5 +46,8 @@ func (Module) PrivacySections(module.Kernel) []privacy.Section {
 }
 
 func (Module) Briefers(k module.Kernel) []module.Briefer {
-	return []module.Briefer{AssignmentBriefer{service: NewAssignmentService(k.Tenants, k.Access, k.Notifier)}}
+	return []module.Briefer{
+		AssignmentBriefer{service: NewAssignmentService(k.Tenants, k.Access, k.Notifier)},
+		CourseBriefer{gate: CourseGate{access: k.Access}},
+	}
 }

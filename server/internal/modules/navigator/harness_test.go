@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
+	"hash/fnv"
 	"net/http"
 	"net/http/httptest"
 	"slices"
@@ -12,6 +13,7 @@ import (
 	"sync"
 	"testing"
 	"time"
+	"unicode"
 
 	"github.com/jackc/pgx/v5"
 
@@ -38,42 +40,90 @@ func (f *fakeSettings) ModuleEnabled(context.Context, string, string) (bool, err
 	return true, nil
 }
 
-const assignmentID = "5a6b7c8d-9e0f-4a1b-8c2d-3e4f5a6b7c8d"
+const (
+	assignmentID = "5a6b7c8d-9e0f-4a1b-8c2d-3e4f5a6b7c8d"
+	courseID     = "1c2d3e4f-5a6b-4c7d-8e9f-0a1b2c3d4e5f"
+)
 
-type fakeBriefer struct {
+type course struct {
 	mode     string
 	students []string
+	teachers []string
 }
 
-func (fakeBriefer) Kind() string {
-	return "assignment"
+type fakeBriefer struct {
+	kind   string
+	course *course
 }
 
-func (b *fakeBriefer) Brief(_ context.Context, _ pgx.Tx, p auth.Principal, id string) (module.Brief, error) {
-	if id != assignmentID || !slices.Contains(b.students, p.UserID) {
+func (b fakeBriefer) Kind() string {
+	return b.kind
+}
+
+func (b fakeBriefer) Brief(_ context.Context, _ pgx.Tx, p auth.Principal, id string) (module.Brief, error) {
+	teaches := slices.Contains(b.course.teachers, p.UserID)
+	if !teaches && !slices.Contains(b.course.students, p.UserID) {
+		return module.Brief{}, module.ErrBriefNotFound
+	}
+	if b.kind == "course" && id == courseID {
+		return module.Brief{
+			Kind: "course", ID: id, Title: "Биология", Course: "Биология", CourseID: courseID, Teaches: teaches, Mode: b.course.mode,
+		}, nil
+	}
+	if b.kind != "assignment" || id != assignmentID {
 		return module.Brief{}, module.ErrBriefNotFound
 	}
 	due := time.Date(2030, 12, 1, 18, 0, 0, 0, time.UTC)
 	return module.Brief{
 		Kind: "assignment", ID: id, Title: "Реферат о клетке", Description: "Опишите строение клетки",
-		Course: "Биология", DueAt: &due, Mode: b.mode,
+		Course: "Биология", CourseID: courseID, Teaches: teaches, DueAt: &due, Mode: b.course.mode,
 	}, nil
 }
 
+type fakeEmbedder struct{}
+
+func (fakeEmbedder) Name() string {
+	return "fake-embed"
+}
+
+func (fakeEmbedder) Embed(_ context.Context, texts []string) ([][]float32, error) {
+	out := make([][]float32, len(texts))
+	for i, text := range texts {
+		v := make([]float32, 32)
+		v[0] = 0.01
+		for _, word := range strings.FieldsFunc(strings.ToLower(text), func(r rune) bool { return !unicode.IsLetter(r) }) {
+			if len([]rune(word)) < 4 {
+				continue
+			}
+			h := fnv.New32a()
+			_, _ = h.Write([]byte(string([]rune(word)[:4])))
+			v[h.Sum32()%32]++
+		}
+		out[i] = v
+	}
+	return out, nil
+}
+
 type fakeModel struct {
-	mu        sync.Mutex
-	intent    string
-	distress  bool
-	reply     string
-	fail      bool
-	requests  []llm.Request
-	completes int
+	mu          sync.Mutex
+	intent      string
+	distress    bool
+	reply       string
+	fail        bool
+	unsupported []int
+	leak        bool
+	requests    []llm.Request
+	completes   int
 }
 
 func (m *fakeModel) Complete(_ context.Context, req llm.Request) (string, error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	m.requests = append(m.requests, req)
+	if req.JSON && strings.Contains(req.Messages[0].Content, "проверяешь") {
+		raw, _ := json.Marshal(map[string]any{"unsupported": m.unsupported, "leak": m.leak})
+		return string(raw), nil
+	}
 	if req.JSON {
 		raw, _ := json.Marshal(map[string]any{"intent": m.intent, "distress": m.distress})
 		return "```json\n" + string(raw) + "\n```", nil
@@ -101,7 +151,12 @@ func (m *fakeModel) Stream(ctx context.Context, req llm.Request, delta func(stri
 func (m *fakeModel) last() llm.Request {
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	return m.requests[len(m.requests)-1]
+	for i := len(m.requests) - 1; i >= 0; i-- {
+		if !m.requests[i].JSON {
+			return m.requests[i]
+		}
+	}
+	return llm.Request{}
 }
 
 type world struct {
@@ -111,8 +166,9 @@ type world struct {
 	kernel    module.Kernel
 	navigator navigator.Service
 	users     identity.Store
+	materials navigator.MaterialService
 	model     *fakeModel
-	briefer   *fakeBriefer
+	course    *course
 }
 
 func newWorld(t *testing.T) *world {
@@ -137,11 +193,14 @@ func newWorld(t *testing.T) *world {
 		navigator.MemorySetting:  30,
 	}}
 	model := &fakeModel{intent: "understand", reply: "Что ты уже знаешь о клетке?"}
-	briefer := &fakeBriefer{mode: module.ModeStudy}
-	k := module.Kernel{Pool: pool, Tenants: tx, Settings: settings, Secrets: box, Model: model, Briefs: module.Briefs{briefer}}
+	c := &course{mode: module.ModeStudy}
+	k := module.Kernel{
+		Pool: pool, Tenants: tx, Settings: settings, Secrets: box, Model: model, Embedder: fakeEmbedder{},
+		Briefs: module.Briefs{fakeBriefer{kind: "assignment", course: c}, fakeBriefer{kind: "course", course: c}},
+	}
 	return &world{
 		t: t, ctx: ctx, tenant: created.ID, kernel: k, navigator: navigator.NewService(k),
-		users: identity.NewStore(tx), model: model, briefer: briefer,
+		materials: navigator.NewMaterialService(k), users: identity.NewStore(tx), model: model, course: c,
 	}
 }
 
@@ -157,14 +216,18 @@ func (w *world) user(subject string) auth.Principal {
 }
 
 func (w *world) enrol(mode string, student auth.Principal) {
-	w.briefer.mode = mode
-	w.briefer.students = append(w.briefer.students, student.UserID)
+	w.course.mode = mode
+	w.course.students = append(w.course.students, student.UserID)
+}
+
+func (w *world) teach(teacher auth.Principal) {
+	w.course.teachers = append(w.course.teachers, teacher.UserID)
 }
 
 func (w *world) post(p auth.Principal, path, body string, header map[string]string) *httptest.ResponseRecorder {
 	w.t.Helper()
 	mux := http.NewServeMux()
-	navigator.Routes{Service: w.navigator}.Mount(mux)
+	navigator.Routes{Service: w.navigator, Materials: w.materials}.Mount(mux)
 	req := httptest.NewRequest(http.MethodPost, path, strings.NewReader(body))
 	for k, v := range header {
 		req.Header.Set(k, v)

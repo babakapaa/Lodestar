@@ -10,12 +10,14 @@ import (
 )
 
 const (
-	CodeUnavailable    = "navigator_unavailable"
-	CodeDialogNotFound = "dialog_not_found"
-	CodeInvalidDialog  = "invalid_dialog"
-	CodeInvalidMessage = "invalid_message"
-	CodeModelFailed    = "navigator_failed"
-	CodeScopeNotFound  = "scope_not_found"
+	CodeUnavailable      = "navigator_unavailable"
+	CodeDialogNotFound   = "dialog_not_found"
+	CodeInvalidDialog    = "invalid_dialog"
+	CodeInvalidMessage   = "invalid_message"
+	CodeModelFailed      = "navigator_failed"
+	CodeScopeNotFound    = "scope_not_found"
+	CodeInvalidMaterial  = "invalid_material"
+	CodeMaterialNotFound = "material_not_found"
 )
 
 var errorCodes = []struct {
@@ -29,6 +31,8 @@ var errorCodes = []struct {
 	{ErrInvalidMessage, http.StatusBadRequest, CodeInvalidMessage},
 	{ErrModelFailed, http.StatusBadGateway, CodeModelFailed},
 	{module.ErrBriefNotFound, http.StatusNotFound, CodeScopeNotFound},
+	{ErrInvalidMaterial, http.StatusBadRequest, CodeInvalidMaterial},
+	{ErrMaterialNotFound, http.StatusNotFound, CodeMaterialNotFound},
 }
 
 func writeError(w http.ResponseWriter, err error) {

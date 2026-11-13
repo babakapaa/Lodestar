@@ -12,9 +12,13 @@ func briefText(b *module.Brief, now time.Time) string {
 		return "Вопрос задан не из задания."
 	}
 	var out strings.Builder
-	out.WriteString("Задание: " + b.Title)
-	if b.Course != "" {
-		out.WriteString("\nКурс: " + b.Course)
+	if b.Kind == scopeCourse {
+		out.WriteString("Курс: " + b.Title)
+	} else {
+		out.WriteString("Задание: " + b.Title)
+		if b.Course != "" {
+			out.WriteString("\nКурс: " + b.Course)
+		}
 	}
 	if b.DueAt != nil {
 		out.WriteString("\nСрок: " + b.DueAt.UTC().Format(time.RFC3339))

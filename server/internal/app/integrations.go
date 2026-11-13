@@ -7,8 +7,10 @@ import (
 )
 
 type Integrations struct {
-	Storage files.Storage
-	Pusher  delivery.Pusher
-	Mailer  delivery.Mailer
-	Model   llm.Model
+	Storage  files.Storage
+	Pusher   delivery.Pusher
+	Mailer   delivery.Mailer
+	Model    llm.Model
+	Embedder llm.Embedder
+	Reranker llm.Reranker
 }

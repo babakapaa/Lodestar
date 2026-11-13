@@ -67,6 +67,7 @@ func NewServer(version string, cfg config.Config, box secretbox.Box, pool *pgxpo
 	settingsService := core.Settings
 	kernel := core.Kernel
 	kernel.Model = ext.Model
+	kernel.Embedder, kernel.Reranker = ext.Embedder, ext.Reranker
 	kernel.Briefs = registry.Briefs(kernel)
 	profileService := profile.NewService(tx, preferences)
 	sources := append([]search.Source{profile.PeopleSource{}, structure.UnitsSource{}}, registry.SearchSources()...)

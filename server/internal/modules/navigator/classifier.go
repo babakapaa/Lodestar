@@ -3,7 +3,6 @@ package navigator
 import (
 	"context"
 	"encoding/json"
-	"strings"
 
 	"github.com/babakapaa/lodestar/server/internal/platform/llm"
 )
@@ -25,12 +24,8 @@ func (c Classifier) Classify(ctx context.Context, question string) Classificatio
 	if err != nil {
 		return fallback
 	}
-	raw = strings.TrimSpace(raw)
-	if start, end := strings.Index(raw, "{"), strings.LastIndex(raw, "}"); start >= 0 && end > start {
-		raw = raw[start : end+1]
-	}
 	var out Classification
-	if json.Unmarshal([]byte(raw), &out) != nil || !out.Intent.Choosable() {
+	if json.Unmarshal([]byte(jsonObject(raw)), &out) != nil || !out.Intent.Choosable() {
 		return Classification{Intent: IntentUnderstand, Distress: out.Distress}
 	}
 	return out

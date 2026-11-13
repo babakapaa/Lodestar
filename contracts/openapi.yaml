@@ -3690,7 +3690,8 @@ paths:
       summary: Задать вопрос или попросить ещё подсказку
       description: |
         key защищает от повторной отправки: повтор с тем же key возвращает прежний ответ без нового запроса к модели.
-        С заголовком Accept text/event-stream ответ приходит потоком событий delta с полем text, затем answer с Answer или error с кодом.
+        С заголовком Accept text/event-stream приходят события stage с полем stage (search, write, check), затем answer с Answer или error с кодом.
+        Если у контекста есть курс, навигатор ищет фрагменты в материалах курса. Перед отправкой ответ проверяется: цитаты должны дословно быть во фрагменте, ссылки [n] вести на найденный фрагмент, а в учебном режиме ответ не должен выдавать готовое решение. Неподтверждённые предложения убираются.
         Тип запроса определяет классификатор. Если он ошибся, студент передаёт intent сам, кроме closed.
       security:
         - bearer: []
@@ -3727,6 +3728,82 @@ paths:
         "502":
           $ref: "#/components/responses/Error"
         "503":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/navigator/courses/{id}/materials:
+    get:
+      tags: [navigator]
+      operationId: listMaterials
+      summary: Материалы курса для поиска навигатора
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Material"
+        "401":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+    post:
+      tags: [navigator]
+      operationId: addMaterial
+      summary: Добавить материал курса
+      description: Только преподаватель курса. Текст режется на фрагменты, индексация идёт в фоне, пока indexed меньше passages.
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MaterialInput"
+      responses:
+        "201":
+          description: Добавлен
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Material"
+        "400":
+          $ref: "#/components/responses/Error"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/navigator/materials/{id}:
+    delete:
+      tags: [navigator]
+      operationId: deleteMaterial
+      summary: Удалить материал курса
+      security:
+        - bearer: []
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "204":
+          description: Удалён
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
           $ref: "#/components/responses/Error"
         default:
           $ref: "#/components/responses/Error"
@@ -5354,7 +5431,7 @@ components:
       description: Ступень лестницы подсказок. Пусто для организационных вопросов и состояния
     Brief:
       type: object
-      required: [kind, id, title, description, course, dueAt, mode]
+      required: [kind, id, title, description, course, courseId, teaches, dueAt, mode]
       properties:
         kind:
           type: string
@@ -5366,6 +5443,10 @@ components:
           type: string
         course:
           type: string
+        courseId:
+          type: string
+        teaches:
+          type: boolean
         dueAt:
           type: [string, "null"]
           format: date-time
@@ -5380,7 +5461,7 @@ components:
           format: uuid
         scopeKind:
           type: string
-          description: assignment или пусто
+          description: assignment, course или пусто
         scopeId:
           type: string
         title:
@@ -5420,7 +5501,7 @@ components:
                 $ref: "#/components/schemas/NavigatorMessage"
     NavigatorMessage:
       type: object
-      required: [seq, role, text, intent, step, lastStep, support, createdAt]
+      required: [seq, role, text, intent, step, lastStep, support, citations, createdAt]
       properties:
         seq:
           type: integer
@@ -5438,6 +5519,10 @@ components:
         support:
           type: string
           description: Контакты поддержки вуза. Заполнено, только если в вопросе были тревожные слова
+        citations:
+          type: array
+          items:
+            $ref: "#/components/schemas/Citation"
         createdAt:
           type: string
           format: date-time
@@ -5465,3 +5550,64 @@ components:
           $ref: "#/components/schemas/NavigatorMessage"
         reply:
           $ref: "#/components/schemas/NavigatorMessage"
+    Citation:
+      type: object
+      required: [n, materialId, title, reference, url, text]
+      properties:
+        n:
+          type: integer
+          description: Номер ссылки [n] в тексте ответа
+        materialId:
+          type: string
+          format: uuid
+        title:
+          type: string
+        reference:
+          type: string
+        url:
+          type: string
+        text:
+          type: string
+          description: Фрагмент источника
+    Material:
+      type: object
+      required: [id, courseId, title, reference, url, passages, indexed, createdAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        courseId:
+          type: string
+          format: uuid
+        title:
+          type: string
+        reference:
+          type: string
+        url:
+          type: string
+        passages:
+          type: integer
+        indexed:
+          type: integer
+          description: Сколько фрагментов уже проиндексировано текущей моделью эмбеддингов
+        createdAt:
+          type: string
+          format: date-time
+    MaterialInput:
+      type: object
+      required: [title, text]
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 300
+        reference:
+          type: string
+          maxLength: 2000
+        url:
+          type: string
+          maxLength: 2000
+        text:
+          type: string
+          minLength: 1
+          maxLength: 1500000

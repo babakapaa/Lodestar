@@ -17,15 +17,23 @@ import (
 
 const titleLength = 80
 
+const fallbackReply = "Не получилось составить подсказку, которую подтверждают источники. Уточни вопрос или напиши, что уже нашёл сам."
+
 type Service struct {
-	k        module.Kernel
-	dialogs  DialogStore
-	messages MessageStore
+	k         module.Kernel
+	dialogs   DialogStore
+	messages  MessageStore
+	retriever Retriever
+	verifier  Verifier
 }
 
 func NewService(k module.Kernel) Service {
 	sealer := Sealer{box: k.Secrets}
-	return Service{k: k, dialogs: DialogStore{sealer: sealer}, messages: MessageStore{sealer: sealer}}
+	return Service{
+		k: k, dialogs: DialogStore{sealer: sealer}, messages: MessageStore{sealer: sealer},
+		retriever: Retriever{tenants: k.Tenants, embedder: k.Embedder, reranker: k.Reranker},
+		verifier:  Verifier{model: k.Model},
+	}
 }
 
 func (s Service) Dialogs(ctx context.Context, p auth.Principal, scopeKind, scopeID string) ([]Dialog, error) {
@@ -88,7 +96,7 @@ func (s Service) Delete(ctx context.Context, p auth.Principal, id string) error 
 	})
 }
 
-func (s Service) Ask(ctx context.Context, p auth.Principal, id string, in MessageInput, delta func(string) error) (Answer, bool, error) {
+func (s Service) Ask(ctx context.Context, p auth.Principal, id string, in MessageInput, stage func(Stage) error) (Answer, bool, error) {
 	in, err := in.normalized()
 	if err != nil {
 		return Answer{}, false, err
@@ -143,11 +151,11 @@ func (s Service) Ask(ctx context.Context, p auth.Principal, id string, in Messag
 	if !in.More {
 		prompt.Step = prompt.Intent.start()
 	}
-	reply, err := s.complete(ctx, prompt, delta)
+	verdict, err := s.answer(ctx, p, prompt, stage)
 	if err != nil {
 		return Answer{}, false, err
 	}
-	body := messageBody{Text: reply, Intent: prompt.Intent, Step: prompt.Step}
+	body := messageBody{Text: verdict.Text, Intent: prompt.Intent, Step: prompt.Step, Citations: verdict.Citations}
 	if distress {
 		body.Support = support
 	}
@@ -178,15 +186,42 @@ func (s Service) Ask(ctx context.Context, p auth.Principal, id string, in Messag
 	return answer, created, err
 }
 
-func (s Service) complete(ctx context.Context, prompt Prompt, delta func(string) error) (string, error) {
-	req := llm.Request{Messages: prompt.Messages(), Temperature: 0.3}
-	var reply string
-	var err error
-	if delta != nil {
-		reply, err = s.k.Model.Stream(ctx, req, delta)
-	} else {
-		reply, err = s.k.Model.Complete(ctx, req)
+func (s Service) answer(ctx context.Context, p auth.Principal, prompt Prompt, stage func(Stage) error) (Verdict, error) {
+	report := func(st Stage) error {
+		if stage == nil {
+			return nil
+		}
+		return stage(st)
 	}
+	if err := report(StageSearch); err != nil {
+		return Verdict{}, err
+	}
+	if prompt.Brief != nil {
+		prompt.Fragments = s.retriever.Find(ctx, p.TenantID, prompt.Brief.CourseID, prompt.query())
+	}
+	var verdict Verdict
+	for attempt := 0; attempt < 2; attempt++ {
+		if err := report(StageWrite); err != nil {
+			return Verdict{}, err
+		}
+		draft, err := s.complete(ctx, prompt)
+		if err != nil {
+			return Verdict{}, err
+		}
+		if err := report(StageCheck); err != nil {
+			return Verdict{}, err
+		}
+		verdict = s.verifier.Check(ctx, draft, prompt)
+		if verdict.Passed() {
+			return verdict, nil
+		}
+		prompt.Retry = retryReason(verdict)
+	}
+	return Verdict{Text: fallbackReply}, nil
+}
+
+func (s Service) complete(ctx context.Context, prompt Prompt) (string, error) {
+	reply, err := s.k.Model.Complete(ctx, llm.Request{Messages: prompt.Messages(), Temperature: 0.3})
 	if err != nil {
 		if errors.Is(err, llm.ErrModelFailed) {
 			return "", errors.Join(ErrModelFailed, err)
@@ -198,6 +233,13 @@ func (s Service) complete(ctx context.Context, prompt Prompt, delta func(string)
 		return "", ErrModelFailed
 	}
 	return reply, nil
+}
+
+func retryReason(v Verdict) string {
+	if v.Leak {
+		return "он выдаёт готовое решение раньше времени или перескакивает ступень."
+	}
+	return "в нём нет утверждений, которые подтверждают фрагменты, или цитаты не совпадают с источником."
 }
 
 func (s Service) brief(ctx context.Context, tx pgx.Tx, p auth.Principal, kind, id string) (*module.Brief, error) {

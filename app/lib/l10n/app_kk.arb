@@ -1274,7 +1274,7 @@
   "setupProtocol": "Қосылу хаттамасы",
   "setupProtocolSigned": "{version} нұсқа, қол қойылған",
   "setupProtocolUnsigned": "Қол қойылмаған",
-  "setupDownload": "Жүктеу",
+  "setupDownload": "Markdown жүктеу",
   "setupSign": "Қол қою",
   "setupBanner": "ЖОО әлі іске қосылмаған. Студенттер мен оқытушылар қосымшаны іске қосылғаннан кейін көреді.",
   "setupOpen": "Шеберді ашу",
@@ -1356,5 +1356,6 @@
   "lessonNote": "Студенттерге түсініктеме",
   "errorInvalidSeries": "Уақытты, ұзақтығын және күндерді тексеріңіз",
   "errorInvalidChange": "Сабақ өзгерісі дұрыс емес",
-  "errorSeriesNotFound": "Сабақ табылмады"
+  "errorSeriesNotFound": "Сабақ табылмады",
+  "setupDownloadPdf": "PDF жүктеу"
 }

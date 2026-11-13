@@ -17,11 +17,23 @@ func (h ProtocolHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		writeError(w, err)
 		return
 	}
-	if r.URL.Query().Get("format") != "md" {
+	switch r.URL.Query().Get("format") {
+	case "md":
+		attach(w, "text/markdown; charset=utf-8", fmt.Sprintf("protocol-v%d.md", p.Version), []byte(p.Markdown()))
+	case "pdf":
+		doc, err := p.PDF()
+		if err != nil {
+			writeError(w, err)
+			return
+		}
+		attach(w, "application/pdf", fmt.Sprintf("protocol-v%d.pdf", p.Version), doc)
+	default:
 		jsonhttp.Write(w, http.StatusOK, p)
-		return
 	}
-	w.Header().Set("Content-Type", "text/markdown; charset=utf-8")
-	w.Header().Set("Content-Disposition", fmt.Sprintf(`attachment; filename="protocol-v%d.md"`, p.Version))
-	_, _ = w.Write([]byte(p.Markdown()))
+}
+
+func attach(w http.ResponseWriter, contentType, name string, body []byte) {
+	w.Header().Set("Content-Type", contentType)
+	w.Header().Set("Content-Disposition", fmt.Sprintf(`attachment; filename="%s"`, name))
+	_, _ = w.Write(body)
 }

@@ -48,8 +48,8 @@ class SetupApi {
   Future<void> approve(String question) =>
       _api.post('/v1/setup/legal/${Uri.encodeComponent(question)}/approve');
 
-  Future<Uint8List> protocol() =>
-      _api.download('/v1/setup/protocol', {'format': 'md'});
+  Future<Uint8List> protocol(String format) =>
+      _api.download('/v1/setup/protocol', {'format': format});
 
   Future<void> sign() => _api.post('/v1/setup/protocol/sign');
 

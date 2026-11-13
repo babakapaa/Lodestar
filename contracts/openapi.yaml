@@ -8250,9 +8250,15 @@ paths:
       tags: [setup]
       operationId: setupProtocol
       summary: Протокол подключения
-      description: С format=md отдаёт файл Markdown.
+      description: С format=md отдаёт файл Markdown, с format=pdf файл PDF.
       security:
         - bearer: []
+      parameters:
+        - name: format
+          in: query
+          schema:
+            type: string
+            enum: [md, pdf]
       responses:
         "200":
           description: Готово
@@ -8260,6 +8266,13 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/SetupProtocol"
+            text/markdown:
+              schema:
+                type: string
+            application/pdf:
+              schema:
+                type: string
+                format: binary
         "401":
           $ref: "#/components/responses/Error"
         "403":

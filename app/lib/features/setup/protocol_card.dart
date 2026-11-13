@@ -29,16 +29,24 @@ class ProtocolCard extends ConsumerWidget {
         ),
         trailing: Wrap(
           children: [
-            IconButton(
-              tooltip: l10n.setupDownload,
-              icon: const Icon(Icons.download_outlined),
-              onPressed: () => TeamAction.run(context, () async {
-                final bytes = await api.protocol();
-                await ref
-                    .read(exportSaverProvider)
-                    .save('protocol', bytes, extension: 'md');
-              }),
-            ),
+            for (final format in const ['pdf', 'md'])
+              IconButton(
+                key: ValueKey('setup-protocol-$format'),
+                tooltip: format == 'pdf'
+                    ? l10n.setupDownloadPdf
+                    : l10n.setupDownload,
+                icon: Icon(
+                  format == 'pdf'
+                      ? Icons.picture_as_pdf_outlined
+                      : Icons.download_outlined,
+                ),
+                onPressed: () => TeamAction.run(context, () async {
+                  final bytes = await api.protocol(format);
+                  await ref
+                      .read(exportSaverProvider)
+                      .save('protocol', bytes, extension: format);
+                }),
+              ),
             if (!overview.signed)
               TextButton(
                 key: const ValueKey('setup-sign'),

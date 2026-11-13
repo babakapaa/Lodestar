@@ -46,7 +46,11 @@ func run() error {
 	if err != nil {
 		return err
 	}
-	agent.New(cfg, docker).Run(ctx)
+	var meter agent.GPUMeter
+	if smi, ok := agent.FindNvidiaSMI(); ok {
+		meter = smi
+	}
+	agent.New(cfg, docker, meter).Run(ctx)
 	return nil
 }
 

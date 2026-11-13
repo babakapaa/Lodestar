@@ -12,14 +12,16 @@ import (
 const runColumns = `r.id::text, r.user_id::text, u.display_name, r.team_id, r.team_name, r.kind, r.title, r.command,
 	r.template_id::text, t.name, t.image, r.class_id::text, c.name, r.rate::float8, r.max_hours::float8,
 	r.work_kind, r.work_id, r.work_title, r.due_at, r.status, r.url, r.exit_code, r.reason, r.charged::float8,
-	r.queued_at, r.started_at, r.ended_at, r.node_id::text, r.term_id::text`
+	r.queued_at, r.started_at, r.ended_at, r.node_id::text, r.term_id::text, r.held_at, r.hold_note, r.refunded,
+	CASE WHEN r.gpu_samples > 0 THEN round((r.gpu_sum / r.gpu_samples)::numeric)::float8 END, r.log_tail,
+	r.active_at, r.net_bytes, r.idle_warned, r.held_secs`
 
 const runFrom = ` FROM sandbox.runs r
 	JOIN core.users u ON u.id = r.user_id
 	JOIN sandbox.templates t ON t.id = r.template_id
 	JOIN sandbox.gpu_classes c ON c.id = r.class_id`
 
-const runActive = `r.status IN ('queued', 'starting', 'running', 'stopping')`
+const runActive = `r.status IN ('queued', 'starting', 'running', 'held', 'stopping')`
 
 func queueOrder(days string) string {
 	return `CASE WHEN r.work_kind IS NOT NULL AND r.due_at >= now() AND r.due_at <= now() + make_interval(days => ` + days + `) THEN 0 ELSE 1 END,
@@ -139,7 +141,7 @@ func (RunStore) Queued(ctx context.Context, tx pgx.Tx, classID string, days, lim
 
 func (RunStore) OnNode(ctx context.Context, tx pgx.Tx, nodeID string) ([]Run, error) {
 	rows, err := tx.Query(ctx, `SELECT `+runColumns+runFrom+`
-		WHERE r.node_id::text = $1 AND r.status IN ('starting', 'running', 'stopping') ORDER BY r.queued_at FOR UPDATE OF r`, nodeID)
+		WHERE r.node_id::text = $1 AND r.status IN ('starting', 'running', 'held', 'stopping') ORDER BY r.queued_at FOR UPDATE OF r`, nodeID)
 	if err != nil {
 		return nil, fmt.Errorf("runs on node: %w", err)
 	}
@@ -148,7 +150,7 @@ func (RunStore) OnNode(ctx context.Context, tx pgx.Tx, nodeID string) ([]Run, er
 
 func (RunStore) Overdue(ctx context.Context, tx pgx.Tx) ([]Run, error) {
 	rows, err := tx.Query(ctx, `SELECT `+runColumns+runFrom+`
-		WHERE r.status = 'running' AND r.started_at + make_interval(secs => r.max_hours * 3600) <= now() FOR UPDATE OF r`)
+		WHERE r.status = 'running' AND r.started_at + make_interval(secs => r.max_hours * 3600 + r.held_secs) <= now() FOR UPDATE OF r`)
 	if err != nil {
 		return nil, fmt.Errorf("overdue runs: %w", err)
 	}
@@ -179,14 +181,59 @@ func (RunStore) Stopping(ctx context.Context, tx pgx.Tx, id, reason string) erro
 	return nil
 }
 
-func (RunStore) End(ctx context.Context, tx pgx.Tx, id, status string, exitCode *int, reason string, charged float64, at time.Time) error {
+func (RunStore) End(ctx context.Context, tx pgx.Tx, id string, e runEnd) error {
 	if _, err := tx.Exec(ctx, `
 		UPDATE sandbox.runs SET status = $2, exit_code = $3, reason = CASE WHEN $4 = '' THEN reason ELSE $4 END,
-		       charged = $5, ended_at = $6, url = ''
-		WHERE id::text = $1`, id, status, exitCode, reason, charged, at); err != nil {
+		       charged = $5, ended_at = $6, url = '', refunded = $7, log_tail = CASE WHEN $8 = '' THEN log_tail ELSE $8 END
+		WHERE id::text = $1`, id, e.status, e.exitCode, e.reason, e.charged, e.at, e.refunded, e.log); err != nil {
 		return fmt.Errorf("end run: %w", err)
 	}
 	return nil
+}
+
+func (RunStore) Observe(ctx context.Context, tx pgx.Tx, id string, active bool, u RunUsage) error {
+	if _, err := tx.Exec(ctx, `
+		UPDATE sandbox.runs SET active_at = CASE WHEN $2 THEN now() ELSE active_at END,
+		       idle_warned = idle_warned AND NOT $2, net_bytes = $3,
+		       gpu_sum = gpu_sum + coalesce($4, 0), gpu_samples = gpu_samples + CASE WHEN $4 IS NULL THEN 0 ELSE 1 END
+		WHERE id::text = $1`, id, active, u.NetBytes, u.GPU); err != nil {
+		return fmt.Errorf("observe run: %w", err)
+	}
+	return nil
+}
+
+func (RunStore) Warned(ctx context.Context, tx pgx.Tx, id string) error {
+	if _, err := tx.Exec(ctx, `UPDATE sandbox.runs SET idle_warned = true WHERE id::text = $1`, id); err != nil {
+		return fmt.Errorf("warn run: %w", err)
+	}
+	return nil
+}
+
+func (RunStore) Hold(ctx context.Context, tx pgx.Tx, id, note string) error {
+	if _, err := tx.Exec(ctx, `
+		UPDATE sandbox.runs SET status = 'held', held_at = now(), hold_note = $2, reason = 'watchdog'
+		WHERE id::text = $1`, id, note); err != nil {
+		return fmt.Errorf("hold run: %w", err)
+	}
+	return nil
+}
+
+func (RunStore) Release(ctx context.Context, tx pgx.Tx, id string) error {
+	if _, err := tx.Exec(ctx, `
+		UPDATE sandbox.runs SET status = 'running', held_secs = held_secs + extract(epoch FROM now() - held_at),
+		       held_at = NULL, hold_note = '', reason = '', active_at = now(), idle_warned = false
+		WHERE id::text = $1`, id); err != nil {
+		return fmt.Errorf("release run: %w", err)
+	}
+	return nil
+}
+
+func (RunStore) Held(ctx context.Context, tx pgx.Tx) ([]Run, error) {
+	rows, err := tx.Query(ctx, `SELECT `+runColumns+runFrom+` WHERE r.status = 'held' ORDER BY r.held_at, r.id`)
+	if err != nil {
+		return nil, fmt.Errorf("held runs: %w", err)
+	}
+	return pgx.CollectRows(rows, scanRun)
 }
 
 func scanRun(row pgx.CollectableRow) (Run, error) {
@@ -194,6 +241,7 @@ func scanRun(row pgx.CollectableRow) (Run, error) {
 	err := row.Scan(&r.ID, &r.UserID, &r.DisplayName, &r.TeamID, &r.TeamName, &r.Kind, &r.Title, &r.Command,
 		&r.TemplateID, &r.TemplateName, &r.Image, &r.ClassID, &r.ClassName, &r.Rate, &r.MaxHours,
 		&r.WorkKind, &r.WorkID, &r.WorkTitle, &r.DueAt, &r.Status, &r.URL, &r.ExitCode, &r.Reason, &r.Charged,
-		&r.QueuedAt, &r.StartedAt, &r.EndedAt, &r.NodeID, &r.TermID)
+		&r.QueuedAt, &r.StartedAt, &r.EndedAt, &r.NodeID, &r.TermID, &r.HeldAt, &r.HoldNote, &r.Refunded,
+		&r.GPULoad, &r.Log, &r.ActiveAt, &r.NetBytes, &r.IdleWarned, &r.HeldSecs)
 	return r, err
 }

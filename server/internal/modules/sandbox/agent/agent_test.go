@@ -76,7 +76,30 @@ func (d *fakeDocker) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNoContent)
 	case r.Method == http.MethodPost && len(parts) == 3 && parts[2] == "stop":
 		c := d.containers[parts[1]]
+		if c.state == "paused" {
+			http.Error(w, "paused", http.StatusConflict)
+			return
+		}
 		c.state, c.exit = "exited", 137
+		w.WriteHeader(http.StatusNoContent)
+	case r.Method == http.MethodGet && len(parts) == 3 && parts[2] == "stats":
+		_ = json.NewEncoder(w).Encode(map[string]any{
+			"cpu_stats":    map[string]any{"cpu_usage": map[string]any{"total_usage": 3000}, "system_cpu_usage": 20000, "online_cpus": 4},
+			"precpu_stats": map[string]any{"cpu_usage": map[string]any{"total_usage": 1000}, "system_cpu_usage": 10000},
+			"networks":     map[string]any{"eth0": map[string]any{"rx_bytes": 700, "tx_bytes": 300}},
+		})
+	case r.Method == http.MethodGet && len(parts) == 3 && parts[2] == "top":
+		_ = json.NewEncoder(w).Encode(map[string]any{"Titles": []string{"PID", "COMMAND"}, "Processes": [][]string{{"1", "sh"}, {"7", "python"}}})
+	case r.Method == http.MethodGet && len(parts) == 3 && parts[2] == "logs":
+		for _, line := range []string{"epoch 1\n", "Traceback: boom\n"} {
+			header := []byte{2, 0, 0, 0, 0, 0, 0, byte(len(line))}
+			_, _ = w.Write(append(header, line...))
+		}
+	case r.Method == http.MethodPost && len(parts) == 3 && parts[2] == "pause":
+		d.containers[parts[1]].state = "paused"
+		w.WriteHeader(http.StatusNoContent)
+	case r.Method == http.MethodPost && len(parts) == 3 && parts[2] == "unpause":
+		d.containers[parts[1]].state = "running"
 		w.WriteHeader(http.StatusNoContent)
 	case r.Method == http.MethodDelete && len(parts) == 2:
 		delete(d.containers, parts[1])
@@ -128,6 +151,12 @@ func (f *fakeLodestar) last() sandbox.AgentReport {
 	return f.reports[len(f.reports)-1]
 }
 
+type fakeMeter map[int]float64
+
+func (m fakeMeter) Load(context.Context) (map[int]float64, error) {
+	return m, nil
+}
+
 type rig struct {
 	t      *testing.T
 	docker *fakeDocker
@@ -153,7 +182,7 @@ func newRig(t *testing.T, gpus int) rig {
 	if err := cfg.Validate(); err != nil {
 		t.Fatalf("config: %v", err)
 	}
-	return rig{t: t, docker: docker, server: lodestar, agent: agent.New(cfg, client), data: data}
+	return rig{t: t, docker: docker, server: lodestar, agent: agent.New(cfg, client, fakeMeter{0: 63}), data: data}
 }
 
 func (r rig) tick() {
@@ -248,5 +277,48 @@ func TestAgentRefusesStrangeWorkspace(t *testing.T) {
 	}
 	if err := (agent.Config{Server: "x", Token: "y", GPUs: 1, DataDir: "/d"}).Validate(); err == nil {
 		t.Fatalf("config without host accepted")
+	}
+}
+
+func TestAgentReportsUsagePausesAndReadsLog(t *testing.T) {
+	r := newRig(t, 1)
+	job := sandbox.RunSpec{RunID: "j1", Kind: sandbox.RunJob, Title: "Обучение", Image: "img", Command: "python train.py", MaxHours: 2, Workspace: "user-u1"}
+	r.server.set(job)
+	r.tick()
+	r.tick()
+	u := r.server.last().Runs[0].Usage
+	if u == nil || u.CPU != 80 || u.NetBytes != 1000 || u.GPU == nil || *u.GPU != 63 || fmt.Sprint(u.Processes) != "[sh python]" {
+		t.Fatalf("usage = %+v", u)
+	}
+
+	held := job
+	held.Hold = true
+	r.server.set(held)
+	r.tick()
+	if c := r.docker.byRun("j1"); c.state != "paused" {
+		t.Fatalf("not paused = %+v", c)
+	}
+	r.tick()
+	if got := r.server.last().Runs[0]; got.Phase != sandbox.PhaseRunning || got.Usage != nil {
+		t.Fatalf("paused report = %+v", got)
+	}
+	r.server.set(job)
+	r.tick()
+	if c := r.docker.byRun("j1"); c.state != "running" {
+		t.Fatalf("not resumed = %+v", c)
+	}
+
+	r.server.set(held)
+	r.tick()
+	stop := job
+	stop.Stop = true
+	r.server.set(stop)
+	r.tick()
+	if c := r.docker.byRun("j1"); c.state != "exited" {
+		t.Fatalf("paused run not stopped = %+v", c)
+	}
+	r.tick()
+	if got := r.server.last().Runs[0]; got.Phase != sandbox.PhaseExited || got.Log != "epoch 1\nTraceback: boom\n" {
+		t.Fatalf("exit report = %+v", got)
 	}
 }

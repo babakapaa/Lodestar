@@ -74,6 +74,18 @@ func (TermStore) All(ctx context.Context, tx pgx.Tx) ([]Term, error) {
 	return pgx.CollectRows(rows, scanTerm)
 }
 
+func (TermStore) ByID(ctx context.Context, tx pgx.Tx, id string) (Term, error) {
+	rows, err := tx.Query(ctx, `SELECT `+termColumns+` FROM sandbox.terms t WHERE t.id::text = $1`, id)
+	if err != nil {
+		return Term{}, fmt.Errorf("load term: %w", err)
+	}
+	t, err := pgx.CollectExactlyOneRow(rows, scanTerm)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return Term{}, ErrTermNotFound
+	}
+	return t, err
+}
+
 func (TermStore) Current(ctx context.Context, tx pgx.Tx) (Term, bool, error) {
 	rows, err := tx.Query(ctx, `
 		SELECT `+termColumns+` FROM sandbox.terms t

@@ -80,7 +80,7 @@ func (s Service) reapLost(ctx context.Context, tx pgx.Tx) error {
 			at = *n.SeenAt
 		}
 		for _, r := range runs {
-			if err := s.end(ctx, tx, r, RunFailed, nil, ReasonNodeLost, at); err != nil {
+			if err := s.end(ctx, tx, r, runEnd{status: RunFailed, reason: ReasonNodeLost, at: at}); err != nil {
 				return err
 			}
 		}

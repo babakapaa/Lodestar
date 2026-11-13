@@ -155,7 +155,7 @@ func newWorld(t *testing.T) *world {
 	if err != nil {
 		t.Fatalf("catalog: %v", err)
 	}
-	w := &world{t: t, ctx: ctx, tenant: created.ID, tx: tx, users: identity.NewStore(tx), sent: &outbox{}, settings: &fakeSettings{values: map[string]any{}}}
+	w := &world{t: t, ctx: ctx, tenant: created.ID, tx: tx, users: identity.NewStore(tx), sent: &outbox{}, settings: &fakeSettings{values: map[string]any{sandbox.Watch: nil}}}
 	w.admin = w.user("admin", "Ректорат")
 	if _, err := access.NewBootstrap(tx).GrantTopRole(ctx, w.tenant, w.admin.UserID); err != nil {
 		t.Fatalf("grant: %v", err)

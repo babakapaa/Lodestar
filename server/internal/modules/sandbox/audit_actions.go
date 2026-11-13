@@ -9,4 +9,5 @@ const (
 	ActionTemplate = "sandbox.template_saved"
 	ActionNode     = "sandbox.node_saved"
 	ActionNodeGone = "sandbox.node_deleted"
+	ActionHold     = "sandbox.hold_decided"
 )

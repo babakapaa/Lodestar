@@ -31,6 +31,15 @@ type Run struct {
 	QueuedAt     time.Time  `json:"queuedAt"`
 	StartedAt    *time.Time `json:"startedAt"`
 	EndedAt      *time.Time `json:"endedAt"`
+	HeldAt       *time.Time `json:"heldAt"`
+	HoldNote     string     `json:"holdNote"`
+	Refunded     bool       `json:"refunded"`
+	GPULoad      *float64   `json:"gpuLoad"`
+	Log          string     `json:"log,omitempty"`
+	ActiveAt     *time.Time `json:"-"`
+	NetBytes     int64      `json:"-"`
+	IdleWarned   bool       `json:"-"`
+	HeldSecs     float64    `json:"-"`
 	NodeID       *string    `json:"-"`
 	TermID       string     `json:"-"`
 }
@@ -46,11 +55,22 @@ func (r Run) reserve() float64 {
 	return hours(r.MaxHours * r.Rate)
 }
 
-func (r Run) cost(end time.Time) float64 {
-	if r.StartedAt == nil || !end.After(*r.StartedAt) {
+func (r Run) used(end time.Time) time.Duration {
+	if r.StartedAt == nil {
 		return 0
 	}
-	return min(hours(end.Sub(*r.StartedAt).Hours()*r.Rate), r.reserve())
+	if r.HeldAt != nil && end.After(*r.HeldAt) {
+		end = *r.HeldAt
+	}
+	return max(end.Sub(*r.StartedAt)-time.Duration(r.HeldSecs*float64(time.Second)), 0)
+}
+
+func (r Run) cost(end time.Time) float64 {
+	return min(hours(r.used(end).Hours()*r.Rate), r.reserve())
+}
+
+func (r Run) interactive() bool {
+	return r.Kind == RunJupyter || r.Kind == RunVSCode
 }
 
 func (r Run) seenBy(userID string) Run {

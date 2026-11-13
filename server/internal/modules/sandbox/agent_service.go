@@ -2,6 +2,7 @@ package sandbox
 
 import (
 	"context"
+	"strings"
 	"time"
 
 	"github.com/jackc/pgx/v5"
@@ -32,7 +33,7 @@ func (s Service) Sync(ctx context.Context, raw string, report AgentReport) (Agen
 		if err != nil {
 			return err
 		}
-		if err := s.apply(ctx, tx, runs, report); err != nil {
+		if err := s.apply(ctx, tx, token.TenantID, runs, report); err != nil {
 			return err
 		}
 		if err := s.Schedule(ctx, tx); err != nil {
@@ -45,7 +46,7 @@ func (s Service) Sync(ctx context.Context, raw string, report AgentReport) (Agen
 		for _, r := range runs {
 			plan.Runs = append(plan.Runs, RunSpec{
 				RunID: r.ID, Kind: r.Kind, Title: r.Title, Image: r.Image, Command: r.Command,
-				MaxHours: r.MaxHours, Workspace: r.workspace(), Stop: r.Status == RunStopping,
+				MaxHours: r.MaxHours, Workspace: r.workspace(), Hold: r.Status == RunHeld, Stop: r.Status == RunStopping,
 			})
 		}
 		return nil
@@ -53,7 +54,7 @@ func (s Service) Sync(ctx context.Context, raw string, report AgentReport) (Agen
 	return plan, err
 }
 
-func (s Service) apply(ctx context.Context, tx pgx.Tx, runs []Run, report AgentReport) error {
+func (s Service) apply(ctx context.Context, tx pgx.Tx, tenantID string, runs []Run, report AgentReport) error {
 	seen := make(map[string]RunReport, len(report.Runs))
 	for _, rr := range report.Runs {
 		seen[rr.RunID] = rr
@@ -64,16 +65,24 @@ func (s Service) apply(ctx context.Context, tx pgx.Tx, runs []Run, report AgentR
 		switch {
 		case !ok && r.Status == RunStarting:
 		case !ok && r.Status == RunStopping:
-			if err := s.end(ctx, tx, r, RunStopped, nil, "", now); err != nil {
+			if err := s.end(ctx, tx, r, runEnd{status: RunStopped, at: now}); err != nil {
 				return err
 			}
 		case !ok:
-			if err := s.end(ctx, tx, r, RunFailed, nil, ReasonVanished, now); err != nil {
+			if err := s.end(ctx, tx, r, runEnd{status: RunFailed, reason: ReasonVanished, at: now}); err != nil {
 				return err
 			}
 		case rr.Phase == PhaseRunning:
 			if err := s.runs.Started(ctx, tx, r.ID, rr.URL); err != nil {
 				return err
+			}
+			if r.Status == RunStarting {
+				r.Status, r.ActiveAt = RunRunning, nil
+			}
+			if rr.Usage != nil {
+				if err := s.observe(ctx, tx, tenantID, r, *rr.Usage, now); err != nil {
+					return err
+				}
 			}
 		case rr.Phase == PhaseExited:
 			if r.StartedAt == nil {
@@ -81,12 +90,21 @@ func (s Service) apply(ctx context.Context, tx pgx.Tx, runs []Run, report AgentR
 				r.StartedAt = &started
 			}
 			code := rr.ExitCode
-			if err := s.end(ctx, tx, r, exitStatus(r, code), &code, "", now); err != nil {
+			if err := s.end(ctx, tx, r, runEnd{status: exitStatus(r, code), exitCode: &code, log: tail(rr.Log), at: now}); err != nil {
 				return err
 			}
 		}
 	}
 	return nil
+}
+
+func tail(log string) string {
+	const limit = 8000
+	runes := []rune(strings.ToValidUTF8(log, ""))
+	if len(runes) > limit {
+		runes = runes[len(runes)-limit:]
+	}
+	return string(runes)
 }
 
 func exitStatus(r Run, code int) string {

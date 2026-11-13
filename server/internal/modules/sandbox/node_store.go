@@ -13,7 +13,7 @@ import (
 const nodeTimeout = 90 * time.Second
 
 const nodeColumns = `n.id::text, n.name, n.class_id::text, c.name, n.gpus,
-	(SELECT count(*)::int FROM sandbox.runs r WHERE r.node_id = n.id AND r.status IN ('starting', 'running', 'stopping')),
+	(SELECT count(*)::int FROM sandbox.runs r WHERE r.node_id = n.id AND r.status IN ('starting', 'running', 'held', 'stopping')),
 	n.seen_at, coalesce(n.seen_at > now() - make_interval(secs => $1), false), n.created_at`
 
 const nodeFrom = ` FROM sandbox.nodes n JOIN sandbox.gpu_classes c ON c.id = n.class_id`
@@ -98,7 +98,7 @@ func (NodeStore) Free(ctx context.Context, tx pgx.Tx, classID string) ([]Node, e
 func (NodeStore) Lost(ctx context.Context, tx pgx.Tx) ([]Node, error) {
 	rows, err := tx.Query(ctx, `SELECT `+nodeColumns+nodeFrom+`
 		WHERE coalesce(n.seen_at <= now() - make_interval(secs => $1), true)
-		  AND EXISTS (SELECT 1 FROM sandbox.runs r WHERE r.node_id = n.id AND r.status IN ('starting', 'running', 'stopping'))`,
+		  AND EXISTS (SELECT 1 FROM sandbox.runs r WHERE r.node_id = n.id AND r.status IN ('starting', 'running', 'held', 'stopping'))`,
 		nodeTimeout.Seconds())
 	if err != nil {
 		return nil, fmt.Errorf("lost nodes: %w", err)

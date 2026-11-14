@@ -2496,5 +2496,6 @@
   "lmsDeepLinkEmpty": "Нет курсов, которые вы ведёте.",
   "lmsDeepLinkSend": "Вернуться в LMS",
   "errorLmsDeepLinkGone": "Запрос LMS устарел. Начните заново в LMS.",
-  "errorLmsDeepLinkInvalid": "LMS не принимает такой выбор"
+  "errorLmsDeepLinkInvalid": "LMS не принимает такой выбор",
+  "settingChatCallTranscripts": "Расшифровывать записи звонков в текст"
 }

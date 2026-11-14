@@ -77,6 +77,10 @@ func NewServer(version string, cfg config.Config, box secretbox.Box, pool *pgxpo
 	kernel.Model = ext.Model
 	kernel.Embedder, kernel.Reranker = ext.Embedder, ext.Reranker
 	kernel.Calls = ext.Calls
+	kernel.Transcriber = ext.Speech
+	if ext.Storage != nil {
+		kernel.Objects = ext.Storage
+	}
 	kernel.Preferences = profileService
 	kernel.Briefs = registry.Briefs(kernel)
 	kernel.Scores = registry.ScoreSources(kernel)

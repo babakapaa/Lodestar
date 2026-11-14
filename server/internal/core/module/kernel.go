@@ -24,6 +24,8 @@ type Kernel struct {
 	Model       llm.Model
 	Embedder    llm.Embedder
 	Reranker    llm.Reranker
+	Transcriber llm.Transcriber
+	Objects     Objects
 	Calls       *livekit.Issuer
 	Briefs      Briefs
 	Rosters     Rosters

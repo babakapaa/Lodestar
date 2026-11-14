@@ -55,6 +55,13 @@ func (m *memoryStorage) Open(_ context.Context, key string) (io.ReadCloser, erro
 	return io.NopCloser(strings.NewReader(strings.Repeat("x", int(size)))), nil
 }
 
+func (m *memoryStorage) Put(_ context.Context, key, _ string, _ io.Reader, size int64) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.objects[key] = size
+	return nil
+}
+
 func (m *memoryStorage) Delete(_ context.Context, key string) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()

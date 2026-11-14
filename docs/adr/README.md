@@ -78,3 +78,4 @@
 | [0070](0070-channel-calls.md) | Звонки в каналах |
 | [0071](0071-recording-consent.md) | Согласие на запись и запись только звука |
 | [0072](0072-lti-deep-linking.md) | Выбор курса из LMS (LTI Deep Linking) |
+| [0073](0073-call-transcripts.md) | Расшифровка записи звонка |

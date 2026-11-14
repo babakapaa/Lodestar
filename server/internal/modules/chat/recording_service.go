@@ -210,8 +210,22 @@ func (s RecordingService) Finish(ctx context.Context, tenantID string, info live
 			}
 			return err
 		}
-		return s.post(ctx, tx, tenantID, r)
+		if err := s.post(ctx, tx, tenantID, r, *r.FileID, "call-recording-"+r.EgressID); err != nil {
+			return err
+		}
+		return s.queueTranscript(ctx, tx, r)
 	})
+}
+
+func (s RecordingService) queueTranscript(ctx context.Context, tx pgx.Tx, r Recording) error {
+	if s.k.Transcriber == nil || s.k.Objects == nil {
+		return nil
+	}
+	var on bool
+	if err := s.calls.setting(ctx, tx, TranscriptSetting, &on); err != nil || !on {
+		return err
+	}
+	return s.recordings.Queue(ctx, tx, r.EgressID)
 }
 
 func (s RecordingService) recordingByEgress(ctx context.Context, tx pgx.Tx, egressID string) (Recording, bool, error) {
@@ -221,12 +235,12 @@ func (s RecordingService) recordingByEgress(ctx context.Context, tx pgx.Tx, egre
 	return s.recordings.ByEgress(ctx, tx, egressID)
 }
 
-func (s RecordingService) post(ctx context.Context, tx pgx.Tx, tenantID string, r Recording) error {
+func (s RecordingService) post(ctx context.Context, tx pgx.Tx, tenantID string, r Recording, fileID, clientID string) error {
 	seq, rev, err := s.chats.Next(ctx, tx, r.ChatID, true)
 	if err != nil {
 		return err
 	}
-	in := MessageInput{ClientID: "call-recording-" + r.EgressID, FileIDs: []string{*r.FileID}}
+	in := MessageInput{ClientID: clientID, FileIDs: []string{fileID}}
 	m, err := s.messages.Insert(ctx, tx, r.ChatID, seq, rev, *r.StartedBy, in, messageBody{})
 	if err != nil {
 		return err

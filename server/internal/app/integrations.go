@@ -14,5 +14,6 @@ type Integrations struct {
 	Model    llm.Model
 	Embedder llm.Embedder
 	Reranker llm.Reranker
+	Speech   llm.Transcriber
 	Calls    *livekit.Issuer
 }

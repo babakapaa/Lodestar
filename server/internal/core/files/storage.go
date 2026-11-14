@@ -13,5 +13,6 @@ type Storage interface {
 	PresignGet(ctx context.Context, key, name, contentType string, ttl time.Duration) (string, error)
 	Size(ctx context.Context, key string) (int64, error)
 	Open(ctx context.Context, key string) (io.ReadCloser, error)
+	Put(ctx context.Context, key, contentType string, body io.Reader, size int64) error
 	Delete(ctx context.Context, key string) error
 }

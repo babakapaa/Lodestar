@@ -49,6 +49,7 @@ void main() {
         'settings.language': 'kk',
         'connection.server': 'https://campus.example.edu',
         'connection.tenant': 'kaznu',
+        'tour.seen': true,
       },
     );
 

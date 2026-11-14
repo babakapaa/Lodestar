@@ -11,6 +11,7 @@ import 'chat_folder.dart';
 import 'chat_tile.dart';
 import 'chats_providers.dart';
 import 'chats_sync_status.dart';
+import 'new_chat_actions.dart';
 
 class ChatList extends ConsumerStatefulWidget {
   const ChatList({
@@ -104,6 +105,9 @@ class _ChatListState extends ConsumerState<ChatList> {
               icon: Icons.chat_bubble_outline,
               title: l10n.emptyChatsTitle,
               body: l10n.emptyChatsBody,
+              actionLabel: l10n.chatsNew,
+              actionIcon: Icons.edit_outlined,
+              onAction: () => NewChatActions.choose(context, ref),
             )
           else
             for (final Chat chat in shown)

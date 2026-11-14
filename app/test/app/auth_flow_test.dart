@@ -12,7 +12,7 @@ void main() {
     final app = await pumpApp(
       tester,
       size: const Size(390, 844),
-      stored: const {'settings.language': 'ru'},
+      stored: const {'settings.language': 'ru', 'tour.seen': true},
       signedIn: false,
       authenticator: authenticator,
     );
@@ -42,7 +42,7 @@ void main() {
     await pumpApp(
       tester,
       size: const Size(390, 844),
-      stored: const {'settings.language': 'ru'},
+      stored: const {'settings.language': 'ru', 'tour.seen': true},
       signedIn: false,
     );
 
@@ -135,7 +135,7 @@ void main() {
     await pumpApp(
       tester,
       size: const Size(390, 844),
-      stored: const {'settings.language': 'ru'},
+      stored: const {'settings.language': 'ru', 'tour.seen': true},
       signedIn: false,
     );
 

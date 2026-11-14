@@ -9,6 +9,7 @@ import 'notes_graph.dart';
 import 'notes_graph_fit.dart';
 import 'notes_graph_painter.dart';
 import 'notes_providers.dart';
+import 'note_actions.dart';
 
 class NotesGraphView extends ConsumerWidget {
   const NotesGraphView({required this.onOpen, super.key});
@@ -29,6 +30,8 @@ class NotesGraphView extends ConsumerWidget {
         icon: Icons.hub_outlined,
         title: l10n.emptyNotesTitle,
         body: l10n.emptyNotesBody,
+        actionLabel: l10n.notesNew,
+        onAction: () => NoteActions.create(context, ref),
       );
     }
     return LayoutBuilder(

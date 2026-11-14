@@ -8,7 +8,8 @@ import 'api_exception.dart';
 class ApiTransport {
   const ApiTransport(this._client);
 
-  static const _timeout = Duration(seconds: 30);
+  static const standard = Duration(seconds: 30);
+  static const long = Duration(minutes: 15);
 
   final http.Client _client;
 
@@ -17,8 +18,15 @@ class ApiTransport {
     Uri uri, {
     Object? body,
     String? accessToken,
+    Duration timeout = standard,
   }) async {
-    final response = await _exchange(method, uri, body, accessToken);
+    final response = await _exchange(
+      method,
+      uri,
+      body,
+      accessToken,
+      timeout: timeout,
+    );
     return _decode(response);
   }
 
@@ -54,6 +62,7 @@ class ApiTransport {
     Uint8List? raw,
     String? contentType,
     Set<int> accepted = const {},
+    Duration timeout = standard,
   }) async {
     final request = http.Request(method, uri)
       ..headers['Accept'] = 'application/json';
@@ -72,7 +81,7 @@ class ApiTransport {
     final http.Response response;
     try {
       response = await http.Response.fromStream(
-        await _client.send(request).timeout(_timeout),
+        await _client.send(request).timeout(timeout),
       );
     } on Exception {
       throw const ApiException(0, ApiException.unreachable);

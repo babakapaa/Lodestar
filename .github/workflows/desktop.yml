@@ -1,0 +1,39 @@
+name: Desktop
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - app/**
+      - .github/workflows/desktop.yml
+  pull_request:
+    paths:
+      - .github/workflows/desktop.yml
+  workflow_dispatch:
+
+concurrency:
+  group: desktop-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: 3.50.0
+          cache: true
+      - run: rustup toolchain install
+        working-directory: app/packages/lodestar_crdt/rust
+      - run: flutter pub get
+      - run: flutter build windows --release --dart-define=LODESTAR_SERVER=http://localhost:8080 --dart-define=LODESTAR_TENANT=demo
+      - uses: actions/upload-artifact@v4
+        with:
+          name: lodestar-windows
+          path: app/build/windows/x64/runner/Release
+          retention-days: 30

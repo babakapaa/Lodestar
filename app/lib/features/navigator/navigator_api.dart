@@ -42,7 +42,10 @@ class NavigatorApi {
 
   Future<NavigatorAnswer> ask(String dialogId, Question question) async =>
       NavigatorAnswer.fromJson(
-        (await _api.post('${_dialog(dialogId)}/messages', question.toJson()))!
+        (await _api.postLong(
+              '${_dialog(dialogId)}/messages',
+              question.toJson(),
+            ))!
             as Map<String, Object?>,
       );
 

@@ -31,7 +31,7 @@ class SidePanel extends StatelessWidget {
           : NavigationRailLabelType.all,
       leading: Padding(
         padding: const EdgeInsets.symmetric(vertical: Spacing.l),
-        child: BrandMark(showName: extended),
+        child: BrandMark(showName: extended, width: 216),
       ),
       trailing: Expanded(
         child: Align(

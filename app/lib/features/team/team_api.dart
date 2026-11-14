@@ -47,7 +47,7 @@ class TeamApi {
 
   Future<TeamSuggestion> suggest(String kind, String id) async =>
       TeamSuggestion.fromJson(
-        (await _api.post('${_scope(kind, id)}/suggestions'))!
+        (await _api.postLong('${_scope(kind, id)}/suggestions'))!
             as Map<String, Object?>,
       );
 

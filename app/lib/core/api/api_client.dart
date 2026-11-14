@@ -29,6 +29,9 @@ class ApiClient {
   Future<Object?> post(String path, [Object? body]) =>
       _send('POST', path, body: body);
 
+  Future<Object?> postLong(String path, [Object? body]) =>
+      _send('POST', path, body: body, timeout: ApiTransport.long);
+
   Future<Object?> put(String path, Object? body) =>
       _send('PUT', path, body: body);
 
@@ -64,10 +67,17 @@ class ApiClient {
     String path, {
     Object? body,
     Map<String, String>? query,
+    Duration timeout = ApiTransport.standard,
   }) {
     final uri = _address.resolve(path, query);
     return _authorized(
-      (token) => _transport.send(method, uri, body: body, accessToken: token),
+      (token) => _transport.send(
+        method,
+        uri,
+        body: body,
+        accessToken: token,
+        timeout: timeout,
+      ),
     );
   }
 

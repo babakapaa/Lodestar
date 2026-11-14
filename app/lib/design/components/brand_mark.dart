@@ -5,9 +5,10 @@ import '../tokens/tokens_context.dart';
 import '../../l10n/l10n_context.dart';
 
 class BrandMark extends StatelessWidget {
-  const BrandMark({required this.showName, super.key});
+  const BrandMark({required this.showName, this.width, super.key});
 
   final bool showName;
+  final double? width;
 
   @override
   Widget build(BuildContext context) {
@@ -25,8 +26,9 @@ class BrandMark extends StatelessWidget {
       return mark;
     }
     return SizedBox(
-      width: 216,
+      width: width,
       child: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
           mark,
           const SizedBox(width: Spacing.m),

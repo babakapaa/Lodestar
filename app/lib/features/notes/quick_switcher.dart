@@ -107,8 +107,12 @@ class _QuickSwitcherState extends State<QuickSwitcher> {
                       dense: true,
                       selected: index == selected,
                       selectedTileColor: palette.accentSoft,
-                      leading: const Icon(Icons.description_outlined),
-                      title: Text(note.meta.name),
+                      leading: Icon(
+                        note.meta.isCanvas
+                            ? Icons.dashboard_outlined
+                            : Icons.description_outlined,
+                      ),
+                      title: Text(note.meta.label),
                       subtitle: note.meta.folder.isEmpty
                           ? null
                           : Text(note.meta.folder),

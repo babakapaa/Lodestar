@@ -25,13 +25,26 @@ abstract final class NoteActions {
     }
   }
 
+  static Future<String> addCanvas(BuildContext context, WidgetRef ref) {
+    final notes = ref.read(notesProvider).value ?? const <Note>[];
+    return add(
+      context,
+      ref,
+      path: _untitled(
+        context.l10n.canvasUntitled,
+        notes,
+        NoteMeta.canvasExtension,
+      ),
+    );
+  }
+
   static Future<String> add(
     BuildContext context,
     WidgetRef ref, {
     String? path,
   }) {
     final notes = ref.read(notesProvider).value ?? const <Note>[];
-    final target = path ?? _untitled(context.l10n.notesUntitled, notes);
+    final target = path ?? _untitled(context.l10n.notesUntitled, notes, '');
     return ref.read(notesStoreProvider).create(NoteMeta(path: target));
   }
 
@@ -91,15 +104,15 @@ abstract final class NoteActions {
     messenger.showSnackBar(SnackBar(content: Text(l10n.notesImported(count))));
   }
 
-  static String _untitled(String base, List<Note> notes) {
+  static String _untitled(String base, List<Note> notes, String suffix) {
     final taken = {for (final note in notes) note.meta.path};
-    if (!taken.contains(base)) {
-      return base;
+    if (!taken.contains('$base$suffix')) {
+      return '$base$suffix';
     }
     var n = 2;
-    while (taken.contains('$base $n')) {
+    while (taken.contains('$base $n$suffix')) {
       n++;
     }
-    return '$base $n';
+    return '$base $n$suffix';
   }
 }

@@ -1436,5 +1436,13 @@
   "notesCloseTab": "Қойындыны жабу",
   "notesInspector": "Байланыстар мен мазмұн",
   "notesVault": "Қойма",
-  "notesLinkHint": "Enter сілтемені қояды, Esc тізімді жасырады"
+  "notesLinkHint": "Enter сілтемені қояды, Esc тізімді жасырады",
+  "canvasNew": "Жаңа кенеп",
+  "canvasUntitled": "Кенеп",
+  "canvasAddCard": "Карточка қосу",
+  "canvasAddNote": "Жазба қосу",
+  "canvasZoomIn": "Жақындату",
+  "canvasZoomOut": "Алыстату",
+  "canvasFit": "Барлығын көрсету",
+  "canvasHint": "Карточка қосу үшін бос жерді екі рет басыңыз. Таңдалған карточканы байланыстыру үшін оң жақтағы нүктені тартыңыз. Delete таңдалғанды жояды."
 }

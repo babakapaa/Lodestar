@@ -24,7 +24,14 @@ class NoteMeta {
   final String? assignmentId;
   final String? lessonId;
 
+  static const canvasExtension = '.canvas';
+
   String get name => path.split('/').last;
+
+  bool get isCanvas => path.toLowerCase().endsWith(canvasExtension);
+
+  String get label =>
+      isCanvas ? name.substring(0, name.length - canvasExtension.length) : name;
 
   String get folder {
     final at = path.lastIndexOf('/');

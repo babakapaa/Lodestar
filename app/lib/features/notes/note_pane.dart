@@ -7,6 +7,7 @@ import '../../core/navigation/app_routes.dart';
 import '../../design/tokens/spacing.dart';
 import '../../design/tokens/tokens_context.dart';
 import '../../l10n/l10n_context.dart';
+import 'canvas/canvas_view.dart';
 import 'note.dart';
 import 'note_editor.dart';
 import 'note_menu.dart';
@@ -56,7 +57,7 @@ class NotePane extends ConsumerWidget {
                       ? () => NoteMenu.rename(context, ref, note)
                       : null,
                   child: Text(
-                    note.meta.name,
+                    note.meta.label,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: textTheme.titleSmall,
@@ -78,13 +79,20 @@ class NotePane extends ConsumerWidget {
         const Divider(),
         NoteNotices(note: note),
         Expanded(
-          child: NoteEditor(
-            key: ValueKey(note.id),
-            noteId: note.id,
-            readOnly: !canEdit,
-            jumps: jumps,
-            onOpenLink: onFollow,
-          ),
+          child: note.meta.isCanvas
+              ? CanvasView(
+                  key: ValueKey(note.id),
+                  noteId: note.id,
+                  readOnly: !canEdit,
+                  onOpenNote: onFollow,
+                )
+              : NoteEditor(
+                  key: ValueKey(note.id),
+                  noteId: note.id,
+                  readOnly: !canEdit,
+                  jumps: jumps,
+                  onOpenLink: onFollow,
+                ),
         ),
       ],
     );

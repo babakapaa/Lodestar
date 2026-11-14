@@ -1436,5 +1436,13 @@
   "notesCloseTab": "Close tab",
   "notesInspector": "Links and outline",
   "notesVault": "Vault",
-  "notesLinkHint": "Enter inserts the link, Esc hides the list"
+  "notesLinkHint": "Enter inserts the link, Esc hides the list",
+  "canvasNew": "New canvas",
+  "canvasUntitled": "Canvas",
+  "canvasAddCard": "Add card",
+  "canvasAddNote": "Add note",
+  "canvasZoomIn": "Zoom in",
+  "canvasZoomOut": "Zoom out",
+  "canvasFit": "Fit to screen",
+  "canvasHint": "Double-click empty space to add a card. Drag the dot on the right of a selected card to connect it. Delete removes the selection."
 }

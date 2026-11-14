@@ -53,8 +53,10 @@ class _NoteTreeState extends State<NoteTree> {
           depth: depth,
           icon: note.error != null
               ? Icons.sync_problem
+              : note.meta.isCanvas
+              ? Icons.dashboard_outlined
               : Icons.description_outlined,
-          label: note.meta.name,
+          label: note.meta.label,
           selected: note.id == widget.active,
           onTap: () => widget.onOpen(note),
         ),

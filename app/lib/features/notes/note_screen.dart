@@ -5,6 +5,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../core/navigation/app_routes.dart';
 import '../../design/components/empty_state.dart';
 import '../../l10n/l10n_context.dart';
+import 'canvas/canvas_view.dart';
 import 'note_actions.dart';
 import 'note_editor.dart';
 import 'note_links_sheet.dart';
@@ -35,11 +36,17 @@ class NoteScreen extends ConsumerWidget {
       );
     }
     final canEdit = note.role.canEdit && !note.deleted;
+    void follow(String link) => NoteActions.follow(
+      context,
+      ref,
+      link,
+      (id) => context.push(AppRoutes.note(id)),
+    );
     return Scaffold(
       appBar: AppBar(
         title: GestureDetector(
           onTap: canEdit ? () => NoteMenu.rename(context, ref, note) : null,
-          child: Text(note.meta.name),
+          child: Text(note.meta.label),
         ),
         actions: [
           IconButton(
@@ -63,17 +70,19 @@ class NoteScreen extends ConsumerWidget {
           children: [
             NoteNotices(note: note),
             Expanded(
-              child: NoteEditor(
-                key: ValueKey(noteId),
-                noteId: noteId,
-                readOnly: !canEdit,
-                onOpenLink: (link) => NoteActions.follow(
-                  context,
-                  ref,
-                  link,
-                  (id) => context.push(AppRoutes.note(id)),
-                ),
-              ),
+              child: note.meta.isCanvas
+                  ? CanvasView(
+                      key: ValueKey(noteId),
+                      noteId: noteId,
+                      readOnly: !canEdit,
+                      onOpenNote: follow,
+                    )
+                  : NoteEditor(
+                      key: ValueKey(noteId),
+                      noteId: noteId,
+                      readOnly: !canEdit,
+                      onOpenLink: follow,
+                    ),
             ),
           ],
         ),

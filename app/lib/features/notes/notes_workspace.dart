@@ -49,6 +49,11 @@ class _NotesWorkspaceState extends ConsumerState<NotesWorkspace> {
     _open(id, newTab: true);
   }
 
+  Future<void> _createCanvas() async {
+    final id = await NoteActions.addCanvas(context, ref);
+    _open(id, newTab: true);
+  }
+
   Future<void> _quick() async {
     final notes = ref.read(notesProvider).value ?? const <Note>[];
     final choice = await QuickSwitcher.show(context, notes);
@@ -170,7 +175,7 @@ class _NotesWorkspaceState extends ConsumerState<NotesWorkspace> {
         ],
       );
     }
-    final showInspector = _inspector && note != null;
+    final showInspector = _inspector && note != null && !note.meta.isCanvas;
     return CallbackShortcuts(
       bindings: _shortcuts,
       child: Focus(
@@ -185,6 +190,7 @@ class _NotesWorkspaceState extends ConsumerState<NotesWorkspace> {
                 active: active,
                 onOpen: (note) => _open(note.id),
                 onCreate: _create,
+                onCanvas: _createCanvas,
                 onQuick: _quick,
                 onGraph: () => _open(NotesTabs.graph, newTab: true),
               ),

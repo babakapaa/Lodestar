@@ -4,6 +4,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../core/navigation/app_routes.dart';
 import '../../design/components/notice_banner.dart';
+import '../../design/components/pane_action.dart';
 import '../../design/components/pane_heading.dart';
 import '../../design/tokens/spacing.dart';
 import '../../l10n/l10n_context.dart';
@@ -20,6 +21,7 @@ class NotesSidebar extends ConsumerStatefulWidget {
     required this.active,
     required this.onOpen,
     required this.onCreate,
+    required this.onCanvas,
     required this.onQuick,
     required this.onGraph,
     super.key,
@@ -28,6 +30,7 @@ class NotesSidebar extends ConsumerStatefulWidget {
   final String? active;
   final void Function(Note note) onOpen;
   final VoidCallback onCreate;
+  final VoidCallback onCanvas;
   final VoidCallback onQuick;
   final VoidCallback onGraph;
 
@@ -65,22 +68,24 @@ class _NotesSidebarState extends ConsumerState<NotesSidebar> {
           trailing: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              IconButton(
+              PaneAction(
                 tooltip: l10n.notesNew,
-                visualDensity: VisualDensity.compact,
-                icon: const Icon(Icons.edit_note),
+                icon: Icons.edit_note,
                 onPressed: widget.onCreate,
               ),
-              IconButton(
+              PaneAction(
+                tooltip: l10n.canvasNew,
+                icon: Icons.dashboard_customize_outlined,
+                onPressed: widget.onCanvas,
+              ),
+              PaneAction(
                 tooltip: l10n.notesQuickOpen,
-                visualDensity: VisualDensity.compact,
-                icon: const Icon(Icons.manage_search),
+                icon: Icons.manage_search,
                 onPressed: widget.onQuick,
               ),
-              IconButton(
+              PaneAction(
                 tooltip: l10n.notesGraph,
-                visualDensity: VisualDensity.compact,
-                icon: const Icon(Icons.hub_outlined),
+                icon: Icons.hub_outlined,
                 onPressed: widget.onGraph,
               ),
             ],

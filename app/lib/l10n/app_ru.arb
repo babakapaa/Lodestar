@@ -2573,5 +2573,13 @@
   "notesCloseTab": "Закрыть вкладку",
   "notesInspector": "Связи и содержание",
   "notesVault": "Хранилище",
-  "notesLinkHint": "Enter вставит ссылку, Esc скроет список"
+  "notesLinkHint": "Enter вставит ссылку, Esc скроет список",
+  "canvasNew": "Новый холст",
+  "canvasUntitled": "Холст",
+  "canvasAddCard": "Добавить карточку",
+  "canvasAddNote": "Добавить заметку",
+  "canvasZoomIn": "Приблизить",
+  "canvasZoomOut": "Отдалить",
+  "canvasFit": "Показать всё",
+  "canvasHint": "Дважды щёлкните по пустому месту, чтобы добавить карточку. Потяните за точку справа у выбранной карточки, чтобы связать её с другой. Delete удаляет выбранное."
 }

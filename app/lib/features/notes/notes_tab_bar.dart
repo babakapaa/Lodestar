@@ -24,7 +24,7 @@ class NotesTabBar extends ConsumerWidget {
       }
       for (final note in notes) {
         if (note.id == id) {
-          return note.meta.name;
+          return note.meta.label;
         }
       }
       return context.l10n.notesNotFound;
@@ -44,6 +44,8 @@ class NotesTabBar extends ConsumerWidget {
                     key: ValueKey('tab:$id'),
                     icon: id == NotesTabs.graph
                         ? Icons.hub_outlined
+                        : notes.any((n) => n.id == id && n.meta.isCanvas)
+                        ? Icons.dashboard_outlined
                         : Icons.description_outlined,
                     label: nameOf(id),
                     active: id == tabs.active,

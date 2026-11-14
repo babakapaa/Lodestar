@@ -13,6 +13,8 @@ tags:
     description: Состояние сервера и сведения о нём
   - name: auth
     description: Вход через систему вуза и сессии на устройствах
+  - name: tester
+    description: Режим тестировщика, только для тестового вуза demo
   - name: lti
     description: Подключение LMS по LTI 1.3
   - name: access
@@ -225,6 +227,49 @@ paths:
           description: Сессия закрыта
         "401":
           $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/tester:
+    get:
+      tags: [tester]
+      operationId: getTesterInfo
+      summary: Тестовый вуз и люди, за которых можно войти без пароля
+      description: Есть только когда сервер запущен с LODESTAR_TESTER_MODE=on, иначе 404.
+      responses:
+        "200":
+          description: Режим тестировщика включён
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TesterInfo"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/tester/sign-in:
+    post:
+      tags: [tester]
+      operationId: testerSignIn
+      summary: Войти в тестовый вуз за выбранного человека без пароля
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TesterSignIn"
+      responses:
+        "200":
+          description: Новая пара токенов
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TokenPair"
+        "404":
+          description: Нет такого человека, код tester_person_unknown, или режим выключен
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
         default:
           $ref: "#/components/responses/Error"
   /v1/me:
@@ -8901,6 +8946,40 @@ components:
         expiresIn:
           type: integer
           description: Сколько секунд живёт токен доступа
+    TesterInfo:
+      type: object
+      required: [tenant, people]
+      properties:
+        tenant:
+          type: string
+          examples: [demo]
+        people:
+          type: array
+          items:
+            $ref: "#/components/schemas/TesterPerson"
+    TesterPerson:
+      type: object
+      required: [key, name, title, email]
+      properties:
+        key:
+          type: string
+          examples: [demo-student]
+        name:
+          type: string
+        title:
+          type: string
+        email:
+          type: string
+    TesterSignIn:
+      type: object
+      required: [person]
+      properties:
+        person:
+          type: string
+          examples: [demo-teacher]
+        device:
+          type: string
+          maxLength: 100
     User:
       type: object
       required: [id, tenantId, email, displayName, createdAt]

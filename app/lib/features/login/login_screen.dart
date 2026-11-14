@@ -10,6 +10,7 @@ import '../../design/components/lodestar_button.dart';
 import '../../design/components/lodestar_button_variant.dart';
 import '../../design/tokens/spacing.dart';
 import '../../l10n/l10n_context.dart';
+import '../tester/tester_section.dart';
 import 'identity_providers_provider.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -83,6 +84,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             _ => [const Center(child: CircularProgressIndicator())],
           },
           if (error != null) FormError(message: error),
+          TesterSection(hint: l10n.testerLoginHint),
           const SizedBox(height: Spacing.l),
           TextButton(
             onPressed: _busy

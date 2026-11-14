@@ -29,6 +29,7 @@ import (
 	"github.com/babakapaa/lodestar/server/internal/platform/config"
 	"github.com/babakapaa/lodestar/server/internal/platform/database"
 	"github.com/babakapaa/lodestar/server/internal/platform/secretbox"
+	"github.com/babakapaa/lodestar/server/internal/platform/webapp"
 )
 
 const (
@@ -51,12 +52,16 @@ type Server struct {
 
 func NewServer(version string, cfg config.Config, box secretbox.Box, pool *pgxpool.Pool, registry *module.Registry, ext Integrations) (Server, error) {
 	tx := database.NewTenantTx(pool)
+	loginClient := ext.LoginClient
+	if loginClient == nil {
+		loginClient = &http.Client{Timeout: 10 * time.Second}
+	}
 	authRoutes := auth.NewRoutes(pool, auth.Settings{
 		Box:        box,
 		Lifetimes:  Lifetimes(cfg),
 		Redirects:  cfg.AppRedirects,
 		PublicURL:  cfg.PublicURL,
-		HTTPClient: &http.Client{Timeout: 10 * time.Second},
+		HTTPClient: loginClient,
 	})
 	authn := authRoutes.Authenticator
 
@@ -163,6 +168,9 @@ func NewServer(version string, cfg config.Config, box secretbox.Box, pool *pgxpo
 	}
 	if ext.Storage != nil {
 		workers = append(workers, files.NewSweeper(pool, ext.Storage, uploadDeadline, sweepEvery))
+	}
+	if cfg.WebDir != "" {
+		handler = webapp.New(cfg.WebDir, handler)
 	}
 	return Server{
 		Handler:    proxies.Wrap(handler),

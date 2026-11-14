@@ -1,10 +1,16 @@
-.PHONY: up down server-test server-lint app-get app-test app-lint app-web contracts-lint lint test
+.PHONY: up down tester tester-down server-test server-lint app-get app-test app-lint app-web contracts-lint lint test
 
 up:
 	docker compose -f deploy/compose.yaml --env-file deploy/.env up -d --build
 
 down:
 	docker compose -f deploy/compose.yaml --env-file deploy/.env down
+
+tester:
+	docker compose -f deploy/compose.yaml -f deploy/tester.yaml --env-file deploy/.env up -d --build
+
+tester-down:
+	docker compose -f deploy/compose.yaml -f deploy/tester.yaml --env-file deploy/.env down
 
 server-test:
 	cd server && go test -race ./...

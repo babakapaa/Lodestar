@@ -1412,5 +1412,9 @@
   "hardwareSpeech": "Сөйлеуді тану",
   "hardwareCalls": "Қоңырау сервері",
   "hardwareRecording": "Қоңырау жазу",
-  "hardwareGpu": "GPU түйіні {name}"
+  "hardwareGpu": "GPU түйіні {name}",
+  "testerTitle": "Тестілеуші режимі",
+  "testerLoginHint": "Тестілік ЖОО: кез келген қатысушы ретінде құпиясөзсіз кіріңіз.",
+  "testerSwitchHint": "Тестілік ЖОО-ның басқа қатысушысы ретінде кіріңіз. Құпиясөз қажет емес.",
+  "testerSignInAs": "{name}, {title}"
 }

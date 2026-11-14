@@ -22,6 +22,8 @@ type Config struct {
 	WebOrigins      []string
 	TrustedProxies  []string
 	AppURL          string
+	WebDir          string
+	Tester          bool
 	Storage         objectstore.Config
 	Mail            mail.Config
 	FCMCredentials  string
@@ -44,6 +46,8 @@ func Load() (Config, error) {
 		AppRedirects:   listEnv("LODESTAR_APP_REDIRECTS", "io.github.babakapaa.lodestar:/auth,http://localhost:43823/auth"),
 		WebOrigins:     listEnv("LODESTAR_WEB_ORIGINS", ""),
 		TrustedProxies: listEnv("LODESTAR_TRUSTED_PROXIES", ""),
+		WebDir:         stringEnv("LODESTAR_WEB_DIR", ""),
+		Tester:         flagEnv("LODESTAR_TESTER_MODE"),
 		Storage: objectstore.Config{
 			Endpoint:       stringEnv("LODESTAR_S3_ENDPOINT", ""),
 			PublicEndpoint: stringEnv("LODESTAR_S3_PUBLIC_ENDPOINT", ""),
@@ -129,6 +133,14 @@ func listEnv(key, fallback string) []string {
 		}
 	}
 	return list
+}
+
+func flagEnv(key string) bool {
+	switch strings.ToLower(stringEnv(key, "")) {
+	case "1", "on", "true", "yes":
+		return true
+	}
+	return false
 }
 
 func durationEnv(key string, fallback time.Duration) (time.Duration, error) {

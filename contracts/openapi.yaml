@@ -8424,6 +8424,52 @@ paths:
           $ref: "#/components/responses/Error"
         default:
           $ref: "#/components/responses/Error"
+  /v1/setup/hardware:
+    get:
+      tags: [setup]
+      operationId: setupHardware
+      summary: Последняя проверка оборудования
+      description: Владелец мастера или тот, кому поручен раздел deploy.
+      security:
+        - bearer: []
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SetupHardwareReport"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
+  /v1/setup/hardware/check:
+    post:
+      tags: [setup]
+      operationId: checkSetupHardware
+      summary: Проверить оборудование
+      description: Проверяет базу, хранилище, почту, push, модели, распознавание речи, сервер звонков и запись, а у песочницы её GPU-узлы. Пока проверка не пройдена или не запускалась, запуск вуза закрыт (hardware_unchecked, hardware_failed). Обязательны база и хранилище, остальное только показывается.
+      security:
+        - bearer: []
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SetupHardwareReport"
+        "401":
+          $ref: "#/components/responses/Error"
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
   /v1/setup/pilot/courses:
     get:
       tags: [setup]
@@ -13416,6 +13462,33 @@ components:
         approvedAt:
           type: [string, "null"]
           format: date-time
+    SetupHardwareCheck:
+      type: object
+      required: [name, required, status, detail, millis]
+      properties:
+        name:
+          type: string
+          description: database, storage, mail, push, model, embeddings, reranker, speech, calls, recording или gpu:<узел>
+        required:
+          type: boolean
+        status:
+          type: string
+          enum: [ok, off, failed]
+        detail:
+          type: string
+        millis:
+          type: integer
+    SetupHardwareReport:
+      type: object
+      required: [checkedAt, checks]
+      properties:
+        checkedAt:
+          type: [string, "null"]
+          format: date-time
+        checks:
+          type: array
+          items:
+            $ref: "#/components/schemas/SetupHardwareCheck"
     SetupProblem:
       type: object
       required: [section, code, count]
@@ -13424,7 +13497,7 @@ components:
           type: string
         code:
           type: string
-          description: section_not_approved, legal_open, protocol_unsigned, no_units, courses_without_teacher, model_missing
+          description: section_not_approved, legal_open, protocol_unsigned, no_units, courses_without_teacher, model_missing, hardware_unchecked, hardware_failed
         count:
           type: integer
     SetupOverview:

@@ -82,6 +82,27 @@ void main() {
     expect(find.byKey(const ValueKey('setup-expand')), findsNothing);
   });
 
+  testWidgets('the owner checks the hardware before launch', (tester) async {
+    final server = FakeServer()..permissions = ['core.administrator'];
+    server.setup.launched = false;
+    await pumpApp(tester, size: const Size(390, 1600), server: server);
+    await openAdmin(tester, 'Мастер установки');
+
+    await tester.tap(find.text('Развёртывание').first);
+    await tester.pumpAndSettle();
+    expect(find.textContaining('Проверки ещё не было'), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('setup-hardware-check')));
+    await tester.pumpAndSettle();
+
+    expect(server.setup.calls, contains('POST hardware/check'));
+    expect(find.text('Хранилище файлов'), findsOneWidget);
+    expect(
+      find.text('Не отвечает. Нужно для запуска. bucket is gone'),
+      findsOneWidget,
+    );
+    expect(find.text('GPU-узел a100-1'), findsOneWidget);
+  });
+
   testWidgets('a section setting is saved through the wizard', (tester) async {
     final server = FakeServer()..permissions = ['core.administrator'];
     server.setup.launched = false;

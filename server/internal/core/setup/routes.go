@@ -24,6 +24,8 @@ func (r Routes) Mount(mux *http.ServeMux) {
 	mux.Handle("POST /v1/setup/legal/{question}/approve", require(ApproveAnswerHandler{service: s}))
 	mux.Handle("GET /v1/setup/protocol", require(ProtocolHandler{service: s}))
 	mux.Handle("POST /v1/setup/protocol/sign", require(StepHandler{step: s.Sign}))
+	mux.Handle("GET /v1/setup/hardware", require(HardwareHandler{check: s.Hardware}))
+	mux.Handle("POST /v1/setup/hardware/check", require(HardwareHandler{check: s.CheckHardware}))
 	mux.Handle("GET /v1/setup/pilot/courses", require(PilotCoursesHandler{service: s}))
 	mux.Handle("POST /v1/setup/launch", require(LaunchHandler{service: s}))
 	mux.Handle("POST /v1/setup/expand", require(StepHandler{step: s.Expand}))

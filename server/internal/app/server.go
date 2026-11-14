@@ -112,7 +112,8 @@ func NewServer(version string, cfg config.Config, box secretbox.Box, pool *pgxpo
 		PublicURL:     cfg.PublicURL,
 		AppURL:        cfg.AppURL,
 	}
-	setupService := setup.NewService(tx, accessService, settingsService, kernel.Notifier, registry.PilotSources(kernel), registry.ReadinessSources(kernel)...)
+	setupService := setup.NewService(tx, accessService, settingsService, kernel.Notifier, registry.PilotSources(kernel), registry.ReadinessSources(kernel)...).
+		WithHardware(registry.HardwareSources(kernel), probes(cfg, pool, ext)...)
 	proxies, err := clientip.Parse(cfg.TrustedProxies)
 	if err != nil {
 		return Server{}, fmt.Errorf("LODESTAR_TRUSTED_PROXIES: %w", err)

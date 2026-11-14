@@ -27,6 +27,7 @@ class SetupSection {
   static const review = 'review';
   static const approved = 'approved';
   static const legal = 'legal';
+  static const deploy = 'deploy';
 
   final String key;
   final bool required;

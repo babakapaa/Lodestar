@@ -2,10 +2,13 @@ package setup
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 
 	"github.com/jackc/pgx/v5"
+
+	"github.com/babakapaa/lodestar/server/internal/core/module"
 )
 
 type Store struct{}
@@ -169,4 +172,30 @@ func (Store) Expand(ctx context.Context, tx pgx.Tx) error {
 		return fmt.Errorf("expand pilot: %w", err)
 	}
 	return nil
+}
+
+func (Store) Hardware(ctx context.Context, tx pgx.Tx) (HardwareReport, error) {
+	r := HardwareReport{Checks: []module.HardwareCheck{}}
+	var raw []byte
+	if err := tx.QueryRow(ctx, `SELECT hardware_checks, hardware_at FROM core.setup_state`).Scan(&raw, &r.CheckedAt); err != nil {
+		return HardwareReport{}, fmt.Errorf("read hardware checks: %w", err)
+	}
+	if raw != nil {
+		if err := json.Unmarshal(raw, &r.Checks); err != nil {
+			return HardwareReport{}, fmt.Errorf("decode hardware checks: %w", err)
+		}
+	}
+	return r, nil
+}
+
+func (Store) PutHardware(ctx context.Context, tx pgx.Tx, checks []module.HardwareCheck) (HardwareReport, error) {
+	raw, err := json.Marshal(checks)
+	if err != nil {
+		return HardwareReport{}, err
+	}
+	r := HardwareReport{Checks: checks}
+	if err := tx.QueryRow(ctx, `UPDATE core.setup_state SET hardware_checks = $1, hardware_at = now() RETURNING hardware_at`, raw).Scan(&r.CheckedAt); err != nil {
+		return HardwareReport{}, fmt.Errorf("save hardware checks: %w", err)
+	}
+	return r, nil
 }

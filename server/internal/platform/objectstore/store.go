@@ -49,6 +49,17 @@ func (s *Store) EnsureBucket(ctx context.Context) error {
 	return nil
 }
 
+func (s *Store) Ping(ctx context.Context) error {
+	exists, err := s.internal.BucketExists(ctx, s.bucket)
+	if err != nil {
+		return fmt.Errorf("check bucket: %w", err)
+	}
+	if !exists {
+		return ErrMissing
+	}
+	return nil
+}
+
 func (s *Store) PresignPut(ctx context.Context, key, contentType string, size int64, ttl time.Duration) (Upload, error) {
 	headers := http.Header{}
 	headers.Set("Content-Type", contentType)

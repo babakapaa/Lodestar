@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 
 import '../../core/api/api_client.dart';
+import 'hardware_report.dart';
 import 'pilot_course.dart';
 import 'setup_overview.dart';
 import 'setup_status.dart';
@@ -56,6 +57,14 @@ class SetupApi {
 
   Future<void> launch(List<String> pilot) =>
       _api.post('/v1/setup/launch', {'pilot': pilot});
+
+  Future<HardwareReport> hardware() async => HardwareReport.fromJson(
+    (await _api.get('/v1/setup/hardware'))! as Map<String, Object?>,
+  );
+
+  Future<HardwareReport> checkHardware() async => HardwareReport.fromJson(
+    (await _api.post('/v1/setup/hardware/check'))! as Map<String, Object?>,
+  );
 
   Future<void> expand() => _api.post('/v1/setup/expand');
 

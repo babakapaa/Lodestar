@@ -24,12 +24,53 @@ type Service struct {
 	notifier module.Notifier
 	pilots   []module.PilotSource
 	sources  []module.ReadinessSource
+	probes   []Probe
+	hardware []module.HardwareSource
 	store    Store
 	log      audit.Log
 }
 
 func NewService(tenants database.TenantTx, acc access.Service, settings SettingsWriter, notifier module.Notifier, pilots []module.PilotSource, sources ...module.ReadinessSource) Service {
 	return Service{tenants: tenants, access: acc, settings: settings, notifier: notifier, pilots: pilots, sources: sources}
+}
+
+func (s Service) WithHardware(sources []module.HardwareSource, probes ...Probe) Service {
+	s.hardware, s.probes = sources, probes
+	return s
+}
+
+func (s Service) Hardware(ctx context.Context, p auth.Principal) (HardwareReport, error) {
+	var out HardwareReport
+	err := s.run(ctx, p, func(tx pgx.Tx, _ State) error {
+		if _, err := s.editable(ctx, tx, p, SectionDeploy); err != nil {
+			return err
+		}
+		var err error
+		out, err = s.store.Hardware(ctx, tx)
+		return err
+	})
+	return out, err
+}
+
+func (s Service) CheckHardware(ctx context.Context, p auth.Principal) (HardwareReport, error) {
+	if _, err := s.Hardware(ctx, p); err != nil {
+		return HardwareReport{}, err
+	}
+	checks := hardwareChecker{probes: s.probes}.run(ctx)
+	var out HardwareReport
+	err := s.run(ctx, p, func(tx pgx.Tx, _ State) error {
+		for _, src := range s.hardware {
+			found, err := src.Hardware(ctx, tx, p.TenantID)
+			if err != nil {
+				return err
+			}
+			checks = append(checks, found...)
+		}
+		var err error
+		out, err = s.store.PutHardware(ctx, tx, checks)
+		return err
+	})
+	return out, err
 }
 
 func (s Service) Begin(ctx context.Context, tenantID string) error {
@@ -423,6 +464,18 @@ func (s Service) problems(ctx context.Context, tx pgx.Tx, tenantID string, st St
 	}
 	if units == 0 {
 		out = append(out, module.Problem{Section: SectionUniversity, Code: "no_units", Count: 1})
+	}
+	if len(s.probes) > 0 {
+		report, err := s.store.Hardware(ctx, tx)
+		if err != nil {
+			return nil, err
+		}
+		switch {
+		case report.CheckedAt == nil:
+			out = append(out, module.Problem{Section: SectionDeploy, Code: "hardware_unchecked", Count: 1})
+		case report.failed() > 0:
+			out = append(out, module.Problem{Section: SectionDeploy, Code: "hardware_failed", Count: report.failed()})
+		}
 	}
 	for _, src := range s.sources {
 		found, err := src.Problems(ctx, tx, tenantID)

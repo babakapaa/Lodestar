@@ -14,4 +14,5 @@ var (
 	ErrNoSetup         = errors.New("university is not in setup")
 	ErrInvalidPilot    = errors.New("pilot courses are not valid")
 	ErrNotPilot        = errors.New("university is not in a pilot")
+	ErrNotConfigured   = errors.New("not configured")
 )

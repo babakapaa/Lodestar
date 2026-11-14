@@ -73,12 +73,13 @@ void main() {
   testWidgets('a report carries only the chosen message to moderators', (
     tester,
   ) async {
+    final server = grouped()
+      ..chats.incoming('g1', 'u2', 'Скинь ответы на экзамен');
     final app = await pumpApp(
       tester,
       size: const Size(390, 1400),
-      server: grouped(),
+      server: server,
     );
-    app.server.chats.incoming('g1', 'u2', 'Скинь ответы на экзамен');
     await openGroup(tester);
 
     await tester.longPress(find.text('Скинь ответы на экзамен'));

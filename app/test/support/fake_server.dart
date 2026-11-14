@@ -149,6 +149,7 @@ class FakeServer {
       'GET /v1/me/preferences' => _json(200, [
         for (final key in [
           'core.theme',
+          'core.accent',
           'core.appearance',
           'core.language',
           'core.quiet_hours',
@@ -311,6 +312,7 @@ class FakeServer {
 
   static const _defaults = <String, Object?>{
     'core.theme': 'tenant',
+    'core.accent': 'auto',
     'core.appearance': 'system',
     'core.language': 'system',
     'core.quiet_hours': false,

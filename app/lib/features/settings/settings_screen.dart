@@ -9,6 +9,7 @@ import '../../design/components/section.dart';
 import '../../design/tokens/spacing.dart';
 import '../../design/tokens/theme_family.dart';
 import '../../l10n/l10n_context.dart';
+import 'accent_picker.dart';
 import 'family_swatch.dart';
 import 'settings_labels.dart';
 
@@ -39,6 +40,16 @@ class SettingsScreen extends ConsumerWidget {
                     labelOf: labels.family,
                     leadingOf: (family) => FamilySwatch(family: family),
                     onSelected: controller.setFamily,
+                  ),
+                ),
+                const SizedBox(height: Spacing.xl),
+                Section(
+                  title: context.l10n.settingsAccent,
+                  child: AccentPicker(
+                    family: settings.family,
+                    selected: settings.accent,
+                    labelOf: labels.accent,
+                    onSelected: controller.setAccent,
                   ),
                 ),
                 const SizedBox(height: Spacing.xl),

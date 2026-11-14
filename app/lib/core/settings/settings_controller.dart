@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../design/tokens/accent_choice.dart';
 import '../../design/tokens/theme_family.dart';
 import '../api/api_exception.dart';
 import 'app_language.dart';
@@ -13,6 +14,9 @@ class SettingsController extends Notifier<AppSettings> {
 
   Future<void> setFamily(ThemeFamily family) =>
       _update(state.copyWith(family: family));
+
+  Future<void> setAccent(AccentChoice accent) =>
+      _update(state.copyWith(accent: accent));
 
   Future<void> setAppearance(AppearanceMode appearance) =>
       _update(state.copyWith(appearance: appearance));

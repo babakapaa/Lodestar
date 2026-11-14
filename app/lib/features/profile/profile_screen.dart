@@ -5,6 +5,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../core/access/access_providers.dart';
 import '../../core/auth/auth_providers.dart';
 import '../../core/navigation/app_routes.dart';
+import '../../design/components/tile_group.dart';
 import '../../design/components/lodestar_button.dart';
 import '../../design/components/lodestar_button_variant.dart';
 import '../../design/tokens/spacing.dart';
@@ -38,34 +39,42 @@ class ProfileScreen extends ConsumerWidget {
               children: [
                 const ProfileHeader(),
                 const SizedBox(height: Spacing.xl),
-                for (final (icon, title, route) in [
-                  (Icons.tune, l10n.settingsTitle, AppRoutes.settings),
-                  (
-                    Icons.notifications_outlined,
-                    l10n.notificationSettingsTitle,
-                    AppRoutes.notificationSettings,
-                  ),
-                  (Icons.shield_outlined, l10n.privacyTitle, AppRoutes.privacy),
-                  if (administers)
-                    (
-                      Icons.admin_panel_settings_outlined,
-                      l10n.adminTitle,
-                      AppRoutes.admin,
-                    ),
-                  for (final unit in units)
-                    (
-                      Icons.query_stats,
-                      l10n.statsOfUnit(unit.name),
-                      AppRoutes.unitStats(unit.unitId, unit.name),
-                    ),
-                ])
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    leading: Icon(icon),
-                    title: Text(title),
-                    trailing: const Icon(Icons.chevron_right),
-                    onTap: () => context.push(route),
-                  ),
+                TileGroup(
+                  children: [
+                    for (final (icon, title, route) in [
+                      (Icons.tune, l10n.settingsTitle, AppRoutes.settings),
+                      (
+                        Icons.notifications_outlined,
+                        l10n.notificationSettingsTitle,
+                        AppRoutes.notificationSettings,
+                      ),
+                      (
+                        Icons.shield_outlined,
+                        l10n.privacyTitle,
+                        AppRoutes.privacy,
+                      ),
+                      if (administers)
+                        (
+                          Icons.admin_panel_settings_outlined,
+                          l10n.adminTitle,
+                          AppRoutes.admin,
+                        ),
+                      for (final unit in units)
+                        (
+                          Icons.query_stats,
+                          l10n.statsOfUnit(unit.name),
+                          AppRoutes.unitStats(unit.unitId, unit.name),
+                        ),
+                    ])
+                      ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        leading: Icon(icon),
+                        title: Text(title),
+                        trailing: const Icon(Icons.chevron_right),
+                        onTap: () => context.push(route),
+                      ),
+                  ],
+                ),
                 const SizedBox(height: Spacing.xl),
                 const SessionsSection(),
                 TesterSection(hint: l10n.testerSwitchHint, current: email),

@@ -88,6 +88,7 @@ import '../../features/sandbox/topups_screen.dart';
 import '../../features/team/teams_screen.dart';
 import '../../features/units/units_screen.dart';
 import '../shell/adaptive_shell.dart';
+import '../shell/detail_frame.dart';
 import 'app_tab.dart';
 import 'auth_redirect.dart';
 
@@ -109,8 +110,8 @@ class AppRouter {
               _branch(AppTab.chats, const ChatsScreen()),
             ],
           ),
-          _route(AppRoutes.connect, const ConnectScreen()),
-          _route(AppRoutes.login, const LoginScreen()),
+          _route(AppRoutes.connect, const ConnectScreen(), framed: false),
+          _route(AppRoutes.login, const LoginScreen(), framed: false),
           _route(AppRoutes.profile, const ProfileScreen()),
           _route(AppRoutes.profileEdit, const ProfileEditScreen()),
           _route(AppRoutes.privacy, const PrivacyScreen()),
@@ -247,7 +248,14 @@ class AppRouter {
             ),
           ),
           _param(AppRoutes.chatInfo(':id'), (id) => ChatInfoScreen(chatId: id)),
-          _param(AppRoutes.chatCall(':id'), (id) => CallScreen(chatId: id)),
+          GoRoute(
+            path: AppRoutes.chatCall(':id'),
+            pageBuilder: (context, state) => _fade(
+              state,
+              CallScreen(chatId: state.pathParameters['id']!),
+              framed: false,
+            ),
+          ),
           _param(
             AppRoutes.courseMaterials(':id'),
             (id) => MaterialsScreen(courseId: id),
@@ -360,6 +368,7 @@ class AppRouter {
               LtiLaunchScreen(
                 launch: LtiLaunch.parse(state.uri.queryParameters),
               ),
+              framed: false,
             ),
           ),
           _param(
@@ -395,10 +404,10 @@ class AppRouter {
 
   final GoRouter config;
 
-  static GoRoute _route(String path, Widget screen) {
+  static GoRoute _route(String path, Widget screen, {bool framed = true}) {
     return GoRoute(
       path: path,
-      pageBuilder: (context, state) => _fade(state, screen),
+      pageBuilder: (context, state) => _fade(state, screen, framed: framed),
     );
   }
 
@@ -424,13 +433,21 @@ class AppRouter {
   }
 
   static StatefulShellBranch _branch(AppTab tab, Widget screen) {
-    return StatefulShellBranch(routes: [_route(tab.path, screen)]);
+    return StatefulShellBranch(
+      routes: [_route(tab.path, screen, framed: false)],
+    );
   }
 
-  static Page<void> _fade(GoRouterState state, Widget child) {
+  static Page<void> _fade(
+    GoRouterState state,
+    Widget child, {
+    bool framed = true,
+  }) {
     return CustomTransitionPage<void>(
       key: state.pageKey,
-      child: child,
+      child: framed
+          ? DetailFrame(location: state.matchedLocation, child: child)
+          : child,
       transitionDuration: Motion.normal,
       reverseTransitionDuration: Motion.fast,
       transitionsBuilder: (context, animation, secondary, child) =>

@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../design/components/empty_state.dart';
 import '../../design/components/section.dart';
 import '../../design/tokens/spacing.dart';
 import '../../l10n/l10n_context.dart';
@@ -10,6 +11,7 @@ import 'loaded_list_view.dart';
 import 'study_day.dart';
 import 'study_labels_context.dart';
 import 'study_providers.dart';
+import '../../design/components/tile_group.dart';
 
 class ScheduleScreen extends ConsumerStatefulWidget {
   const ScheduleScreen({this.date, super.key});
@@ -40,13 +42,19 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
       byDay.putIfAbsent(lesson.date, () => []).add(lesson);
     }
     if (byDay.isEmpty) {
-      return [Text(l10n.scheduleEmpty)];
+      return [
+        EmptyState(
+          icon: Icons.event_available_outlined,
+          title: l10n.scheduleEmpty,
+          body: l10n.scheduleEmptyBody,
+        ),
+      ];
     }
     return [
       for (final MapEntry(key: day, value: list) in byDay.entries) ...[
         Section(
           title: labels.day(StudyDay.parse(day)),
-          child: Column(
+          child: TileGroup(
             children: [
               for (final lesson in list)
                 LessonTile(

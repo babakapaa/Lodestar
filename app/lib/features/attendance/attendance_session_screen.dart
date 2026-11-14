@@ -86,8 +86,9 @@ class _AttendanceSessionScreenState
       ],
       if (session.open && session.code.isNotEmpty) ...[
         LodestarCard(
+          padding: EdgeInsets.zero,
           child: ListTile(
-            contentPadding: EdgeInsets.zero,
+            contentPadding: LodestarCard.tilePadding,
             title: Text(
               l10n.attendanceCode(session.code),
               key: const ValueKey('attendance-code'),

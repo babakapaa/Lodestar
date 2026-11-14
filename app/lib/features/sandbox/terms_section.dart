@@ -52,8 +52,9 @@ class TermsSection extends ConsumerWidget {
           for (final term in terms)
             LodestarCard(
               key: ValueKey('term-${term.id}'),
+              padding: EdgeInsets.zero,
               child: ListTile(
-                contentPadding: EdgeInsets.zero,
+                contentPadding: LodestarCard.tilePadding,
                 title: Text(term.name),
                 subtitle: Text('${term.startsOn} – ${term.endsOn}'),
                 onTap: () => _edit(context, ref, term),

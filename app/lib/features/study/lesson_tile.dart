@@ -6,6 +6,7 @@ import '../../design/tokens/tokens_context.dart';
 import 'lesson.dart';
 import 'lesson_status.dart';
 import 'study_labels_context.dart';
+import '../../design/components/tile_group.dart';
 
 class LessonTile extends StatelessWidget {
   const LessonTile({required this.lesson, this.onTap, super.key});
@@ -21,7 +22,7 @@ class LessonTile extends StatelessWidget {
     final cancelled = lesson.status == LessonStatus.cancelled;
     final status = labels.status(lesson.status);
     return ListTile(
-      contentPadding: EdgeInsets.zero,
+      contentPadding: TileGroup.tilePadding,
       leading: SizedBox(
         width: 52,
         child: Text(labels.clock(lesson.startsAt), style: textTheme.titleSmall),

@@ -6,6 +6,8 @@ import '../tokens/tokens_context.dart';
 class TileGroup extends StatelessWidget {
   const TileGroup({required this.children, super.key});
 
+  static const tilePadding = EdgeInsets.symmetric(horizontal: Spacing.l);
+
   final List<Widget> children;
 
   @override
@@ -22,16 +24,16 @@ class TileGroup extends StatelessWidget {
         borderRadius: tokens.borderRadius,
         child: Material(
           type: MaterialType.transparency,
-          child: Column(
-            children: [
-              for (final (index, child) in children.indexed) ...[
-                if (index > 0) const Divider(indent: Spacing.l),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: Spacing.l),
-                  child: child,
-                ),
+          child: ListTileTheme.merge(
+            shape: const RoundedRectangleBorder(),
+            child: Column(
+              children: [
+                for (final (index, child) in children.indexed) ...[
+                  if (index > 0) const Divider(indent: Spacing.l),
+                  child,
+                ],
               ],
-            ],
+            ),
           ),
         ),
       ),

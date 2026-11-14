@@ -9,6 +9,7 @@ import '../admin/setting_tile.dart';
 import '../team/team_action.dart';
 import 'setup_providers.dart';
 import 'setup_section.dart';
+import '../../design/components/tile_group.dart';
 
 class SectionSettings extends ConsumerWidget {
   const SectionSettings({required this.section, super.key});
@@ -47,7 +48,7 @@ class SectionSettings extends ConsumerWidget {
     if (definitions == null || current == null) {
       return const Center(child: CircularProgressIndicator());
     }
-    return Column(
+    return TileGroup(
       children: [
         for (final definition in definitions)
           if (section.settings.contains(definition.key))

@@ -65,8 +65,9 @@ class NodesSection extends ConsumerWidget {
           for (final n in nodes)
             LodestarCard(
               key: ValueKey('node-${n.id}'),
+              padding: EdgeInsets.zero,
               child: ListTile(
-                contentPadding: EdgeInsets.zero,
+                contentPadding: LodestarCard.tilePadding,
                 leading: Icon(
                   n.online ? Icons.dns_outlined : Icons.cloud_off_outlined,
                 ),

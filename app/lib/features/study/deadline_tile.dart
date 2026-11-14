@@ -5,6 +5,7 @@ import '../../core/navigation/app_routes.dart';
 import '../../l10n/l10n_context.dart';
 import 'deadline.dart';
 import 'study_labels_context.dart';
+import '../../design/components/tile_group.dart';
 
 class DeadlineTile extends StatelessWidget {
   const DeadlineTile({required this.deadline, super.key});
@@ -17,7 +18,7 @@ class DeadlineTile extends StatelessWidget {
     final labels = context.studyLabels;
     final submitted = deadline.submittedAt != null;
     return ListTile(
-      contentPadding: EdgeInsets.zero,
+      contentPadding: TileGroup.tilePadding,
       leading: Icon(submitted ? Icons.task_alt : Icons.assignment_outlined),
       title: Text(deadline.title),
       subtitle: Text(

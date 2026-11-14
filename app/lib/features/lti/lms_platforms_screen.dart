@@ -96,8 +96,9 @@ class LmsPlatformsScreen extends ConsumerWidget {
                   for (final platform in platforms)
                     LodestarCard(
                       key: ValueKey('lms-${platform.id}'),
+                      padding: EdgeInsets.zero,
                       child: ListTile(
-                        contentPadding: EdgeInsets.zero,
+                        contentPadding: LodestarCard.tilePadding,
                         leading: const Icon(Icons.school_outlined),
                         title: Text(platform.input.name),
                         subtitle: Text(platform.input.issuer),

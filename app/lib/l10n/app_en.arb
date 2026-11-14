@@ -1488,5 +1488,6 @@
   "tourNext": "Next",
   "tourDone": "Get started",
   "tourReplay": "Replay the tour",
-  "settingsHelp": "Help"
+  "settingsHelp": "Help",
+  "scheduleEmptyBody": "Use the arrows at the top to see another week."
 }

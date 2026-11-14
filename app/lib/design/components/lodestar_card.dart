@@ -10,6 +10,11 @@ class LodestarCard extends StatelessWidget {
     super.key,
   });
 
+  static const tilePadding = EdgeInsets.symmetric(
+    horizontal: Spacing.l,
+    vertical: Spacing.xs,
+  );
+
   final Widget child;
   final EdgeInsetsGeometry padding;
 
@@ -23,9 +28,12 @@ class LodestarCard extends StatelessWidget {
         border: Border.all(color: tokens.palette.border),
         boxShadow: tokens.palette.shadow,
       ),
-      child: Material(
-        type: MaterialType.transparency,
-        child: Padding(padding: padding, child: child),
+      child: ClipRRect(
+        borderRadius: tokens.borderRadius,
+        child: Material(
+          type: MaterialType.transparency,
+          child: Padding(padding: padding, child: child),
+        ),
       ),
     );
   }

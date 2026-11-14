@@ -15,6 +15,15 @@ enum AppTab {
   final IconData icon;
   final IconData selectedIcon;
 
+  static AppTab? of(String location) {
+    for (final tab in values) {
+      if (location == tab.path || location.startsWith('${tab.path}/')) {
+        return tab;
+      }
+    }
+    return null;
+  }
+
   String label(AppLocalizations l10n) => switch (this) {
     AppTab.today => l10n.tabToday,
     AppTab.study => l10n.tabStudy,

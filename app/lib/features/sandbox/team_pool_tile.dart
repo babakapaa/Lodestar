@@ -16,8 +16,9 @@ class TeamPoolTile extends StatelessWidget {
     final l10n = context.l10n;
     final labels = context.sandboxLabels;
     return LodestarCard(
+      padding: EdgeInsets.zero,
       child: ListTile(
-        contentPadding: EdgeInsets.zero,
+        contentPadding: LodestarCard.tilePadding,
         leading: const Icon(Icons.groups_outlined),
         title: Text(pool.name),
         subtitle: Text(

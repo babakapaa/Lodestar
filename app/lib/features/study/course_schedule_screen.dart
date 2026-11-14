@@ -15,6 +15,7 @@ import 'lesson_tile.dart';
 import 'schedule_providers.dart';
 import 'series_dialog.dart';
 import 'series_tile.dart';
+import '../../design/components/tile_group.dart';
 
 class CourseScheduleScreen extends ConsumerWidget {
   const CourseScheduleScreen({required this.courseId, super.key});
@@ -204,7 +205,7 @@ class CourseScheduleScreen extends ConsumerWidget {
                 AsyncData(:final value) when value.isEmpty => Text(
                   l10n.lessonsNone,
                 ),
-                AsyncData(:final value) => Column(
+                AsyncData(:final value) => TileGroup(
                   children: [
                     for (final lesson in value)
                       LessonTile(

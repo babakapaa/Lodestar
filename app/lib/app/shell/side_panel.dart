@@ -14,7 +14,7 @@ class SidePanel extends StatelessWidget {
     super.key,
   });
 
-  final int currentIndex;
+  final int? currentIndex;
   final ValueChanged<int> onSelected;
   final bool extended;
 

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'server_address.dart';
@@ -9,6 +10,13 @@ class ConnectionStore {
   static const _tenantKey = 'connection.tenant';
   static const presetServer = String.fromEnvironment('LODESTAR_SERVER');
   static const presetTenant = String.fromEnvironment('LODESTAR_TENANT');
+
+  static String get suggestedServer {
+    if (presetServer.isNotEmpty || !kIsWeb) {
+      return presetServer;
+    }
+    return Uri.base.origin;
+  }
 
   final SharedPreferences _prefs;
 

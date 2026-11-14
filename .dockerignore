@@ -1,0 +1,10 @@
+.git
+deploy/.env
+app/build
+app/.dart_tool
+app/web/crdt
+app/web/drift_worker.js
+app/web/sqlite3.wasm
+app/packages/lodestar_crdt/rust/target
+app/packages/lodestar_crdt/.dart_tool
+server/bin

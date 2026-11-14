@@ -20,7 +20,7 @@ class ConnectScreen extends ConsumerStatefulWidget {
 }
 
 class _ConnectScreenState extends ConsumerState<ConnectScreen> {
-  final _server = TextEditingController(text: ConnectionStore.presetServer);
+  final _server = TextEditingController(text: ConnectionStore.suggestedServer);
   final _tenant = TextEditingController(text: ConnectionStore.presetTenant);
   String? _error;
   bool _busy = false;

@@ -39,22 +39,20 @@ docker compose -f deploy/compose.yaml exec server /lodestarctl role grant-top -t
 
 ## Режим тестировщика
 
-Чтобы погонять Lodestar самому, без настройки входа вуза:
+Чтобы погонять Lodestar самому, без настройки входа вуза, нужен только Docker. Установщик сам создаст `deploy/.env` с паролями, соберёт веб-версию, поднимет ИИ-навигатор на Ollama, звонки на LiveKit и почтовый ящик Mailpit.
 
 ```sh
-cp deploy/.env.example deploy/.env
-make app-web
-make tester
+./install-tester.sh          # macOS и Linux
+install-tester.cmd           # Windows, можно двойным щелчком
 ```
 
-В `deploy/.env` впишите `LODESTAR_SECRET_KEY` (`openssl rand -base64 32`). `make app-web` нужен только для веб-версии, ему нужны Flutter и Rust, как в разделе «Разработка».
+Первый запуск занимает 15–30 минут. Повторный запуск обновляет адрес компьютера в сети и перезапускает всё. Параметры: `--no-ai` и `--no-calls` (в Windows `-NoAi`, `-NoCalls`), `--model=qwen2.5:7b` (`-Model`) для модели посильнее.
 
-- Веб-версия: `http://localhost:8080`. Код вуза `demo`.
+- Веб-версия: `http://localhost:8080`, код вуза `demo`. С телефона в той же Wi-Fi: `http://<IP компьютера>:8080`, установщик его напечатает.
 - На экране входа раздел «Режим тестировщика»: вход за студентку, студента, преподавателя или администратора одной кнопкой, без пароля. В профиле тот же раздел меняет пользователя.
 - Письма не уходят наружу, их видно в Mailpit: `http://localhost:8025`.
-- С телефона: в `deploy/.env` укажите `LODESTAR_PUBLIC_URL=http://<IP компьютера>:8080` и `LODESTAR_S3_PUBLIC_ENDPOINT=http://<IP компьютера>:9000`.
-- Звонки: добавьте `--profile calls` и `LIVEKIT_API_SECRET`, `LODESTAR_LIVEKIT_URL` в `deploy/.env`.
-- ИИ-навигатор: укажите `LODESTAR_LLM_URL` и `LODESTAR_LLM_MODEL` любого OpenAI-совместимого сервера, например Ollama.
+- Модель по умолчанию `qwen2.5:3b` работает на процессоре, нужно 8 ГБ памяти. Для Ollama нужно ещё около 4 ГБ на диске.
+- Остановить: `make tester-down`. Запустить снова без установщика: `make tester`.
 
 Режим пускает кого угодно без пароля. Не включайте его у настоящего вуза.
 

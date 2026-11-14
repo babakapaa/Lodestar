@@ -1412,5 +1412,9 @@
   "hardwareSpeech": "Speech recognition",
   "hardwareCalls": "Call server",
   "hardwareRecording": "Call recording",
-  "hardwareGpu": "GPU node {name}"
+  "hardwareGpu": "GPU node {name}",
+  "testerTitle": "Tester mode",
+  "testerLoginHint": "Test university: sign in as any member without a password.",
+  "testerSwitchHint": "Sign in as another member of the test university. No password needed.",
+  "testerSignInAs": "{name}, {title}"
 }

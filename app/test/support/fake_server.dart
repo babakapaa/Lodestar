@@ -87,6 +87,7 @@ class FakeServer {
   String validAccess = 'access-1';
   int issued = 1;
   bool acceptRefresh = true;
+  Map<String, Object?>? tester;
 
   MockClient get client => MockClient(_handle);
 
@@ -102,6 +103,9 @@ class FakeServer {
     final route = '${request.method} $path';
     if (path.startsWith('/v1/auth/')) {
       return _auth(request, route);
+    }
+    if (path.startsWith('/v1/tester')) {
+      return _tester(request, route);
     }
     if (request.headers['Authorization'] != 'Bearer $validAccess') {
       return _json(401, {'code': 'unauthorized'});
@@ -270,6 +274,32 @@ class FakeServer {
     }
     if (route.endsWith('/providers')) {
       return _json(404, {'code': 'tenant_not_found'});
+    }
+    return _json(404, {'code': 'not_found'});
+  }
+
+  http.Response _tester(http.Request request, String route) {
+    final info = tester;
+    if (info == null) {
+      return _json(404, {'code': 'not_found'});
+    }
+    switch (route) {
+      case 'GET /v1/tester':
+        return _json(200, info);
+      case 'POST /v1/tester/sign-in':
+        final body = jsonDecode(request.body) as Map<String, Object?>;
+        final people = info['people']! as List<Object?>;
+        if (!people.any((p) => (p! as Map)['key'] == body['person'])) {
+          return _json(404, {'code': 'tester_person_unknown'});
+        }
+        issued++;
+        validAccess = 'access-$issued';
+        return _json(200, {
+          'accessToken': validAccess,
+          'refreshToken': 'refresh-$issued',
+          'tokenType': 'Bearer',
+          'expiresIn': 900,
+        });
     }
     return _json(404, {'code': 'not_found'});
   }

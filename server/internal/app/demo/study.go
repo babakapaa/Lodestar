@@ -24,18 +24,20 @@ func seedStudy(ctx context.Context, core app.Core, tenantID string, ids map[stri
 	if err != nil {
 		return err
 	}
+	units := structure.NewService(tx, core.Access)
 	for _, c := range existing {
 		if c.Code != nil && *c.Code == CourseCode {
-			return nil
+			return joinGroup(ctx, units, admin, ids[Peer.Subject])
 		}
 	}
-	units := structure.NewService(tx, core.Access)
 	group, err := units.Create(ctx, admin, structure.UnitInput{Kind: "group", Name: GroupName})
 	if err != nil {
 		return err
 	}
-	if err := units.AddMember(ctx, admin, group.ID, ids[Student.Subject]); err != nil {
-		return err
+	for _, student := range []string{ids[Student.Subject], ids[Peer.Subject]} {
+		if err := units.AddMember(ctx, admin, group.ID, student); err != nil {
+			return err
+		}
 	}
 	code := CourseCode
 	course, err := courses.Create(ctx, admin, study.CourseInput{
@@ -78,6 +80,19 @@ func seedStudy(ctx context.Context, core app.Core, tenantID string, ids map[stri
 		lesson.Minutes = 90
 		if _, err := schedule.Create(ctx, admin, course.ID, lesson); err != nil {
 			return err
+		}
+	}
+	return nil
+}
+
+func joinGroup(ctx context.Context, units structure.Service, admin auth.Principal, userID string) error {
+	groups, err := units.Children(ctx, admin, nil, false)
+	if err != nil {
+		return err
+	}
+	for _, g := range groups {
+		if g.Name == GroupName {
+			return units.AddMember(ctx, admin, g.ID, userID)
 		}
 	}
 	return nil

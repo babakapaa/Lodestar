@@ -2539,5 +2539,19 @@
         "type": "String"
       }
     }
+  },
+  "testerTitle": "Режим тестировщика",
+  "testerLoginHint": "Тестовый вуз: войдите за любого участника без пароля.",
+  "testerSwitchHint": "Войдите за другого участника тестового вуза. Пароль не нужен.",
+  "testerSignInAs": "{name}, {title}",
+  "@testerSignInAs": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "title": {
+        "type": "String"
+      }
+    }
   }
 }

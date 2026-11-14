@@ -1,0 +1,21 @@
+services:
+  server:
+    environment:
+      LODESTAR_TESTER_MODE: "on"
+      LODESTAR_WEB_DIR: /web
+      LODESTAR_APP_REDIRECTS: io.github.babakapaa.lodestar:/auth,http://localhost:43823/auth,${LODESTAR_PUBLIC_URL:-http://localhost:8080}/auth.html
+      LODESTAR_SMTP_ADDR: mailpit:1025
+      LODESTAR_MAIL_FROM: Lodestar <lodestar@demo.invalid>
+    volumes:
+      - ../app/build/web:/web:ro
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      mailpit:
+        condition: service_started
+
+  mailpit:
+    image: axllent/mailpit:v1.21.0
+    ports:
+      - "${MAILPIT_PORT:-8025}:8025"
+    restart: unless-stopped

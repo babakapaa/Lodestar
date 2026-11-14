@@ -1,6 +1,8 @@
 package app
 
 import (
+	"net/http"
+
 	"github.com/babakapaa/lodestar/server/internal/core/delivery"
 	"github.com/babakapaa/lodestar/server/internal/core/files"
 	"github.com/babakapaa/lodestar/server/internal/platform/livekit"
@@ -16,4 +18,6 @@ type Integrations struct {
 	Reranker llm.Reranker
 	Speech   llm.Transcriber
 	Calls    *livekit.Issuer
+
+	LoginClient *http.Client
 }

@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../api/api_exception.dart';
 import '../api/server_address.dart';
+import '../api/token_pair.dart';
 import '../offline/offline_providers.dart';
 import 'auth_providers.dart';
 import 'auth_state.dart';
@@ -81,6 +82,15 @@ class AuthController extends Notifier<AuthState> {
       await ref.read(responseCacheProvider).clear();
     }
     await ref.read(connectionStoreProvider).save(address);
+    await ref.read(tokenStoreProvider).save(tokens);
+    state = SignedIn(address);
+  }
+
+  Future<void> adopt(TokenPair tokens) async {
+    final address = state.address;
+    if (address == null) {
+      return;
+    }
     await ref.read(tokenStoreProvider).save(tokens);
     state = SignedIn(address);
   }

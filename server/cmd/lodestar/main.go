@@ -9,6 +9,7 @@ import (
 	"syscall"
 
 	"github.com/babakapaa/lodestar/server/internal/app"
+	"github.com/babakapaa/lodestar/server/internal/app/tester"
 	"github.com/babakapaa/lodestar/server/internal/core/module"
 	"github.com/babakapaa/lodestar/server/internal/platform/config"
 	"github.com/babakapaa/lodestar/server/internal/platform/database"
@@ -58,14 +59,28 @@ func run() error {
 	if err != nil {
 		return err
 	}
+	var mode *tester.Mode
+	if cfg.Tester {
+		started, err := tester.Start(ctx, cfg, pool, box, registry)
+		if err != nil {
+			return fmt.Errorf("tester mode: %w", err)
+		}
+		mode = &started
+		ext.LoginClient = mode.LoginClient()
+		slog.Warn("tester mode is on: anyone can sign in to the demo university without a password, never use it for a real university")
+	}
 	server, err := app.NewServer(version, cfg, box, pool, registry, ext)
 	if err != nil {
 		return err
 	}
+	handler := server.Handler
+	if mode != nil {
+		handler = mode.Wrap(handler)
+	}
 	for _, w := range server.Workers {
 		go w.Run(ctx)
 	}
-	srv := httpserver.New(cfg.HTTPAddr, server.Handler)
+	srv := httpserver.New(cfg.HTTPAddr, handler)
 	for _, f := range server.OnShutdown {
 		srv.RegisterOnShutdown(f)
 	}

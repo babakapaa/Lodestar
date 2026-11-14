@@ -27,6 +27,24 @@ func TestLoadDefaults(t *testing.T) {
 	if len(cfg.AppRedirects) != 2 {
 		t.Errorf("AppRedirects = %v, want mobile and desktop defaults", cfg.AppRedirects)
 	}
+	if cfg.Tester || cfg.WebDir != "" {
+		t.Errorf("Tester = %v, WebDir = %q, want off and empty", cfg.Tester, cfg.WebDir)
+	}
+}
+
+func TestLoadTesterMode(t *testing.T) {
+	t.Setenv("LODESTAR_DATABASE_URL", "postgres://db")
+	t.Setenv("LODESTAR_SECRET_KEY", "key")
+	t.Setenv("LODESTAR_TESTER_MODE", "On")
+	t.Setenv("LODESTAR_WEB_DIR", "/web")
+
+	cfg, err := Load()
+	if err != nil {
+		t.Fatalf("Load: %v", err)
+	}
+	if !cfg.Tester || cfg.WebDir != "/web" {
+		t.Errorf("Tester = %v, WebDir = %q", cfg.Tester, cfg.WebDir)
+	}
 }
 
 func TestLoadFromEnv(t *testing.T) {

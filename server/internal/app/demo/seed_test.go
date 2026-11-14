@@ -45,6 +45,9 @@ func TestSeedIsRepeatableAndGivesEachPersonTheirRole(t *testing.T) {
 	if err != nil {
 		t.Fatalf("seed again: %v", err)
 	}
+	if len(second.People) != len(demo.People()) || second.People[demo.Peer.Subject] == "" {
+		t.Fatalf("people = %v", second.People)
+	}
 	if first.Tenant.ID != second.Tenant.ID || second.Callback != "http://lodestar.test/v1/auth/demo/demo/callback" {
 		t.Fatalf("results = %+v / %+v", first, second)
 	}
@@ -88,6 +91,10 @@ func TestSeedIsRepeatableAndGivesEachPersonTheirRole(t *testing.T) {
 	courses, err := study.NewService(tx, core.Access).Mine(ctx, student, false)
 	if err != nil || len(courses) != 1 || courses[0].Role != study.RoleStudent {
 		t.Fatalf("student courses = %+v, %v", courses, err)
+	}
+	peerCourses, err := study.NewService(tx, core.Access).Mine(ctx, principalOf(demo.Peer.Email), false)
+	if err != nil || len(peerCourses) != 1 || peerCourses[0].ID != courses[0].ID {
+		t.Fatalf("peer courses = %+v, %v", peerCourses, err)
 	}
 	items, err := study.NewAssignmentService(tx, core.Access, core.Kernel.Notifier).List(ctx, student, courses[0].ID)
 	if err != nil || len(items) != 1 {

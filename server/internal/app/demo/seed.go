@@ -70,7 +70,7 @@ func Seed(ctx context.Context, pool *pgxpool.Pool, box secretbox.Box, registry *
 	if err := seedStudy(ctx, core, t.ID, ids, time.Now()); err != nil {
 		return Result{}, err
 	}
-	return Result{Tenant: t, Callback: auth.CallbackURL(cfg.PublicURL, t.Slug, ProviderKey)}, nil
+	return Result{Tenant: t, Callback: auth.CallbackURL(cfg.PublicURL, t.Slug, ProviderKey), People: ids}, nil
 }
 
 func ensureTenant(ctx context.Context, pool *pgxpool.Pool) (tenant.Tenant, error) {

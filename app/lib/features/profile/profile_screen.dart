@@ -10,7 +10,9 @@ import '../../design/components/lodestar_button_variant.dart';
 import '../../design/tokens/spacing.dart';
 import '../../l10n/l10n_context.dart';
 import '../stats/stats_providers.dart';
+import '../tester/tester_section.dart';
 import 'profile_header.dart';
+import 'profile_providers.dart';
 import 'sessions_section.dart';
 
 class ProfileScreen extends ConsumerWidget {
@@ -22,6 +24,7 @@ class ProfileScreen extends ConsumerWidget {
     final administers =
         ref.watch(myPermissionsProvider).value?.administers ?? false;
     final units = ref.watch(statsEntriesProvider).value ?? const [];
+    final email = ref.watch(accountProvider).value?.email;
     return Scaffold(
       appBar: AppBar(title: Text(l10n.profileTitle)),
       body: SafeArea(
@@ -65,6 +68,7 @@ class ProfileScreen extends ConsumerWidget {
                   ),
                 const SizedBox(height: Spacing.xl),
                 const SessionsSection(),
+                TesterSection(hint: l10n.testerSwitchHint, current: email),
                 const SizedBox(height: Spacing.xl),
                 LodestarButton(
                   label: l10n.signOut,

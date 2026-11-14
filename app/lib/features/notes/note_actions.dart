@@ -38,6 +38,21 @@ abstract final class NoteActions {
     );
   }
 
+  static Future<String> addText(
+    WidgetRef ref,
+    String title,
+    String text,
+  ) async {
+    final notes = ref.read(notesProvider).value ?? const <Note>[];
+    final store = ref.read(notesStoreProvider);
+    final id = await store.create(
+      NoteMeta(path: _untitled(NoteMeta.normalizePath(title), notes, '')),
+    );
+    store.edit(await store.open(id), text);
+    await store.flush(id);
+    return id;
+  }
+
   static Future<String> add(
     BuildContext context,
     WidgetRef ref, {

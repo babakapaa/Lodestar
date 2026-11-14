@@ -8,6 +8,8 @@ import '../../design/components/form_error.dart';
 import '../../design/tokens/spacing.dart';
 import '../../design/tokens/tokens_context.dart';
 import '../../l10n/l10n_context.dart';
+import 'ai_declaration.dart';
+import 'artifact_screen.dart';
 import 'brief.dart';
 import 'brief_banner.dart';
 import 'dialog_scope.dart';
@@ -15,6 +17,9 @@ import 'intent_sheet.dart';
 import 'letter_sheet.dart';
 import 'message_bubble.dart';
 import 'message_composer.dart';
+import 'navigator_artifact.dart';
+import 'navigator_avatar.dart';
+import 'navigator_labels_context.dart';
 import 'navigator_message.dart';
 import 'navigator_providers.dart';
 import 'pending_bubble.dart';
@@ -23,11 +28,22 @@ import 'reply_actions.dart';
 import 'teacher_letter.dart';
 
 class DialogScreen extends ConsumerStatefulWidget {
-  const DialogScreen({this.dialogId, this.scope, this.draft = '', super.key});
+  const DialogScreen({
+    this.dialogId,
+    this.scope,
+    this.draft = '',
+    this.onArtifact,
+    this.onCreated,
+    this.onDeleted,
+    super.key,
+  });
 
   final String? dialogId;
   final DialogScope? scope;
   final String draft;
+  final ValueChanged<NavigatorArtifact>? onArtifact;
+  final ValueChanged<String>? onCreated;
+  final VoidCallback? onDeleted;
 
   @override
   ConsumerState<DialogScreen> createState() => _DialogScreenState();
@@ -97,6 +113,7 @@ class _DialogScreenState extends ConsumerState<DialogScreen> {
         final details = await api.create(_id, widget.scope);
         _created = true;
         _brief = details.brief;
+        widget.onCreated?.call(_id);
       }
       final answer = await api.ask(_id, question);
       if (!mounted) {
@@ -163,7 +180,13 @@ class _DialogScreenState extends ConsumerState<DialogScreen> {
     try {
       await ref.read(navigatorApiProvider).delete(_id);
       ref.invalidate(dialogsProvider);
-      if (mounted) {
+      if (!mounted) {
+        return;
+      }
+      final deleted = widget.onDeleted;
+      if (deleted != null) {
+        deleted();
+      } else {
         context.pop();
       }
     } on Object catch (error) {
@@ -174,10 +197,32 @@ class _DialogScreenState extends ConsumerState<DialogScreen> {
   }
 
   void _letter() {
-    LetterSheet.show(
-      context,
-      TeacherLetter.compose(context.l10n, _brief, _messages),
+    final text = TeacherLetter.compose(context.l10n, _brief, _messages);
+    final open = widget.onArtifact;
+    if (open == null) {
+      LetterSheet.show(context, text);
+      return;
+    }
+    open(NavigatorArtifact(title: context.l10n.letterTitle, text: text));
+  }
+
+  void _declaration() {
+    final artifact = NavigatorArtifact(
+      title: context.l10n.declarationTitle,
+      text: AiDeclaration.compose(
+        context.l10n,
+        context.navigatorLabels,
+        Localizations.localeOf(context).toLanguageTag(),
+        _brief,
+        _messages,
+      ),
     );
+    final open = widget.onArtifact;
+    if (open == null) {
+      ArtifactScreen.show(context, artifact);
+    } else {
+      open(artifact);
+    }
   }
 
   void _toBottom() {
@@ -197,11 +242,22 @@ class _DialogScreenState extends ConsumerState<DialogScreen> {
         BriefBanner(brief: brief),
         const SizedBox(height: Spacing.l),
       ],
-      if (_messages.isEmpty && pending == null)
+      if (_messages.isEmpty && pending == null) ...[
+        const SizedBox(height: Spacing.xxl),
+        const Center(child: NavigatorAvatar()),
+        const SizedBox(height: Spacing.l),
+        Text(
+          context.l10n.navigatorPickTitle,
+          textAlign: TextAlign.center,
+          style: Theme.of(context).textTheme.headlineSmall,
+        ),
+        const SizedBox(height: Spacing.s),
         Text(
           context.l10n.navigatorEmptyDialog,
+          textAlign: TextAlign.center,
           style: TextStyle(color: context.palette.muted),
         ),
+      ],
       for (final message in _messages) ...[
         MessageBubble(key: ValueKey(message.seq), message: message),
         const SizedBox(height: Spacing.m),
@@ -234,6 +290,12 @@ class _DialogScreenState extends ConsumerState<DialogScreen> {
               tooltip: l10n.letterTitle,
               icon: const Icon(Icons.mail_outline),
               onPressed: _letter,
+            ),
+          if (_messages.isNotEmpty)
+            IconButton(
+              tooltip: l10n.declarationTitle,
+              icon: const Icon(Icons.verified_outlined),
+              onPressed: _declaration,
             ),
           if (_created)
             IconButton(

@@ -67,7 +67,7 @@ class ProfileScreen extends ConsumerWidget {
                         ),
                     ])
                       ListTile(
-                        contentPadding: EdgeInsets.zero,
+                        contentPadding: TileGroup.tilePadding,
                         leading: Icon(icon),
                         title: Text(title),
                         trailing: const Icon(Icons.chevron_right),

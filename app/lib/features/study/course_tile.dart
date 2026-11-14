@@ -5,6 +5,7 @@ import '../../core/navigation/app_routes.dart';
 import '../../l10n/l10n_context.dart';
 import 'course.dart';
 import 'study_labels_context.dart';
+import '../../design/components/tile_group.dart';
 
 class CourseTile extends StatelessWidget {
   const CourseTile({required this.course, super.key});
@@ -15,7 +16,7 @@ class CourseTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final code = course.code;
     return ListTile(
-      contentPadding: EdgeInsets.zero,
+      contentPadding: TileGroup.tilePadding,
       leading: const Icon(Icons.school_outlined),
       title: Text(course.title),
       subtitle: Text(

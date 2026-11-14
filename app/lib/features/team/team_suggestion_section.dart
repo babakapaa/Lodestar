@@ -74,8 +74,9 @@ class _TeamSuggestionSectionState extends ConsumerState<TeamSuggestionSection> {
               Text(l10n.teamSuggestNone, style: muted),
             for (final team in suggestion.teams)
               LodestarCard(
+                padding: EdgeInsets.zero,
                 child: ListTile(
-                  contentPadding: EdgeInsets.zero,
+                  contentPadding: LodestarCard.tilePadding,
                   title: Text(team.members.map((p) => p.label).join(', ')),
                   subtitle: Text(team.why),
                   trailing: create == null

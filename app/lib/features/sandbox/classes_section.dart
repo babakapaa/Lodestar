@@ -42,8 +42,9 @@ class ClassesSection extends ConsumerWidget {
           for (final c in classes)
             LodestarCard(
               key: ValueKey('gpu-class-${c.id}'),
+              padding: EdgeInsets.zero,
               child: ListTile(
-                contentPadding: EdgeInsets.zero,
+                contentPadding: LodestarCard.tilePadding,
                 leading: const Icon(Icons.memory),
                 title: Text(l10n.sandboxClassName(c.name, c.memoryGb)),
                 subtitle: Text(

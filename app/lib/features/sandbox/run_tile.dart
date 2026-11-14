@@ -15,8 +15,9 @@ class RunTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return LodestarCard(
+      padding: EdgeInsets.zero,
       child: ListTile(
-        contentPadding: EdgeInsets.zero,
+        contentPadding: LodestarCard.tilePadding,
         leading: Icon(RunIcon.of(run.kind)),
         title: Text(run.title),
         subtitle: Text(context.sandboxLabels.summary(run)),

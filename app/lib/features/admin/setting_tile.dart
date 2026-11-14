@@ -5,6 +5,7 @@ import '../../l10n/l10n_context.dart';
 import 'setting_definition.dart';
 import 'setting_labels.dart';
 import 'setting_value_dialog.dart';
+import '../../design/components/tile_group.dart';
 
 class SettingTile extends StatelessWidget {
   const SettingTile({
@@ -49,13 +50,13 @@ class SettingTile extends StatelessWidget {
     final current = _current;
     return switch (definition.type) {
       SettingDefinition.boolType => SwitchListTile(
-        contentPadding: EdgeInsets.zero,
+        contentPadding: TileGroup.tilePadding,
         title: Text(label),
         value: current == true,
         onChanged: onChanged,
       ),
       SettingDefinition.choiceType => ListTile(
-        contentPadding: EdgeInsets.zero,
+        contentPadding: TileGroup.tilePadding,
         title: Text(label),
         trailing: DropdownButton<String>(
           value: definition.options.contains(current)
@@ -75,10 +76,19 @@ class SettingTile extends StatelessWidget {
           },
         ),
       ),
-      _ => ListTile(
-        contentPadding: EdgeInsets.zero,
+      SettingDefinition.integerType => ListTile(
+        contentPadding: TileGroup.tilePadding,
         title: Text(label),
         trailing: Text('${current ?? ''}'),
+        onTap: () => _editText(context, label),
+      ),
+      _ => ListTile(
+        contentPadding: TileGroup.tilePadding,
+        title: Text(label),
+        subtitle: '${current ?? ''}'.isEmpty
+            ? null
+            : Text('$current', maxLines: 2, overflow: TextOverflow.ellipsis),
+        trailing: const Icon(Icons.edit_outlined),
         onTap: () => _editText(context, label),
       ),
     };

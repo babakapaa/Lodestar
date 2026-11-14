@@ -25,8 +25,9 @@ class SearchMapTile extends ConsumerWidget {
     final gaps = map?.gaps(rules ?? MapRules.none) ?? const [];
     final palette = context.palette;
     return LodestarCard(
+      padding: EdgeInsets.zero,
       child: ListTile(
-        contentPadding: EdgeInsets.zero,
+        contentPadding: LodestarCard.tilePadding,
         leading: Icon(
           map != null && gaps.isEmpty
               ? Icons.check_circle_outline

@@ -21,8 +21,9 @@ class NavigatorTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final text = subtitle;
     return LodestarCard(
+      padding: EdgeInsets.zero,
       child: ListTile(
-        contentPadding: EdgeInsets.zero,
+        contentPadding: LodestarCard.tilePadding,
         leading: Icon(icon),
         title: Text(title),
         subtitle: text == null ? null : Text(text),

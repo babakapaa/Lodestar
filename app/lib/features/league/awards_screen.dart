@@ -44,8 +44,9 @@ class AwardsScreen extends ConsumerWidget {
       for (final award in awards)
         LodestarCard(
           key: ValueKey('award-${award.id}'),
+          padding: EdgeInsets.zero,
           child: ListTile(
-            contentPadding: EdgeInsets.zero,
+            contentPadding: LodestarCard.tilePadding,
             leading: Icon(
               award.archived
                   ? Icons.inventory_2_outlined

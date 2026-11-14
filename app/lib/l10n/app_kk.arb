@@ -1488,5 +1488,6 @@
   "tourNext": "Әрі қарай",
   "tourDone": "Бастау",
   "tourReplay": "Турды қайта көрсету",
-  "settingsHelp": "Көмек"
+  "settingsHelp": "Көмек",
+  "scheduleEmptyBody": "Басқа аптаны көру үшін жоғарыдағы көрсеткілерді басыңыз."
 }

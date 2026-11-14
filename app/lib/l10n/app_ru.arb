@@ -2625,5 +2625,6 @@
   "tourNext": "Далее",
   "tourDone": "Начать",
   "tourReplay": "Показать тур снова",
-  "settingsHelp": "Помощь"
+  "settingsHelp": "Помощь",
+  "scheduleEmptyBody": "Стрелками вверху можно перейти к другой неделе."
 }

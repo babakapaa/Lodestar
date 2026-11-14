@@ -61,6 +61,9 @@ class LodestarTheme {
         space: 1,
       ),
       iconTheme: IconThemeData(color: palette.text, size: 20),
+      listTileTheme: ListTileThemeData(
+        shape: RoundedRectangleBorder(borderRadius: tokens.borderRadiusSmall),
+      ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: palette.surface,

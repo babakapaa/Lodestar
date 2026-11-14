@@ -44,7 +44,7 @@ class TodayNotes extends ConsumerWidget {
                 for (final note in notes.take(limit))
                   ListTile(
                     key: ValueKey('today-note:${note.id}'),
-                    contentPadding: EdgeInsets.zero,
+                    contentPadding: TileGroup.tilePadding,
                     leading: Icon(
                       note.meta.isCanvas
                           ? Icons.dashboard_outlined

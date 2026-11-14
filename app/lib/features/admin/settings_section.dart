@@ -11,6 +11,7 @@ import 'admin_providers.dart';
 import 'setting_group.dart';
 import 'setting_labels.dart';
 import 'setting_tile.dart';
+import '../../design/components/tile_group.dart';
 
 class SettingsSection extends ConsumerWidget {
   const SettingsSection({super.key});
@@ -56,20 +57,27 @@ class SettingsSection extends ConsumerWidget {
                     (d) => SettingGroup.of(d.key) == group,
                   )) ...[
                     Padding(
-                      padding: const EdgeInsets.only(top: Spacing.m),
+                      padding: const EdgeInsets.only(
+                        top: Spacing.l,
+                        bottom: Spacing.s,
+                      ),
                       child: Text(
                         labels.group(group),
                         style: Theme.of(context).textTheme.titleSmall,
                       ),
                     ),
-                    for (final definition in definitions)
-                      if (SettingGroup.of(definition.key) == group)
-                        SettingTile(
-                          definition: definition,
-                          value: current[definition.key],
-                          onChanged: (value) =>
-                              _save(context, ref, definition.key, value),
-                        ),
+                    TileGroup(
+                      children: [
+                        for (final definition in definitions)
+                          if (SettingGroup.of(definition.key) == group)
+                            SettingTile(
+                              definition: definition,
+                              value: current[definition.key],
+                              onChanged: (value) =>
+                                  _save(context, ref, definition.key, value),
+                            ),
+                      ],
+                    ),
                   ],
               ],
             ),

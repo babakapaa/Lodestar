@@ -15,8 +15,9 @@ class TeamCardTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final scope = card.scope;
     return LodestarCard(
+      padding: EdgeInsets.zero,
       child: ListTile(
-        contentPadding: EdgeInsets.zero,
+        contentPadding: LodestarCard.tilePadding,
         leading: const Icon(Icons.groups_outlined),
         title: Text(card.team.name),
         subtitle: Text(

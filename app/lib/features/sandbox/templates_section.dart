@@ -40,8 +40,9 @@ class TemplatesSection extends ConsumerWidget {
           for (final t in templates)
             LodestarCard(
               key: ValueKey('template-${t.id}'),
+              padding: EdgeInsets.zero,
               child: ListTile(
-                contentPadding: EdgeInsets.zero,
+                contentPadding: LodestarCard.tilePadding,
                 leading: Icon(
                   t.starter
                       ? Icons.school_outlined

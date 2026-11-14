@@ -61,6 +61,23 @@ class LodestarTheme {
         space: 1,
       ),
       iconTheme: IconThemeData(color: palette.text, size: 20),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: palette.surface,
+        hintStyle: text.bodyMedium!.copyWith(color: palette.muted),
+        border: OutlineInputBorder(
+          borderRadius: tokens.borderRadiusSmall,
+          borderSide: BorderSide(color: palette.border),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: tokens.borderRadiusSmall,
+          borderSide: BorderSide(color: palette.border),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: tokens.borderRadiusSmall,
+          borderSide: BorderSide(color: palette.accent, width: 1.5),
+        ),
+      ),
       appBarTheme: AppBarTheme(
         backgroundColor: palette.bg,
         foregroundColor: palette.text,

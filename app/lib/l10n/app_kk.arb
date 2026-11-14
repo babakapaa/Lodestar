@@ -1426,5 +1426,15 @@
   "testerTitle": "Тестілеуші режимі",
   "testerLoginHint": "Тестілік ЖОО: кез келген қатысушы ретінде құпиясөзсіз кіріңіз.",
   "testerSwitchHint": "Тестілік ЖОО-ның басқа қатысушысы ретінде кіріңіз. Құпиясөз қажет емес.",
-  "testerSignInAs": "{name}, {title}"
+  "testerSignInAs": "{name}, {title}",
+  "notesOutline": "Мазмұны",
+  "notesOutlineNone": "Әзірге тақырыптар жоқ. # белгісімен басталған жол тақырып болады.",
+  "notesNoTabsTitle": "Жазбаны ашыңыз",
+  "notesNoTabsBody": "Сол жақтан жазбаны таңдаңыз немесе атауы бойынша табу үшін Ctrl+O басыңыз.",
+  "notesQuickOpen": "Жылдам өту (Ctrl+O)",
+  "notesQuickHint": "Жазба атауы",
+  "notesCloseTab": "Қойындыны жабу",
+  "notesInspector": "Байланыстар мен мазмұн",
+  "notesVault": "Қойма",
+  "notesLinkHint": "Enter сілтемені қояды, Esc тізімді жасырады"
 }

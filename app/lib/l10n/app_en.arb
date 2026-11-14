@@ -1426,5 +1426,15 @@
   "testerTitle": "Tester mode",
   "testerLoginHint": "Test university: sign in as any member without a password.",
   "testerSwitchHint": "Sign in as another member of the test university. No password needed.",
-  "testerSignInAs": "{name}, {title}"
+  "testerSignInAs": "{name}, {title}",
+  "notesOutline": "Outline",
+  "notesOutlineNone": "No headings yet. A line starting with # becomes a heading.",
+  "notesNoTabsTitle": "Open a note",
+  "notesNoTabsBody": "Pick a note on the left or press Ctrl+O to find it by name.",
+  "notesQuickOpen": "Quick switcher (Ctrl+O)",
+  "notesQuickHint": "Note name",
+  "notesCloseTab": "Close tab",
+  "notesInspector": "Links and outline",
+  "notesVault": "Vault",
+  "notesLinkHint": "Enter inserts the link, Esc hides the list"
 }

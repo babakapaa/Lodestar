@@ -2563,5 +2563,15 @@
         "type": "String"
       }
     }
-  }
+  },
+  "notesOutline": "Содержание",
+  "notesOutlineNone": "Заголовков пока нет. Строка с # в начале станет заголовком.",
+  "notesNoTabsTitle": "Откройте заметку",
+  "notesNoTabsBody": "Выберите заметку слева или нажмите Ctrl+O, чтобы найти её по названию.",
+  "notesQuickOpen": "Быстрый переход (Ctrl+O)",
+  "notesQuickHint": "Название заметки",
+  "notesCloseTab": "Закрыть вкладку",
+  "notesInspector": "Связи и содержание",
+  "notesVault": "Хранилище",
+  "notesLinkHint": "Enter вставит ссылку, Esc скроет список"
 }

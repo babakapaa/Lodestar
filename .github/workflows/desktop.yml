@@ -6,9 +6,6 @@ on:
     paths:
       - app/**
       - .github/workflows/desktop.yml
-  pull_request:
-    paths:
-      - .github/workflows/desktop.yml
   workflow_dispatch:
 
 concurrency:

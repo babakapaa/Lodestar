@@ -9,6 +9,7 @@ import '../../core/navigation/app_routes.dart';
 import '../../l10n/l10n_context.dart';
 import 'note.dart';
 import 'note_meta.dart';
+import 'note_resolver.dart';
 import 'note_vault.dart';
 import 'notes_providers.dart';
 
@@ -18,14 +19,36 @@ abstract final class NoteActions {
     WidgetRef ref, {
     String? path,
   }) async {
-    final notes = ref.read(notesProvider).value ?? const <Note>[];
-    final target = path ?? _untitled(context.l10n.notesUntitled, notes);
-    final id = await ref
-        .read(notesStoreProvider)
-        .create(NoteMeta(path: target));
+    final id = await add(context, ref, path: path);
     if (context.mounted) {
       await context.push(AppRoutes.note(id));
     }
+  }
+
+  static Future<String> add(
+    BuildContext context,
+    WidgetRef ref, {
+    String? path,
+  }) {
+    final notes = ref.read(notesProvider).value ?? const <Note>[];
+    final target = path ?? _untitled(context.l10n.notesUntitled, notes);
+    return ref.read(notesStoreProvider).create(NoteMeta(path: target));
+  }
+
+  static Future<void> follow(
+    BuildContext context,
+    WidgetRef ref,
+    String link,
+    ValueChanged<String> open,
+  ) async {
+    final notes = ref.read(notesProvider).value ?? const <Note>[];
+    final target = NoteResolver.resolve(link, notes);
+    if (target != null) {
+      open(target.id);
+      return;
+    }
+    final id = await add(context, ref, path: NoteMeta.normalizePath(link));
+    open(id);
   }
 
   static Future<bool> remote(

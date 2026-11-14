@@ -8,6 +8,7 @@ import '../../design/components/lodestar_button_variant.dart';
 import '../../design/components/notice_banner.dart';
 import '../../design/tokens/spacing.dart';
 import '../../l10n/l10n_context.dart';
+import 'hardware_card.dart';
 import 'legal_question_card.dart';
 import 'protocol_card.dart';
 import 'section_assignee.dart';
@@ -55,6 +56,10 @@ class SetupSectionScreen extends ConsumerWidget {
               ],
               if (manages) SectionAssignee(section: section),
               const SizedBox(height: Spacing.l),
+              if (sectionKey == SetupSection.deploy) ...[
+                const HardwareCard(),
+                const SizedBox(height: Spacing.l),
+              ],
               if (sectionKey == SetupSection.legal) ...[
                 for (final answer in overview.legal)
                   LegalQuestionCard(

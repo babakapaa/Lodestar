@@ -67,6 +67,23 @@ class SetupLabels {
     'no_units' => l10n.setupProblemNoUnits,
     'courses_without_teacher' => l10n.setupProblemLonelyCourses(p.count),
     'model_missing' => l10n.setupProblemModel,
+    'hardware_unchecked' => l10n.setupProblemHardwareUnchecked,
+    'hardware_failed' => l10n.setupProblemHardwareFailed(p.count),
     _ => l10n.setupProblemOther(p.code),
+  };
+
+  String hardware(String name) => switch (name) {
+    'database' => l10n.hardwareDatabase,
+    'storage' => l10n.hardwareStorage,
+    'mail' => l10n.hardwareMail,
+    'push' => l10n.hardwarePush,
+    'model' => l10n.hardwareModel,
+    'embeddings' => l10n.hardwareEmbeddings,
+    'reranker' => l10n.hardwareReranker,
+    'speech' => l10n.hardwareSpeech,
+    'calls' => l10n.hardwareCalls,
+    'recording' => l10n.hardwareRecording,
+    _ when name.startsWith('gpu:') => l10n.hardwareGpu(name.substring(4)),
+    _ => name,
   };
 }

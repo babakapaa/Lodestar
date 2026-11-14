@@ -12,6 +12,8 @@ class FakeSetup {
   final List<String> calls = [];
   List<String> pilot = [];
   bool included = true;
+  String storage = 'failed';
+  String? checkedAt;
 
   static const _sections = [
     ('deploy', true),
@@ -30,6 +32,8 @@ class FakeSetup {
       if (required && statuses[key] != 'approved')
         {'section': key, 'code': 'section_not_approved', 'count': 1},
     if (!signed) {'section': 'launch', 'code': 'protocol_unsigned', 'count': 1},
+    if (checkedAt != null && storage != 'ok')
+      {'section': 'deploy', 'code': 'hardware_failed', 'count': 1},
   ];
 
   Map<String, Object?> _overview() => {
@@ -90,6 +94,11 @@ class FakeSetup {
           {'id': 'c-bio', 'title': 'Основы биологии', 'code': 'BIO-101'},
           {'id': 'c-chem', 'title': 'Химия', 'code': null},
         ]);
+      case ('GET', ['hardware']):
+        return _json(200, _hardware());
+      case ('POST', ['hardware', 'check']):
+        checkedAt = '2026-11-14T04:00:00Z';
+        return _json(200, _hardware());
       case ('POST', ['expand']):
         pilot = [];
       case ('GET', []):
@@ -126,6 +135,35 @@ class FakeSetup {
     }
     return _json(200, _overview());
   }
+
+  Map<String, Object?> _hardware() => {
+    'checkedAt': checkedAt,
+    'checks': checkedAt == null
+        ? <Object?>[]
+        : [
+            {
+              'name': 'database',
+              'required': true,
+              'status': 'ok',
+              'detail': '',
+              'millis': 3,
+            },
+            {
+              'name': 'storage',
+              'required': true,
+              'status': storage,
+              'detail': storage == 'ok' ? '' : 'bucket is gone',
+              'millis': 12,
+            },
+            {
+              'name': 'gpu:a100-1',
+              'required': false,
+              'status': 'off',
+              'detail': '',
+              'millis': 0,
+            },
+          ],
+  };
 
   http.Response _json(int status, Object? body) => http.Response(
     jsonEncode(body),

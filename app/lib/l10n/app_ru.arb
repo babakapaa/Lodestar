@@ -2497,5 +2497,47 @@
   "lmsDeepLinkSend": "Вернуться в LMS",
   "errorLmsDeepLinkGone": "Запрос LMS устарел. Начните заново в LMS.",
   "errorLmsDeepLinkInvalid": "LMS не принимает такой выбор",
-  "settingChatCallTranscripts": "Расшифровывать записи звонков в текст"
+  "settingChatCallTranscripts": "Расшифровывать записи звонков в текст",
+  "setupHardware": "Проверка оборудования",
+  "setupHardwareNever": "Проверки ещё не было. Без неё запуск закрыт.",
+  "setupHardwareCheckedAt": "Проверено {time}",
+  "@setupHardwareCheckedAt": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "setupHardwareRun": "Проверить",
+  "setupHardwareOk": "Работает",
+  "setupHardwareFailed": "Не отвечает",
+  "setupHardwareOff": "Не настроено",
+  "setupHardwareRequired": "Нужно для запуска",
+  "setupProblemHardwareUnchecked": "Оборудование не проверено",
+  "setupProblemHardwareFailed": "Не работает обязательное оборудование: {count}",
+  "@setupProblemHardwareFailed": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "hardwareDatabase": "База данных",
+  "hardwareStorage": "Хранилище файлов",
+  "hardwareMail": "Почта",
+  "hardwarePush": "Push-уведомления",
+  "hardwareModel": "Модель навигатора",
+  "hardwareEmbeddings": "Поиск по материалам",
+  "hardwareReranker": "Ранжирование",
+  "hardwareSpeech": "Распознавание речи",
+  "hardwareCalls": "Сервер звонков",
+  "hardwareRecording": "Запись звонков",
+  "hardwareGpu": "GPU-узел {name}",
+  "@hardwareGpu": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  }
 }

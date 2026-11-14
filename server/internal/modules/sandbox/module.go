@@ -26,6 +26,10 @@ func (Module) Workers(k module.Kernel) []module.Worker {
 	return []module.Worker{NewRunWorker(k)}
 }
 
+func (Module) HardwareSources(k module.Kernel) []module.HardwareSource {
+	return []module.HardwareSource{NodeHardware{settings: k.Settings}}
+}
+
 func (Module) StatsSources(module.Kernel) []module.StatsSource {
 	return []module.StatsSource{SandboxStats{}}
 }

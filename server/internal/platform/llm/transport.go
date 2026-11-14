@@ -24,11 +24,24 @@ func (t transport) open(ctx context.Context, path string, body any) (*http.Respo
 	if err != nil {
 		return nil, err
 	}
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, strings.TrimRight(t.cfg.URL, "/")+path, bytes.NewReader(raw))
+	return t.post(ctx, path, "application/json", bytes.NewReader(raw))
+}
+
+func (t transport) send(ctx context.Context, path, contentType string, body io.Reader, out any) error {
+	resp, err := t.post(ctx, path, contentType, body)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = resp.Body.Close() }()
+	return decode(resp.Body, out)
+}
+
+func (t transport) post(ctx context.Context, path, contentType string, body io.Reader) (*http.Response, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, strings.TrimRight(t.cfg.URL, "/")+path, body)
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Content-Type", contentType)
 	if t.cfg.Key != "" {
 		req.Header.Set("Authorization", "Bearer "+t.cfg.Key)
 	}
@@ -49,7 +62,11 @@ func (t transport) call(ctx context.Context, path string, body, out any) error {
 		return err
 	}
 	defer func() { _ = resp.Body.Close() }()
-	if err := json.NewDecoder(io.LimitReader(resp.Body, maxReply)).Decode(out); err != nil {
+	return decode(resp.Body, out)
+}
+
+func decode(body io.Reader, out any) error {
+	if err := json.NewDecoder(io.LimitReader(body, maxReply)).Decode(out); err != nil {
 		return fmt.Errorf("%w: decode reply: %w", ErrModelFailed, err)
 	}
 	return nil

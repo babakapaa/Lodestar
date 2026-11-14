@@ -15,6 +15,7 @@ var exactSections = map[string]string{
 	"study.defense_recording":    SectionLegal,
 	"chat.call_recording":        SectionLegal,
 	"chat.recording_consent":     SectionLegal,
+	"chat.call_transcripts":      SectionLegal,
 	"navigator.support_contacts": SectionLegal,
 	"sandbox.watch_processes":    SectionLegal,
 }

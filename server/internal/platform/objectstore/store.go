@@ -95,6 +95,13 @@ func (s *Store) Open(ctx context.Context, key string) (io.ReadCloser, error) {
 	return obj, nil
 }
 
+func (s *Store) Put(ctx context.Context, key, contentType string, body io.Reader, size int64) error {
+	if _, err := s.internal.PutObject(ctx, s.bucket, key, body, size, minio.PutObjectOptions{ContentType: contentType}); err != nil {
+		return fmt.Errorf("put object: %w", err)
+	}
+	return nil
+}
+
 func (s *Store) Delete(ctx context.Context, key string) error {
 	if err := s.internal.RemoveObject(ctx, s.bucket, key, minio.RemoveObjectOptions{}); err != nil {
 		return fmt.Errorf("delete object: %w", err)

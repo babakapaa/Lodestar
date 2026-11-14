@@ -54,3 +54,7 @@ type rerankReply struct {
 		Score float64 `json:"relevance_score"`
 	} `json:"results"`
 }
+
+type transcribeReply struct {
+	Text string `json:"text"`
+}

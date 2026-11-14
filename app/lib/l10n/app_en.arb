@@ -1390,5 +1390,6 @@
   "lmsDeepLinkEmpty": "There are no courses you teach.",
   "lmsDeepLinkSend": "Return to LMS",
   "errorLmsDeepLinkGone": "The LMS request has expired. Start again in the LMS.",
-  "errorLmsDeepLinkInvalid": "The LMS does not accept this choice"
+  "errorLmsDeepLinkInvalid": "The LMS does not accept this choice",
+  "settingChatCallTranscripts": "Transcribe call recordings to text"
 }

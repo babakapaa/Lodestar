@@ -28,6 +28,7 @@ type Config struct {
 	LLM             llm.Config
 	Embed           llm.Config
 	Rerank          llm.Config
+	Speech          llm.Config
 	LiveKit         livekit.Config
 	AccessTTL       time.Duration
 	RefreshTTL      time.Duration
@@ -73,6 +74,11 @@ func Load() (Config, error) {
 			Model: stringEnv("LODESTAR_RERANK_MODEL", ""),
 			Key:   stringEnv("LODESTAR_RERANK_KEY", ""),
 		},
+		Speech: llm.Config{
+			URL:   stringEnv("LODESTAR_STT_URL", ""),
+			Model: stringEnv("LODESTAR_STT_MODEL", ""),
+			Key:   stringEnv("LODESTAR_STT_KEY", ""),
+		},
 		LiveKit: livekit.Config{
 			URL:       stringEnv("LODESTAR_LIVEKIT_URL", ""),
 			APIURL:    stringEnv("LODESTAR_LIVEKIT_API_URL", ""),
@@ -102,6 +108,9 @@ func Load() (Config, error) {
 		return Config{}, err
 	}
 	cfg.Embed.Timeout, cfg.Rerank.Timeout = cfg.LLM.Timeout, cfg.LLM.Timeout
+	if cfg.Speech.Timeout, err = durationEnv("LODESTAR_STT_TIMEOUT", 30*time.Minute); err != nil {
+		return Config{}, err
+	}
 	return cfg, nil
 }
 

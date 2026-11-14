@@ -26,7 +26,7 @@ func (Module) MountOpen(mux *http.ServeMux, k module.Kernel) {
 }
 
 func (Module) Workers(k module.Kernel) []module.Worker {
-	return []module.Worker{NewRosterWorker(k), NewPurger(k)}
+	return []module.Worker{NewRosterWorker(k), NewPurger(k), NewTranscriptWorker(k)}
 }
 
 func (Module) Permissions() []string {

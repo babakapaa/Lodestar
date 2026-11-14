@@ -1390,5 +1390,6 @@
   "lmsDeepLinkEmpty": "Сіз жүргізетін курстар жоқ.",
   "lmsDeepLinkSend": "LMS-ке оралу",
   "errorLmsDeepLinkGone": "LMS сұрауы ескірді. LMS-те қайта бастаңыз.",
-  "errorLmsDeepLinkInvalid": "LMS мұндай таңдауды қабылдамайды"
+  "errorLmsDeepLinkInvalid": "LMS мұндай таңдауды қабылдамайды",
+  "settingChatCallTranscripts": "Қоңырау жазбаларын мәтінге айналдыру"
 }

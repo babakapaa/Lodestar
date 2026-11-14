@@ -14,6 +14,7 @@ enum SettingGroup {
     'chat.retention_days',
     'chat.call_recording',
     'chat.recording_consent',
+    'chat.call_transcripts',
     'study.defense_recording',
   };
 

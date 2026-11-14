@@ -8,6 +8,7 @@ const (
 	ScreenShareSetting = "chat.screen_share"
 	RecordingSetting   = "chat.call_recording"
 	ConsentSetting     = "chat.recording_consent"
+	TranscriptSetting  = "chat.call_transcripts"
 )
 
 func (Module) Settings() []schema.Definition {
@@ -18,5 +19,6 @@ func (Module) Settings() []schema.Definition {
 		{Key: ScreenShareSetting, Type: schema.Choice, Options: []string{ShareEveryone, ShareAdmins}, Default: ShareEveryone},
 		{Key: RecordingSetting, Type: schema.Choice, Options: []string{RecordOff, RecordAdmins, RecordEveryone}, Default: RecordOff},
 		{Key: ConsentSetting, Type: schema.Bool, Default: true},
+		{Key: TranscriptSetting, Type: schema.Bool, Default: false},
 	}
 }

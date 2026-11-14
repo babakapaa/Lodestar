@@ -60,5 +60,8 @@ func OpenIntegrations(ctx context.Context, cfg config.Config) (Integrations, err
 	if cfg.Rerank.Enabled() {
 		ext.Reranker = llm.NewRerankClient(cfg.Rerank)
 	}
+	if cfg.Speech.Enabled() {
+		ext.Speech = llm.NewTranscribeClient(cfg.Speech)
+	}
 	return ext, nil
 }

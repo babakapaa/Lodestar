@@ -121,6 +121,8 @@ type world struct {
 	calls    chat.CallService
 	records  chat.RecordingService
 	egress   *fakeEgress
+	speech   *fakeSpeech
+	scribe   chat.TranscriptWorker
 	rosters  *fakeRosters
 	sent     *outbox
 	settings *fakeSettings
@@ -156,10 +158,11 @@ func newWorld(t *testing.T) *world {
 	rosters := &fakeRosters{list: map[string]module.Roster{}}
 	sent := &outbox{}
 	egress := newFakeEgress(t)
-	settings := &fakeSettings{values: map[string]any{chat.CallsSetting: true, chat.ScreenShareSetting: chat.ShareAdmins, chat.RecordingSetting: chat.RecordOff, chat.ConsentSetting: false}}
+	speech := newFakeSpeech()
+	settings := &fakeSettings{values: map[string]any{chat.CallsSetting: true, chat.ScreenShareSetting: chat.ShareAdmins, chat.RecordingSetting: chat.RecordOff, chat.ConsentSetting: false, chat.TranscriptSetting: false}}
 	k := module.Kernel{
 		Pool: pool, Tenants: tx, Access: acc, Notifier: sent, Settings: settings, Secrets: box,
-		Rosters: module.Rosters{rosters},
+		Rosters: module.Rosters{rosters}, Transcriber: speech, Objects: speech,
 		Calls: livekit.NewIssuer(livekit.Config{
 			URL: "wss://calls.kaznu.kz", APIURL: egress.server.URL, APIKey: "key", APISecret: callSecret,
 			Storage: objectstore.Config{Endpoint: "http://minio:9000", Bucket: "lodestar", AccessKey: "a", SecretKey: "s"},
@@ -169,7 +172,7 @@ func newWorld(t *testing.T) *world {
 		t: t, ctx: ctx, tenant: created.ID, tx: tx, users: identity.NewStore(tx), access: acc,
 		chats: chat.NewService(k), messages: chat.NewMessageService(k), worker: chat.NewRosterWorker(k),
 		blocks: chat.NewBlockService(k), reports: chat.NewReportService(k), purger: chat.NewPurger(k), calls: chat.NewCallService(k),
-		records: chat.NewRecordingService(k), egress: egress,
+		records: chat.NewRecordingService(k), egress: egress, speech: speech, scribe: chat.NewTranscriptWorker(k),
 		rosters: rosters, sent: sent, settings: settings, pool: pool,
 	}
 	w.admin = w.user("admin")

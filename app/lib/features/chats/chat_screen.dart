@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -13,6 +15,7 @@ import '../calls/active_call_banner.dart';
 import 'chat.dart';
 import 'chat_bubble.dart';
 import 'chat_composer.dart';
+import 'chat_day_pill.dart';
 import 'chat_draft.dart';
 import 'chat_entry.dart';
 import 'chat_file.dart';
@@ -242,81 +245,119 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       ),
       body: SafeArea(
         top: false,
-        child: Align(
-          alignment: Alignment.topCenter,
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 760),
-            child: Column(
-              children: [
-                ActiveCallBanner(chatId: _id),
-                if (chat.request)
-                  Padding(
-                    padding: const EdgeInsets.all(Spacing.m),
-                    child: Column(
-                      children: [
-                        NoticeBanner(
-                          icon: Icons.mark_email_unread_outlined,
-                          message: l10n.chatsRequestBanner,
-                        ),
-                        const SizedBox(height: Spacing.s),
-                        FilledButton(
-                          onPressed: _accept,
-                          child: Text(l10n.chatsAccept),
-                        ),
-                      ],
+        child: ColoredBox(
+          color: context.tokens.palette.side,
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final side = max(Spacing.l, (constraints.maxWidth - 760) / 2);
+              return Column(
+                children: [
+                  ActiveCallBanner(chatId: _id),
+                  if (chat.request)
+                    Padding(
+                      padding: const EdgeInsets.all(Spacing.m),
+                      child: Column(
+                        children: [
+                          NoticeBanner(
+                            icon: Icons.mark_email_unread_outlined,
+                            message: l10n.chatsRequestBanner,
+                          ),
+                          const SizedBox(height: Spacing.s),
+                          FilledButton(
+                            onPressed: _accept,
+                            child: Text(l10n.chatsAccept),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                Expanded(
-                  child: ListView.separated(
-                    reverse: true,
-                    padding: const EdgeInsets.all(Spacing.l),
-                    itemCount: shown.length + (older ? 1 : 0),
-                    separatorBuilder: (_, _) =>
-                        const SizedBox(height: Spacing.s),
-                    itemBuilder: (context, index) {
-                      if (index == shown.length) {
-                        return Center(
-                          child: TextButton(
-                            onPressed: _loadingOlder ? null : _older,
-                            child: Text(l10n.chatsOlder),
+                  Expanded(
+                    child: ListView.builder(
+                      reverse: true,
+                      padding: EdgeInsets.symmetric(
+                        horizontal: side,
+                        vertical: Spacing.l,
+                      ),
+                      itemCount: shown.length + (older ? 1 : 0),
+                      itemBuilder: (context, index) {
+                        if (index == shown.length) {
+                          return Center(
+                            child: TextButton(
+                              onPressed: _loadingOlder ? null : _older,
+                              child: Text(l10n.chatsOlder),
+                            ),
+                          );
+                        }
+                        final entry = shown[index];
+                        final previous = index + 1 < shown.length
+                            ? shown[index + 1]
+                            : null;
+                        final day = _dayOf(entry);
+                        final newDay =
+                            previous == null ||
+                            !DateUtils.isSameDay(day, _dayOf(previous));
+                        final grouped =
+                            !newDay &&
+                            previous.message != null &&
+                            entry.message != null &&
+                            previous.message!.authorId ==
+                                entry.message!.authorId;
+                        return Padding(
+                          padding: EdgeInsets.only(
+                            top: grouped ? 2 : Spacing.s,
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              if (newDay) ChatDayPill(day: day),
+                              _entry(
+                                chat,
+                                entry,
+                                me,
+                                names,
+                                bySeq,
+                                quoteOf,
+                                grouped,
+                              ),
+                            ],
                           ),
                         );
-                      }
-                      final entry = shown[index];
-                      return _entry(chat, entry, me, names, bySeq, quoteOf);
-                    },
-                  ),
-                ),
-                if (chat.writable)
-                  ChatComposer(
-                    onSend: _send,
-                    onAttach: _attach,
-                    members: [
-                      for (final member
-                          in details?.members ?? const <ChatMember>[])
-                        if (member.userId != me) member,
-                    ],
-                    quote: quoteOf(_replyTo),
-                    onCancelReply: () => setState(() => _replyTo = null),
-                  )
-                else
-                  Padding(
-                    padding: const EdgeInsets.all(Spacing.l),
-                    child: Text(
-                      chat.archived
-                          ? l10n.chatsArchived
-                          : l10n.chatsReadOnlyChannel,
-                      style: TextStyle(color: context.tokens.palette.muted),
-                      textAlign: TextAlign.center,
+                      },
                     ),
                   ),
-              ],
-            ),
+                  if (chat.writable)
+                    ChatComposer(
+                      onSend: _send,
+                      onAttach: _attach,
+                      members: [
+                        for (final member
+                            in details?.members ?? const <ChatMember>[])
+                          if (member.userId != me) member,
+                      ],
+                      quote: quoteOf(_replyTo),
+                      onCancelReply: () => setState(() => _replyTo = null),
+                    )
+                  else
+                    Padding(
+                      padding: const EdgeInsets.all(Spacing.l),
+                      child: Text(
+                        chat.archived
+                            ? l10n.chatsArchived
+                            : l10n.chatsReadOnlyChannel,
+                        style: TextStyle(color: context.tokens.palette.muted),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                ],
+              );
+            },
           ),
         ),
       ),
     );
   }
+
+  static DateTime _dayOf(ChatEntry entry) =>
+      (entry.message?.createdAt ?? entry.outgoing!.createdAt).toLocal();
 
   Widget _entry(
     Chat chat,
@@ -325,6 +366,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     Map<String, String> names,
     Map<int, ChatMessage> bySeq,
     ReplyQuote? Function(ChatMessage?) quoteOf,
+    bool grouped,
   ) {
     final outgoing = entry.outgoing;
     if (outgoing != null) {
@@ -347,6 +389,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           ? null
           : names[message.authorId] ?? context.l10n.chatsUnknown,
       quote: reply == null ? null : quoteOf(bySeq[reply]),
+      grouped: grouped,
       onLongPress: () => _act(chat, message, mine),
       onFile: _save,
     );

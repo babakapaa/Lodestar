@@ -1444,5 +1444,10 @@
   "canvasZoomIn": "Zoom in",
   "canvasZoomOut": "Zoom out",
   "canvasFit": "Fit to screen",
-  "canvasHint": "Double-click empty space to add a card. Drag the dot on the right of a selected card to connect it. Delete removes the selection."
+  "canvasHint": "Double-click empty space to add a card. Drag the dot on the right of a selected card to connect it. Delete removes the selection.",
+  "chatsSearch": "Search chats",
+  "chatsPickTitle": "Pick a chat",
+  "chatsPickBody": "Your conversations are on the left. Start a new one with “New chat”.",
+  "chatsToday": "Today",
+  "chatsYesterday": "Yesterday"
 }

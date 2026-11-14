@@ -9,6 +9,8 @@ import '../../design/components/section.dart';
 import '../../design/tokens/spacing.dart';
 import '../../design/tokens/theme_family.dart';
 import '../../l10n/l10n_context.dart';
+import '../tour/tour_providers.dart';
+import 'accent_picker.dart';
 import 'family_swatch.dart';
 import 'settings_labels.dart';
 
@@ -43,6 +45,16 @@ class SettingsScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: Spacing.xl),
                 Section(
+                  title: context.l10n.settingsAccent,
+                  child: AccentPicker(
+                    family: settings.family,
+                    selected: settings.accent,
+                    labelOf: labels.accent,
+                    onSelected: controller.setAccent,
+                  ),
+                ),
+                const SizedBox(height: Spacing.xl),
+                Section(
                   title: context.l10n.settingsAppearance,
                   child: ChoiceGroup<AppearanceMode>(
                     values: AppearanceMode.values,
@@ -59,6 +71,19 @@ class SettingsScreen extends ConsumerWidget {
                     selected: settings.language,
                     labelOf: labels.language,
                     onSelected: controller.setLanguage,
+                  ),
+                ),
+                const SizedBox(height: Spacing.xl),
+                Section(
+                  title: context.l10n.settingsHelp,
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: OutlinedButton.icon(
+                      onPressed: () =>
+                          ref.read(tourSeenProvider.notifier).restart(),
+                      icon: const Icon(Icons.tour_outlined),
+                      label: Text(context.l10n.tourReplay),
+                    ),
                   ),
                 ),
               ],

@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 
 import '../../design/tokens/spacing.dart';
+import '../../design/tokens/tokens_context.dart';
 import '../../l10n/l10n_context.dart';
 import 'attachment_chips.dart';
 import 'chat_draft.dart';
@@ -120,8 +121,17 @@ class _ChatComposerState extends State<ChatComposer> {
     final l10n = context.l10n;
     final quote = widget.quote;
     final suggestions = _suggestions;
-    return Padding(
+    final palette = context.palette;
+    final pill = OutlineInputBorder(
+      borderRadius: BorderRadius.circular(24),
+      borderSide: BorderSide(color: palette.border),
+    );
+    return Container(
       padding: const EdgeInsets.all(Spacing.m),
+      decoration: BoxDecoration(
+        color: palette.surface,
+        border: Border(top: BorderSide(color: palette.border)),
+      ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -178,6 +188,12 @@ class _ChatComposerState extends State<ChatComposer> {
                   decoration: InputDecoration(
                     hintText: l10n.chatsMessageHint,
                     counterText: '',
+                    fillColor: palette.bg,
+                    border: pill,
+                    enabledBorder: pill,
+                    focusedBorder: pill.copyWith(
+                      borderSide: BorderSide(color: palette.accent),
+                    ),
                   ),
                 ),
               ),

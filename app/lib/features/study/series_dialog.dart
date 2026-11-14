@@ -111,6 +111,7 @@ class _SeriesDialogState extends State<SeriesDialog> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             DropdownButtonFormField<String>(
+              isExpanded: true,
               initialValue: _kind,
               decoration: InputDecoration(labelText: l10n.seriesKind),
               items: [
@@ -121,6 +122,7 @@ class _SeriesDialogState extends State<SeriesDialog> {
             ),
             const SizedBox(height: Spacing.m),
             DropdownButtonFormField<int>(
+              isExpanded: true,
               initialValue: _weekday,
               decoration: InputDecoration(labelText: l10n.seriesWeekday),
               items: [
@@ -162,6 +164,7 @@ class _SeriesDialogState extends State<SeriesDialog> {
             ),
             const SizedBox(height: Spacing.m),
             DropdownButtonFormField<int>(
+              isExpanded: true,
               initialValue: _every,
               decoration: InputDecoration(labelText: l10n.seriesEvery),
               items: [

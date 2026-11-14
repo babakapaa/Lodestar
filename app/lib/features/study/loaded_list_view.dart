@@ -16,6 +16,7 @@ class LoadedListView<T> extends StatelessWidget {
     required this.onRefresh,
     required this.builder,
     this.bottomInset = 0,
+    this.maxWidth = 720,
     super.key,
   });
 
@@ -23,6 +24,7 @@ class LoadedListView<T> extends StatelessWidget {
   final Future<void> Function() onRefresh;
   final List<Widget> Function(T value) builder;
   final double bottomInset;
+  final double maxWidth;
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +40,7 @@ class LoadedListView<T> extends StatelessWidget {
     return Align(
       alignment: Alignment.topCenter,
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 720),
+        constraints: BoxConstraints(maxWidth: maxWidth),
         child: loaded != null
             ? RefreshIndicator(
                 onRefresh: onRefresh,

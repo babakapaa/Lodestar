@@ -24,7 +24,7 @@ class NotesGraphPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     canvas.translate(origin.dx, origin.dy);
     final edge = Paint()
-      ..color = palette.border
+      ..color = palette.muted.withValues(alpha: 0.5)
       ..strokeWidth = 1.2;
     for (final (a, b) in graph.edges) {
       canvas.drawLine(graph.nodes[a].position, graph.nodes[b].position, edge);

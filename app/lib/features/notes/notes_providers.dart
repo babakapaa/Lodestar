@@ -13,6 +13,8 @@ import 'notes_store.dart';
 import 'notes_sync.dart';
 import 'notes_sync_controller.dart';
 import 'notes_sync_status.dart';
+import 'notes_tabs.dart';
+import 'notes_tabs_controller.dart';
 import '../../core/sources/source.dart';
 import 'sources_api.dart';
 
@@ -84,4 +86,8 @@ final sourcesApiProvider = Provider<SourcesApi>(
 
 final sourcesProvider = FutureProvider.autoDispose<Loaded<List<Source>>>(
   (ref) => ref.watch(sourcesApiProvider).list(),
+);
+
+final notesTabsProvider = NotifierProvider<NotesTabsController, NotesTabs>(
+  NotesTabsController.new,
 );

@@ -32,6 +32,28 @@ class Palette {
   final Color warnSoft;
   final List<BoxShadow> shadow;
 
+  Palette withAccent({
+    required Color accent,
+    required Color onAccent,
+    required Color accentSoft,
+  }) {
+    return Palette(
+      bg: bg,
+      side: side,
+      surface: surface,
+      surface2: surface2,
+      border: border,
+      text: text,
+      muted: muted,
+      accent: accent,
+      onAccent: onAccent,
+      accentSoft: accentSoft,
+      warn: warn,
+      warnSoft: warnSoft,
+      shadow: shadow,
+    );
+  }
+
   Palette lerp(Palette other, double t) {
     Color mix(Color a, Color b) => Color.lerp(a, b, t)!;
     return Palette(

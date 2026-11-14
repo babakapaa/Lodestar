@@ -55,7 +55,7 @@ class _LodestarAppState extends ConsumerState<LodestarApp> {
   @override
   Widget build(BuildContext context) {
     final settings = ref.watch(settingsProvider);
-    final theme = LodestarTheme(settings.family);
+    final theme = LodestarTheme(settings.family, settings.accent);
     return MaterialApp.router(
       onGenerateTitle: (context) => AppLocalizations.of(context).appTitle,
       debugShowCheckedModeBanner: false,

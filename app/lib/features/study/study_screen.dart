@@ -3,6 +3,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../core/navigation/app_routes.dart';
 import '../../core/navigation/tab_page.dart';
+import '../../design/components/tile_group.dart';
 import '../../design/components/empty_state.dart';
 import '../../design/components/section.dart';
 import '../../design/tokens/spacing.dart';
@@ -42,7 +43,7 @@ class StudyScreen extends ConsumerWidget {
           else
             Section(
               title: l10n.studyCourses,
-              child: Column(
+              child: TileGroup(
                 children: [
                   for (final course in courses)
                     CourseTile(key: ValueKey(course.id), course: course),

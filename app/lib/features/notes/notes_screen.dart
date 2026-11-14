@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/navigation/app_routes.dart';
+import '../../core/navigation/layout_size.dart';
 import '../../core/navigation/tab_page.dart';
 import '../../design/components/empty_state.dart';
 import '../../design/components/notice_banner.dart';
@@ -13,6 +14,7 @@ import 'note_actions.dart';
 import 'note_tile.dart';
 import 'notes_providers.dart';
 import 'notes_sync_status.dart';
+import 'notes_workspace.dart';
 
 class NotesScreen extends ConsumerStatefulWidget {
   const NotesScreen({super.key});
@@ -46,6 +48,10 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
     ];
     final shown = live.where(_matches).toList();
     final trashed = (all?.length ?? 0) - live.length;
+    if (LayoutSize.of(MediaQuery.sizeOf(context).width) ==
+        LayoutSize.expanded) {
+      return TabPage(title: l10n.tabNotes, child: const NotesWorkspace());
+    }
     return TabPage(
       title: l10n.tabNotes,
       actions: [

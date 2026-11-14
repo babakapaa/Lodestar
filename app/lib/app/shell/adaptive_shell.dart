@@ -3,6 +3,7 @@ import 'package:material_ui/material_ui.dart';
 
 import 'bottom_nav.dart';
 import '../../core/navigation/layout_size.dart';
+import '../../features/tour/tour_gate.dart';
 import 'side_panel.dart';
 
 class AdaptiveShell extends StatelessWidget {
@@ -18,25 +19,29 @@ class AdaptiveShell extends StatelessWidget {
   Widget build(BuildContext context) {
     final size = LayoutSize.of(MediaQuery.sizeOf(context).width);
     if (size == LayoutSize.compact) {
-      return Scaffold(
-        body: shell,
-        bottomNavigationBar: BottomNav(
-          currentIndex: shell.currentIndex,
-          onSelected: _select,
+      return TourGate(
+        child: Scaffold(
+          body: shell,
+          bottomNavigationBar: BottomNav(
+            currentIndex: shell.currentIndex,
+            onSelected: _select,
+          ),
         ),
       );
     }
-    return Scaffold(
-      body: Row(
-        children: [
-          SidePanel(
-            currentIndex: shell.currentIndex,
-            onSelected: _select,
-            extended: size == LayoutSize.expanded,
-          ),
-          const VerticalDivider(width: 1),
-          Expanded(child: shell),
-        ],
+    return TourGate(
+      child: Scaffold(
+        body: Row(
+          children: [
+            SidePanel(
+              currentIndex: shell.currentIndex,
+              onSelected: _select,
+              extended: size == LayoutSize.expanded,
+            ),
+            const VerticalDivider(width: 1),
+            Expanded(child: shell),
+          ],
+        ),
       ),
     );
   }

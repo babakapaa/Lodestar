@@ -7,6 +7,7 @@ services:
     environment:
       LODESTAR_TESTER_MODE: "on"
       LODESTAR_WEB_DIR: /web
+      LODESTAR_LLM_TIMEOUT: ${LODESTAR_LLM_TIMEOUT:-4m}
       LODESTAR_APP_REDIRECTS: io.github.babakapaa.lodestar:/auth,http://localhost:43823/auth,${LODESTAR_PUBLIC_URL:-http://localhost:8080}/auth.html,http://localhost:${LODESTAR_HTTP_PORT:-8080}/auth.html
       LODESTAR_SMTP_ADDR: mailpit:1025
       LODESTAR_MAIL_FROM: Lodestar <lodestar@demo.invalid>

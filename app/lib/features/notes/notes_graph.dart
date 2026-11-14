@@ -44,7 +44,7 @@ class NotesGraph {
     return NotesGraph._(nodes, edges.toList())..settle();
   }
 
-  static const _spring = 120.0;
+  static const _spring = 80.0;
 
   final List<GraphNode> nodes;
   final List<(int, int)> edges;
@@ -77,7 +77,7 @@ class NotesGraph {
         forces[b] += pull;
       }
       for (var i = 0; i < n; i++) {
-        final pullToCenter = nodes[i].position * 0.02;
+        final pullToCenter = nodes[i].position * 0.08;
         var move = forces[i] - pullToCenter;
         final limit = 20 * cooling + 0.5;
         if (move.distance > limit) {

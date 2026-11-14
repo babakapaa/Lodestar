@@ -30,6 +30,7 @@ const signedInStorage = <String, Object>{
   'settings.language': 'ru',
   'connection.server': 'https://campus.example.edu',
   'connection.tenant': 'kaznu',
+  'tour.seen': true,
 };
 
 class AppHarness {

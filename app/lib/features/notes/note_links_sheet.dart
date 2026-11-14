@@ -9,6 +9,7 @@ import '../../l10n/l10n_context.dart';
 import 'note.dart';
 import 'note_actions.dart';
 import 'note_link_tile.dart';
+import 'note_resolver.dart';
 import 'notes_providers.dart';
 
 class NoteLinksSheet extends ConsumerWidget {
@@ -24,16 +25,6 @@ class NoteLinksSheet extends ConsumerWidget {
         builder: (context) => NoteLinksSheet(note: note),
       );
 
-  static Note? _resolve(String link, List<Note> notes) {
-    for (final candidate in notes) {
-      if (!candidate.deleted &&
-          (candidate.meta.path == link || candidate.meta.name == link)) {
-        return candidate;
-      }
-    }
-    return null;
-  }
-
   void _open(BuildContext context, String id) {
     Navigator.of(context).pop();
     context.push(AppRoutes.note(id));
@@ -43,10 +34,7 @@ class NoteLinksSheet extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final notes = ref.watch(notesProvider).value ?? const <Note>[];
-    final backlinks = [
-      for (final other in notes)
-        if (other.id != note.id && !other.deleted && other.linksTo(note)) other,
-    ];
+    final backlinks = NoteResolver.backlinks(note, notes);
     final links = note.meta.links;
     return SafeArea(
       child: ListView(
@@ -62,7 +50,7 @@ class NoteLinksSheet extends ConsumerWidget {
                   for (final link in links)
                     NoteLinkTile(
                       link: link,
-                      target: _resolve(link, notes),
+                      target: NoteResolver.resolve(link, notes),
                       onOpen: (id) => _open(context, id),
                       onCreate: () {
                         Navigator.of(context).pop();

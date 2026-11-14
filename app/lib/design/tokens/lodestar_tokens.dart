@@ -16,9 +16,9 @@ class LodestarTokens extends ThemeExtension<LodestarTokens> {
     required this.radiusSmall,
   });
 
-  factory LodestarTokens.from(FamilySpec spec, Brightness brightness) {
+  factory LodestarTokens.from(FamilySpec spec, Palette palette) {
     return LodestarTokens(
-      palette: spec.palette(brightness),
+      palette: palette,
       headingFont: spec.headingFont,
       bodyFont: spec.bodyFont,
       numberFont: spec.numberFont,

@@ -19,16 +19,21 @@ abstract final class NoteVault {
       if (note.deleted) {
         continue;
       }
-      final base = note.meta.path.replaceAll(_unsafe, '-');
-      var name = '$base.md';
+      final canvas = note.meta.isCanvas;
+      final ext = canvas ? NoteMeta.canvasExtension : '.md';
+      final path = note.meta.path.replaceAll(_unsafe, '-');
+      final base = canvas ? path.substring(0, path.length - ext.length) : path;
+      var name = '$base$ext';
       for (var n = 2; used.contains(name.toLowerCase()); n++) {
-        name = '$base $n.md';
+        name = '$base $n$ext';
       }
       used.add(name.toLowerCase());
       archive.add(
         ArchiveFile.bytes(
           name,
-          utf8.encode(FrontMatter.render(note.meta.tags, note.body)),
+          utf8.encode(
+            canvas ? note.body : FrontMatter.render(note.meta.tags, note.body),
+          ),
         ),
       );
     }
@@ -53,14 +58,24 @@ abstract final class NoteVault {
 
   static bool _isNote(String name) {
     final parts = name.split('/');
-    return name.toLowerCase().endsWith('.md') &&
+    final lower = name.toLowerCase();
+    return (lower.endsWith('.md') ||
+            lower.endsWith(NoteMeta.canvasExtension)) &&
         !parts.any((part) => part.startsWith('.') || part == '__MACOSX');
   }
 
   static VaultNote _note(String name, List<int> bytes) {
-    final parsed = FrontMatter.parse(
-      utf8.decode(bytes, allowMalformed: true).replaceAll('\r\n', '\n'),
-    );
+    final text = utf8
+        .decode(bytes, allowMalformed: true)
+        .replaceAll('\r\n', '\n');
+    if (name.toLowerCase().endsWith(NoteMeta.canvasExtension)) {
+      return VaultNote(
+        path: NoteMeta.normalizePath(name),
+        tags: const [],
+        body: text,
+      );
+    }
+    final parsed = FrontMatter.parse(text);
     return VaultNote(
       path: NoteMeta.normalizePath(name.substring(0, name.length - 3)),
       tags: parsed.tags,

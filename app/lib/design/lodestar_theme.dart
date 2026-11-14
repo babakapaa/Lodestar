@@ -2,14 +2,16 @@ import 'package:cupertino_ui/cupertino_ui.dart'
     show CupertinoPageTransitionsBuilder;
 import 'package:material_ui/material_ui.dart';
 
+import 'tokens/accent_choice.dart';
 import 'tokens/lodestar_tokens.dart';
 import 'tokens/theme_family.dart';
 import 'typography/lodestar_typography.dart';
 
 class LodestarTheme {
-  const LodestarTheme(this.family);
+  const LodestarTheme(this.family, this.accent);
 
   final ThemeFamily family;
+  final AccentChoice accent;
 
   ThemeData light() => _build(Brightness.light);
 
@@ -17,8 +19,8 @@ class LodestarTheme {
 
   ThemeData _build(Brightness brightness) {
     final spec = family.spec;
-    final palette = spec.palette(brightness);
-    final tokens = LodestarTokens.from(spec, brightness);
+    final palette = accent.apply(spec.palette(brightness), brightness);
+    final tokens = LodestarTokens.from(spec, palette);
     final text = LodestarTypography(spec, palette).build();
     final scheme = ColorScheme(
       brightness: brightness,
@@ -59,6 +61,23 @@ class LodestarTheme {
         space: 1,
       ),
       iconTheme: IconThemeData(color: palette.text, size: 20),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: palette.surface,
+        hintStyle: text.bodyMedium!.copyWith(color: palette.muted),
+        border: OutlineInputBorder(
+          borderRadius: tokens.borderRadiusSmall,
+          borderSide: BorderSide(color: palette.border),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: tokens.borderRadiusSmall,
+          borderSide: BorderSide(color: palette.border),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: tokens.borderRadiusSmall,
+          borderSide: BorderSide(color: palette.accent, width: 1.5),
+        ),
+      ),
       appBarTheme: AppBarTheme(
         backgroundColor: palette.bg,
         foregroundColor: palette.text,
@@ -66,6 +85,7 @@ class LodestarTheme {
         scrolledUnderElevation: 0,
         centerTitle: false,
         titleTextStyle: text.titleLarge,
+        shape: Border(bottom: BorderSide(color: palette.border)),
       ),
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: palette.bg,

@@ -63,6 +63,7 @@ class _UnitFormDialogState extends State<UnitFormDialog> {
           mainAxisSize: MainAxisSize.min,
           children: [
             DropdownButtonFormField<String>(
+              isExpanded: true,
               initialValue: _kind,
               decoration: InputDecoration(labelText: l10n.unitsKind),
               items: [

@@ -1,13 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
-import '../../core/navigation/app_routes.dart';
+import '../../core/navigation/layout_size.dart';
 import '../../core/navigation/tab_page.dart';
 import '../../design/components/empty_state.dart';
-import '../../design/components/lodestar_button.dart';
-import '../../design/components/lodestar_button_variant.dart';
 import '../../design/components/section.dart';
+import '../../design/components/tile_group.dart';
 import '../../design/tokens/spacing.dart';
 import '../../l10n/l10n_context.dart';
 import '../attendance/attendance_providers.dart';
@@ -21,21 +19,18 @@ import '../study/outbox_section.dart';
 import '../study/study_day.dart';
 import '../study/study_labels_context.dart';
 import '../study/study_providers.dart';
+import 'today_actions.dart';
+import 'today_messages.dart';
+import 'today_notes.dart';
 
 class TodayScreen extends ConsumerWidget {
   const TodayScreen({super.key});
 
-  List<Widget> _body(BuildContext context, Agenda agenda) {
+  static const sideWidth = 380.0;
+
+  List<Widget> _agenda(BuildContext context, Agenda agenda) {
     final l10n = context.l10n;
     return [
-      const SetupBanner(),
-      const OutboxSection(),
-      const OpenLessonsSection(),
-      Text(
-        context.studyLabels.day(StudyDay.parse(agenda.date)),
-        style: Theme.of(context).textTheme.titleLarge,
-      ),
-      const SizedBox(height: Spacing.l),
       if (agenda.lessons.isEmpty && agenda.deadlines.isEmpty)
         EmptyState(
           icon: Icons.wb_sunny_outlined,
@@ -45,7 +40,7 @@ class TodayScreen extends ConsumerWidget {
       if (agenda.lessons.isNotEmpty) ...[
         Section(
           title: l10n.todayLessons,
-          child: Column(
+          child: TileGroup(
             children: [
               for (final lesson in agenda.lessons)
                 LessonTile(
@@ -60,7 +55,7 @@ class TodayScreen extends ConsumerWidget {
       if (agenda.deadlines.isNotEmpty) ...[
         Section(
           title: l10n.todayDeadlines,
-          child: Column(
+          child: TileGroup(
             children: [
               for (final deadline in agenda.deadlines)
                 DeadlineTile(
@@ -72,29 +67,68 @@ class TodayScreen extends ConsumerWidget {
         ),
         const SizedBox(height: Spacing.xl),
       ],
-      Align(
-        alignment: Alignment.centerLeft,
-        child: LodestarButton(
-          label: l10n.todayWeek,
-          icon: Icons.calendar_month_outlined,
-          variant: LodestarButtonVariant.secondary,
-          onPressed: () => context.push(AppRoutes.schedule(agenda.date)),
-        ),
+    ];
+  }
+
+  List<Widget> _side() => const [
+    TodayMessages(),
+    SizedBox(height: Spacing.xl),
+    TodayNotes(),
+  ];
+
+  List<Widget> _body(BuildContext context, Agenda agenda, bool wide) {
+    return [
+      const SetupBanner(),
+      const OutboxSection(),
+      const OpenLessonsSection(),
+      Text(
+        context.studyLabels.day(StudyDay.parse(agenda.date)),
+        style: Theme.of(context).textTheme.titleLarge,
       ),
+      const SizedBox(height: Spacing.m),
+      TodayActions(date: agenda.date),
+      const SizedBox(height: Spacing.xl),
+      if (wide)
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: _agenda(context, agenda),
+              ),
+            ),
+            const SizedBox(width: Spacing.xl),
+            SizedBox(
+              width: sideWidth,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: _side(),
+              ),
+            ),
+          ],
+        )
+      else ...[
+        ..._agenda(context, agenda),
+        ..._side(),
+      ],
     ];
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final wide =
+        LayoutSize.of(MediaQuery.sizeOf(context).width) == LayoutSize.expanded;
     return TabPage(
       title: context.l10n.tabToday,
       child: LoadedListView(
         value: ref.watch(agendaProvider(null)),
+        maxWidth: wide ? 1160 : 720,
         onRefresh: () {
           ref.invalidate(openLessonsProvider);
           return ref.refresh(agendaProvider(null).future);
         },
-        builder: (agenda) => _body(context, agenda),
+        builder: (agenda) => _body(context, agenda, wide),
       ),
     );
   }

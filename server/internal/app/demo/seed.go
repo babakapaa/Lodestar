@@ -67,8 +67,15 @@ func Seed(ctx context.Context, pool *pgxpool.Pool, box secretbox.Box, registry *
 	if err := grantTeacher(ctx, core.Access, t.ID, ids[Admin.Subject], ids[Teacher.Subject]); err != nil {
 		return Result{}, err
 	}
-	if err := seedStudy(ctx, core, t.ID, ids, time.Now()); err != nil {
+	now := time.Now()
+	courseID, created, err := seedStudy(ctx, core, t.ID, ids, now)
+	if err != nil {
 		return Result{}, err
+	}
+	if created {
+		if err := seedExtras(ctx, core, registry, t.ID, ids, courseID, now); err != nil {
+			return Result{}, err
+		}
 	}
 	return Result{Tenant: t, Callback: auth.CallbackURL(cfg.PublicURL, t.Slug, ProviderKey), People: ids}, nil
 }

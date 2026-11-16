@@ -15,6 +15,7 @@ import (
 	"github.com/babakapaa/lodestar/server/internal/core/identity"
 	"github.com/babakapaa/lodestar/server/internal/core/module"
 	"github.com/babakapaa/lodestar/server/internal/core/structure"
+	"github.com/babakapaa/lodestar/server/internal/modules/chat"
 	"github.com/babakapaa/lodestar/server/internal/modules/study"
 	"github.com/babakapaa/lodestar/server/internal/platform/database"
 	"github.com/babakapaa/lodestar/server/internal/platform/database/dbtest"
@@ -97,8 +98,17 @@ func TestSeedIsRepeatableAndGivesEachPersonTheirRole(t *testing.T) {
 		t.Fatalf("peer courses = %+v, %v", peerCourses, err)
 	}
 	items, err := study.NewAssignmentService(tx, core.Access, core.Kernel.Notifier).List(ctx, student, courses[0].ID)
-	if err != nil || len(items) != 1 {
+	if err != nil || len(items) != 2 {
 		t.Fatalf("assignments = %+v, %v", items, err)
+	}
+	chats, err := chat.NewService(core.Kernel).List(ctx, student)
+	if err != nil || len(chats) != 3 {
+		t.Fatalf("student chats = %+v, %v", chats, err)
+	}
+	for _, c := range chats {
+		if c.Request || c.Last == nil {
+			t.Errorf("chat %q is a request or has no messages", c.Title)
+		}
 	}
 	today := study.DayOf(time.Now())
 	lessons, err := study.NewScheduleService(core.Kernel).Mine(ctx, student, today, today.AddDays(6))

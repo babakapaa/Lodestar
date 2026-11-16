@@ -1,0 +1,41 @@
+services:
+  caddy:
+    image: caddy:2.8.4-alpine
+    environment:
+      LODESTAR_DOMAIN: ${LODESTAR_DOMAIN:?set LODESTAR_DOMAIN in deploy/.env}
+      MAILPIT_PASSWORD_HASH: ${MAILPIT_PASSWORD_HASH:?set MAILPIT_PASSWORD_HASH in deploy/.env}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      - server
+    restart: unless-stopped
+
+  server:
+    environment:
+      LODESTAR_TRUSTED_PROXIES: 172.16.0.0/12
+    ports: !override
+      - "127.0.0.1:${LODESTAR_HTTP_PORT:-8080}:8080"
+
+  minio:
+    ports: !override
+      - "127.0.0.1:${LODESTAR_S3_PORT:-9000}:9000"
+
+  mailpit:
+    ports: !override
+      - "127.0.0.1:${MAILPIT_PORT:-8025}:8025"
+
+  livekit:
+    ports: !override
+      - "127.0.0.1:${LIVEKIT_PORT:-7880}:7880"
+      - "7881:7881"
+      - "50000-50200:50000-50200/udp"
+
+volumes:
+  caddy-data:
+  caddy-config:

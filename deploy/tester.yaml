@@ -54,7 +54,9 @@ services:
     image: ollama/ollama:0.5.7
     environment:
       OLLAMA_HOST: ollama:11434
-    entrypoint: ["sh", "-c", "ollama pull ${LODESTAR_LLM_MODEL:-qwen2.5:3b} && ollama pull ${LODESTAR_EMBED_MODEL:-bge-m3}"]
+      LODESTAR_OLLAMA_LLM_MODEL: ${LODESTAR_OLLAMA_LLM_MODEL-${LODESTAR_LLM_MODEL:-qwen2.5:3b}}
+      LODESTAR_EMBED_MODEL: ${LODESTAR_EMBED_MODEL:-bge-m3}
+    entrypoint: ["sh", "-c", "if [ -n \"$$LODESTAR_OLLAMA_LLM_MODEL\" ]; then ollama pull \"$$LODESTAR_OLLAMA_LLM_MODEL\" || exit $$?; fi; ollama pull \"$$LODESTAR_EMBED_MODEL\""]
     depends_on:
       - ollama
     restart: "no"

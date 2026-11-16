@@ -5,7 +5,7 @@ map $http_upgrade $lodestar_connection {
 
 server {
     listen 80;
-    server_name __DOMAIN__ s3.__DOMAIN__ rtc.__DOMAIN__ mail.__DOMAIN__;
+    server_name __NAMES__;
 
     location /.well-known/acme-challenge/ {
         root /var/www/certbot;
@@ -22,6 +22,7 @@ server {
     server_name __DOMAIN__;
     ssl_certificate __CERTS__/fullchain.pem;
     ssl_certificate_key __CERTS__/privkey.pem;
+__REALIP__
 
     client_max_body_size 200m;
 
@@ -42,9 +43,10 @@ server {
 server {
     listen 443 ssl;
     http2 on;
-    server_name s3.__DOMAIN__;
+    server_name __S3_HOST__;
     ssl_certificate __CERTS__/fullchain.pem;
     ssl_certificate_key __CERTS__/privkey.pem;
+__REALIP__
 
     client_max_body_size 0;
 
@@ -62,26 +64,10 @@ server {
 server {
     listen 443 ssl;
     http2 on;
-    server_name rtc.__DOMAIN__;
+    server_name __MAIL_HOST__;
     ssl_certificate __CERTS__/fullchain.pem;
     ssl_certificate_key __CERTS__/privkey.pem;
-
-    location / {
-        proxy_pass http://__RTC__;
-        proxy_http_version 1.1;
-        proxy_set_header Host $host;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection $lodestar_connection;
-        proxy_read_timeout 3600s;
-    }
-}
-
-server {
-    listen 443 ssl;
-    http2 on;
-    server_name mail.__DOMAIN__;
-    ssl_certificate __CERTS__/fullchain.pem;
-    ssl_certificate_key __CERTS__/privkey.pem;
+__REALIP__
 
     auth_basic "Lodestar mail";
     auth_basic_user_file __HTPASSWD__;

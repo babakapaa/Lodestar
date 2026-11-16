@@ -2626,5 +2626,21 @@
   "tourDone": "Начать",
   "tourReplay": "Показать тур снова",
   "settingsHelp": "Помощь",
-  "scheduleEmptyBody": "Стрелками вверху можно перейти к другой неделе."
+  "scheduleEmptyBody": "Стрелками вверху можно перейти к другой неделе.",
+  "todayMorning": "Доброе утро",
+  "todayAfternoon": "Добрый день",
+  "todayEvening": "Добрый вечер",
+  "todayNight": "Доброй ночи",
+  "todayAskHint": "Разобрать тему по шагам",
+  "todayNoteHint": "Конспект, мысли, ссылки",
+  "todayWeekHint": "Занятия и сроки сдачи",
+  "todayPlan": "План на сегодня",
+  "navigatorStarterExplain": "Объясни тему лекции простыми словами",
+  "navigatorStarterEssay": "С чего начать эссе по курсу?",
+  "navigatorStarterSources": "Какие источники подойдут для работы?",
+  "navigatorStarterCheck": "Проверь, правильно ли я понял тему",
+  "entryTagline": "Учёба, заметки и ИИ‑навигатор в одном месте",
+  "entryFeatureStudy": "Курсы, задания и расписание",
+  "entryFeatureNotes": "Заметки со связями, графом и холстами",
+  "entryFeatureNavigator": "Навигатор, который учит, а не пишет за вас"
 }

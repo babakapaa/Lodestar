@@ -31,11 +31,13 @@ class LoadedListView<T> extends StatelessWidget {
     final l10n = context.l10n;
     final loaded = value.value;
     final error = value.error;
+    final wide = MediaQuery.sizeOf(context).width >= 600;
+    final side = wide ? Spacing.xxl : Spacing.l;
     final padding = EdgeInsets.fromLTRB(
-      Spacing.l,
-      Spacing.l,
-      Spacing.l,
-      Spacing.l + bottomInset,
+      side,
+      wide ? Spacing.xl : Spacing.l,
+      side,
+      Spacing.xl + bottomInset,
     );
     return Align(
       alignment: Alignment.topCenter,

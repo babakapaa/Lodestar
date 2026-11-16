@@ -151,7 +151,8 @@ void main() {
     await pumpApp(tester, size: const Size(390, 1700), server: server);
     await tester.tap(find.text('Учёба').first);
     await tester.pumpAndSettle();
-    expect(find.text('BIO-101, Преподаю'), findsOneWidget);
+    expect(find.text('BIO-101'), findsOneWidget);
+    expect(find.text('Преподаю'), findsOneWidget);
     await tester.tap(find.text('Биология'));
     await tester.pumpAndSettle();
 

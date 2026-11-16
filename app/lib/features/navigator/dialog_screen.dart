@@ -17,6 +17,7 @@ import 'intent_sheet.dart';
 import 'letter_sheet.dart';
 import 'message_bubble.dart';
 import 'message_composer.dart';
+import 'navigator_starters.dart';
 import 'navigator_artifact.dart';
 import 'navigator_avatar.dart';
 import 'navigator_labels_context.dart';
@@ -257,6 +258,8 @@ class _DialogScreenState extends ConsumerState<DialogScreen> {
           textAlign: TextAlign.center,
           style: TextStyle(color: context.palette.muted),
         ),
+        const SizedBox(height: Spacing.xl),
+        NavigatorStarters(onPick: _send),
       ],
       for (final message in _messages) ...[
         MessageBubble(key: ValueKey(message.seq), message: message),

@@ -87,7 +87,7 @@ class LodestarTheme {
         elevation: 0,
         scrolledUnderElevation: 0,
         centerTitle: false,
-        titleTextStyle: text.titleLarge,
+        titleTextStyle: text.titleLarge!.copyWith(fontSize: 19),
         shape: Border(bottom: BorderSide(color: palette.border)),
       ),
       navigationBarTheme: NavigationBarThemeData(
@@ -110,7 +110,7 @@ class LodestarTheme {
         ),
       ),
       navigationRailTheme: NavigationRailThemeData(
-        backgroundColor: palette.side,
+        backgroundColor: palette.frame,
         indicatorColor: palette.accentSoft,
         indicatorShape: RoundedRectangleBorder(
           borderRadius: tokens.borderRadiusSmall,

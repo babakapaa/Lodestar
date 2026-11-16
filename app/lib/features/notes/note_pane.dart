@@ -85,19 +85,20 @@ class NotePane extends ConsumerWidget {
               : Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Align(
-                      alignment: Alignment.topCenter,
-                      child: ConstrainedBox(
-                        constraints: const BoxConstraints(
-                          maxWidth: NoteEditor.readableWidth,
-                        ),
-                        child: NoteTitleField(
-                          key: ValueKey('title-${note.id}'),
-                          note: note,
-                          readOnly: !canEdit,
+                    if (!note.headedByTitle)
+                      Align(
+                        alignment: Alignment.topCenter,
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(
+                            maxWidth: NoteEditor.readableWidth,
+                          ),
+                          child: NoteTitleField(
+                            key: ValueKey('title-${note.id}'),
+                            note: note,
+                            readOnly: !canEdit,
+                          ),
                         ),
                       ),
-                    ),
                     Expanded(
                       child: NoteEditor(
                         key: ValueKey(note.id),

@@ -39,6 +39,16 @@ class Note {
 
   bool get deleted => deletedAt != null;
 
+  bool get headedByTitle {
+    for (final line in body.split('\n')) {
+      if (line.trim().isEmpty) {
+        continue;
+      }
+      return line.trim() == '# ${meta.label}';
+    }
+    return false;
+  }
+
   bool linksTo(Note other) => meta.links.any(
     (link) => link == other.meta.name || link == other.meta.path,
   );

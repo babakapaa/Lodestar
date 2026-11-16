@@ -1,24 +1,32 @@
 services:
-  caddy:
-    image: caddy:2.8.4-alpine
-    environment:
-      LODESTAR_DOMAIN: ${LODESTAR_DOMAIN:?set LODESTAR_DOMAIN in deploy/.env}
-      MAILPIT_PASSWORD_HASH: ${MAILPIT_PASSWORD_HASH:?set MAILPIT_PASSWORD_HASH in deploy/.env}
+  nginx:
+    profiles: ["proxy"]
+    image: nginx:1.27-alpine
+    command: ["/bin/sh", "-c", "while :; do sleep 6h; nginx -s reload; done & exec nginx -g 'daemon off;'"]
     ports:
       - "80:80"
       - "443:443"
-      - "443:443/udp"
     volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile:ro
-      - caddy-data:/data
-      - caddy-config:/config
+      - ./nginx/rendered/lodestar.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx/rendered/htpasswd:/etc/nginx/htpasswd:ro
+      - certs:/etc/letsencrypt:ro
+      - acme:/var/www/certbot:ro
     depends_on:
       - server
     restart: unless-stopped
 
+  certbot:
+    profiles: ["proxy"]
+    image: certbot/certbot:v3.0.1
+    entrypoint: ["/bin/sh", "-c", "trap exit TERM; while :; do certbot renew --webroot -w /var/www/certbot --quiet; sleep 12h & wait $${!}; done"]
+    volumes:
+      - certs:/etc/letsencrypt
+      - acme:/var/www/certbot
+    restart: unless-stopped
+
   server:
     environment:
-      LODESTAR_TRUSTED_PROXIES: 172.16.0.0/12
+      LODESTAR_TRUSTED_PROXIES: 127.0.0.1/32,172.16.0.0/12
     ports: !override
       - "127.0.0.1:${LODESTAR_HTTP_PORT:-8080}:8080"
 
@@ -36,6 +44,12 @@ services:
       - "7881:7881"
       - "50000-50200:50000-50200/udp"
 
+  ollama:
+    mem_limit: ${LODESTAR_AI_MEMORY:-5g}
+    environment:
+      OLLAMA_MAX_LOADED_MODELS: "2"
+      OLLAMA_NUM_PARALLEL: "1"
+
 volumes:
-  caddy-data:
-  caddy-config:
+  certs:
+  acme:

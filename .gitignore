@@ -4,6 +4,7 @@
 *.iml
 
 deploy/.env
+deploy/nginx/rendered/
 
 server/bin/
 server/coverage.out

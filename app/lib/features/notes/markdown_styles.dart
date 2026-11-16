@@ -22,6 +22,14 @@ class MarkdownStyles {
   TextStyle get marker =>
       TextStyle(color: palette.muted.withValues(alpha: 0.6));
 
+  TextStyle get hidden => const TextStyle(
+    fontSize: 0.01,
+    letterSpacing: 0,
+    color: Color(0x00000000),
+    backgroundColor: Color(0x00000000),
+    decoration: TextDecoration.none,
+  );
+
   TextStyle get accentMarker => base.copyWith(color: palette.accent);
 
   TextStyle get quote =>

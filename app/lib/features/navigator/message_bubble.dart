@@ -2,7 +2,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../design/tokens/spacing.dart';
 import '../../design/tokens/tokens_context.dart';
-import '../notes/markdown_text.dart';
+import '../../design/markdown/markdown_view.dart';
 import 'citation_list.dart';
 import 'navigator_avatar.dart';
 import 'navigator_labels_context.dart';
@@ -59,7 +59,7 @@ class MessageBubble extends StatelessWidget {
                 ),
                 const SizedBox(height: Spacing.xs),
               ],
-              MarkdownText(message.text, style: body),
+              SelectionArea(child: MarkdownView(message.text, style: body)),
               if (message.support.isNotEmpty) ...[
                 const SizedBox(height: Spacing.m),
                 SupportCard(contacts: message.support),

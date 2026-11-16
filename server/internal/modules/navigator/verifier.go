@@ -57,7 +57,7 @@ func (v Verifier) ask(ctx context.Context, kept []sentence, prompt Prompt) check
 			{Role: llm.RoleSystem, Content: verifierPrompt},
 			{Role: llm.RoleUser, Content: b.String()},
 		},
-		MaxTokens: 200,
+		MaxTokens: 400,
 		JSON:      true,
 	})
 	if err != nil {

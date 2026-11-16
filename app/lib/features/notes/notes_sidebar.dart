@@ -5,7 +5,6 @@ import 'package:material_ui/material_ui.dart';
 import '../../core/navigation/app_routes.dart';
 import '../../design/components/notice_banner.dart';
 import '../../design/components/pane_action.dart';
-import '../../design/components/pane_heading.dart';
 import '../../design/tokens/spacing.dart';
 import '../../l10n/l10n_context.dart';
 import 'note.dart';
@@ -21,6 +20,7 @@ class NotesSidebar extends ConsumerStatefulWidget {
     required this.active,
     required this.onOpen,
     required this.onCreate,
+    required this.onCreateIn,
     required this.onCanvas,
     required this.onQuick,
     required this.onGraph,
@@ -30,6 +30,7 @@ class NotesSidebar extends ConsumerStatefulWidget {
   final String? active;
   final void Function(Note note) onOpen;
   final VoidCallback onCreate;
+  final ValueChanged<String> onCreateIn;
   final VoidCallback onCanvas;
   final VoidCallback onQuick;
   final VoidCallback onGraph;
@@ -63,10 +64,15 @@ class _NotesSidebarState extends ConsumerState<NotesSidebar> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        PaneHeading(
-          title: l10n.notesVault,
-          trailing: Row(
-            mainAxisSize: MainAxisSize.min,
+        Padding(
+          padding: const EdgeInsets.fromLTRB(
+            Spacing.m,
+            Spacing.m,
+            Spacing.m,
+            Spacing.xs,
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               PaneAction(
                 tooltip: l10n.notesNew,
@@ -121,6 +127,7 @@ class _NotesSidebarState extends ConsumerState<NotesSidebar> {
                   root: NoteFolder.of(all),
                   active: widget.active,
                   onOpen: widget.onOpen,
+                  onCreate: widget.onCreateIn,
                 )
               : shown.isEmpty
               ? Padding(

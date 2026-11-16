@@ -4,15 +4,18 @@ set -euo pipefail
 root="$(cd "$(dirname "$0")" && pwd)"
 env_file="$root/deploy/.env"
 rendered="$root/deploy/nginx/rendered"
-ai=1
+ai=""
 calls=""
-model="qwen2.5:3b"
+model=""
+ai_memory=""
+cloudflare=""
 server=""
 domain=""
 proxy=""
 
 for arg in "$@"; do
   case "$arg" in
+    --ai) ai=1 ;;
     --no-ai) ai=0 ;;
     --calls) calls=1 ;;
     --no-calls) calls=0 ;;
@@ -20,9 +23,12 @@ for arg in "$@"; do
     --server) server=1 ;;
     --domain=*) server=1; domain="${arg#--domain=}" ;;
     --proxy=docker|--proxy=host) server=1; proxy="${arg#--proxy=}" ;;
+    --cloudflare) server=1; cloudflare=1 ;;
+    --no-cloudflare) cloudflare=0 ;;
+    --ai-memory=*) ai_memory="${arg#--ai-memory=}" ;;
     --local) server=0 ;;
     -h|--help)
-      echo "Использование: ./install-tester.sh [--no-ai] [--calls|--no-calls] [--model=qwen2.5:3b] [--server] [--domain=lodestar.example.kz] [--proxy=docker|host] [--local]"
+      echo "Использование: ./install-tester.sh [--ai|--no-ai] [--calls|--no-calls] [--model=qwen2.5:3b] [--ai-memory=5g] [--server] [--domain=lodestar.example.kz] [--proxy=docker|host] [--cloudflare] [--local]"
       exit 0 ;;
     *) echo "Неизвестный параметр: $arg" >&2; exit 1 ;;
   esac
@@ -133,7 +139,7 @@ check_resources() {
   if [ -r /proc/meminfo ]; then
     mem_kb="$(awk '/MemAvailable/ {print $2}' /proc/meminfo)"
     if [ "$ai" = 1 ] && [ "$mem_kb" -lt 7000000 ]; then
-      warn "Свободно памяти $((mem_kb / 1024 / 1024)) ГБ. С ИИ лучше от 7 ГБ свободных: ИИ берёт до 5 ГБ, остальное сервер, база и звонки. Если сервер начнёт тормозить, запустите с --model=qwen2.5:1.5b или --no-ai."
+      warn "Свободно памяти $((mem_kb / 1024 / 1024)) ГБ. С ИИ лучше от 7 ГБ свободных: ИИ берёт до $ai_memory, остальное сервер, база и звонки. Если сервер начнёт тормозить, запустите с --model=qwen2.5:1.5b или --no-ai."
     elif [ "$mem_kb" -lt 2000000 ]; then
       warn "Свободно памяти $((mem_kb / 1024 / 1024)) ГБ. Без ИИ нужно от 2 ГБ свободных."
     fi
@@ -144,8 +150,19 @@ check_resources() {
   fi
   case "$model" in
     qwen2.5:0.5b|qwen2.5:1.5b|qwen2.5:3b|llama3.2:1b|llama3.2:3b|gemma2:2b) ;;
-    *) warn "Модель $model может не уложиться в 5 ГБ памяти, отведённые ИИ. Проверенная модель: qwen2.5:3b." ;;
+    *) warn "Модель $model может не уложиться в $ai_memory памяти, отведённые ИИ. Проверенная модель: qwen2.5:3b." ;;
   esac
+}
+
+real_ip() {
+  local ips
+  [ "$cloudflare" = 1 ] || return 0
+  ips="$( { curl -fsS --max-time 5 https://www.cloudflare.com/ips-v4 && echo && curl -fsS --max-time 5 https://www.cloudflare.com/ips-v6; } 2>/dev/null || true)"
+  if ! printf '%s\n' "$ips" | grep -q '/'; then
+    ips="$(cat "$root/deploy/nginx/cloudflare-ips.txt")"
+  fi
+  printf '%s\n' "$ips" | awk 'NF {printf "    set_real_ip_from %s;\n", $1}'
+  echo "    real_ip_header CF-Connecting-IP;"
 }
 
 render_nginx() {
@@ -161,9 +178,12 @@ render_nginx() {
   mkdir -p "$rendered"
   local templates=("$root/deploy/nginx/lodestar.conf.template")
   [ "$calls" = 1 ] && templates+=("$root/deploy/nginx/rtc.conf.template")
-  cat "${templates[@]}" | sed -e "s|__NAMES__|${names[*]}|g" -e "s|__DOMAIN__|$domain|g" -e "s|__SERVER__|$upstream_server|g" \
+  real_ip > "$rendered/realip.part"
+  cat "${templates[@]}" | sed -e "s|__NAMES__|${names[*]}|g" -e "s|__DOMAIN__|$domain|g" -e "s|__S3_HOST__|$s3_host|g" \
+    -e "s|__MAIL_HOST__|$mail_host|g" -e "s|__RTC_HOST__|$rtc_host|g" -e "s|__SERVER__|$upstream_server|g" \
     -e "s|__S3__|$upstream_s3|g" -e "s|__RTC__|$upstream_rtc|g" -e "s|__MAIL__|$upstream_mail|g" -e "s|__CERTS__|$certs|g" \
-    -e "s|__HTPASSWD__|$htpasswd|g" > "$rendered/lodestar.conf"
+    -e "s|__HTPASSWD__|$htpasswd|g" -e "/__REALIP__/{r $rendered/realip.part" -e "d}" > "$rendered/lodestar.conf"
+  rm -f "$rendered/realip.part"
   if [ ! -s "$rendered/htpasswd" ]; then
     docker run --rm httpd:2.4-alpine htpasswd -nbB tester "$mail_password" > "$rendered/htpasswd"
   fi
@@ -188,6 +208,19 @@ touch "$env_file"
 if [ -z "$server" ]; then
   if has_key LODESTAR_DOMAIN; then server=1; else server=0; fi
 fi
+[ -n "$ai" ] || ai="$(get_key LODESTAR_AI)"
+[ -n "$ai" ] || ai=1
+set_key LODESTAR_AI "$ai"
+[ -n "$model" ] || model="$(get_key LODESTAR_LLM_MODEL)"
+[ -n "$model" ] || model="qwen2.5:3b"
+[ -n "$ai_memory" ] || ai_memory="$(get_key LODESTAR_AI_MEMORY)"
+if [ -z "$ai_memory" ]; then
+  case "$model" in
+    qwen2.5:0.5b|qwen2.5:1.5b|llama3.2:1b) ai_memory=3g ;;
+    *) ai_memory=5g ;;
+  esac
+fi
+set_key LODESTAR_AI_MEMORY "$ai_memory"
 keep_key LODESTAR_SECRET_KEY "$(secret 32)"
 keep_key POSTGRES_PASSWORD "$(word 24)"
 keep_key MINIO_ROOT_USER lodestar
@@ -229,8 +262,16 @@ if [ "$server" = 1 ]; then
   ip="$(public_ip)"
   [ -n "$domain" ] || domain="$(get_key LODESTAR_DOMAIN)"
   [ -n "$domain" ] || domain="${ip//./-}.sslip.io"
-  names=("$domain" "s3.$domain" "mail.$domain")
-  [ "$calls" = 1 ] && names+=("rtc.$domain")
+  [ -n "$cloudflare" ] || cloudflare="$(get_key LODESTAR_CLOUDFLARE)"
+  [ -n "$cloudflare" ] || cloudflare=0
+  set_key LODESTAR_CLOUDFLARE "$cloudflare"
+  if [ "$cloudflare" = 1 ]; then
+    s3_host="${domain%%.*}-s3.${domain#*.}"; mail_host="${domain%%.*}-mail.${domain#*.}"; rtc_host="${domain%%.*}-rtc.${domain#*.}"
+  else
+    s3_host="s3.$domain"; mail_host="mail.$domain"; rtc_host="rtc.$domain"
+  fi
+  names=("$domain" "$s3_host" "$mail_host")
+  [ "$calls" = 1 ] && names+=("$rtc_host")
   [ -n "$proxy" ] || proxy="$(get_key LODESTAR_PROXY)"
   if [ -z "$proxy" ]; then
     proxy=docker
@@ -247,7 +288,7 @@ if [ "$server" = 1 ]; then
   set_key LODESTAR_PROXY "$proxy"
   set_key LODESTAR_HOST_IP "$ip"
   set_key LODESTAR_PUBLIC_URL "https://$domain"
-  set_key LODESTAR_S3_PUBLIC_ENDPOINT "https://s3.$domain"
+  set_key LODESTAR_S3_PUBLIC_ENDPOINT "https://$s3_host"
   keep_key MAILPIT_PASSWORD "$(word 16)"
   mail_password="$(get_key MAILPIT_PASSWORD)"
   files+=(-f "$root/deploy/vds.yaml")
@@ -282,7 +323,7 @@ fi
 if [ "$calls" = 1 ]; then
   profiles="${profiles:+$profiles,}calls"
   if [ "$server" = 1 ]; then
-    set_key LODESTAR_LIVEKIT_URL "wss://rtc.$domain"
+    set_key LODESTAR_LIVEKIT_URL "wss://$rtc_host"
   else
     set_key LODESTAR_LIVEKIT_URL "ws://$ip:$rtc_port"
   fi
@@ -319,10 +360,23 @@ cat <<INFO
   Lodestar:        https://$domain  (веб-версия; в приложении: «Сменить вуз», адрес https://$domain)
   Код вуза:        demo
   Вход:            раздел «Режим тестировщика» на экране входа
-  Письма:          https://mail.$domain  (логин tester, пароль $mail_password)
+  Письма:          https://$mail_host  (логин tester, пароль $mail_password)
 INFO
 if [ "$proxy" = host ]; then
-  warn "Lodestar не занимает порты 80 и 443. Подключите его к своему nginx: include $rendered/lodestar.conf, а сертификат на ${names[*]} выпустите сами (certbot --nginx или свой)."
+  cat <<STEPS
+
+Подключение к nginx сервера (скрипт этого не делает):
+  1. DNS: A-записи ${names[*]} на $ip
+  2. sudo certbot certonly --nginx --cert-name $domain $(printf -- '-d %s ' "${names[@]}")
+  3. sudo ln -s $rendered/lodestar.conf /etc/nginx/conf.d/lodestar.conf
+  4. sudo nginx -t && sudo systemctl reload nginx
+STEPS
+  case "$root" in
+    /root/*|/home/*) warn "Проект лежит в $root. nginx может не прочитать оттуда пароль почты ($rendered/htpasswd). Надёжнее держать его, например, в /opt/lodestar." ;;
+  esac
+fi
+if [ "$cloudflare" = 1 ]; then
+  warn "Cloudflare: имена плоские (${names[*]}), их покрывает бесплатный сертификат Cloudflare *.${domain#*.}. Реальные IP берутся из CF-Connecting-IP только от адресов Cloudflare. Сертификат выпускайте при выключенном проксировании (серое облако), потом включайте и ставьте SSL Full (strict). «Always Use HTTPS» для этих имён не включайте, иначе не пройдёт продление: на https nginx переводит сам. Бесплатный тариф пропускает загрузки до 100 МБ."
 fi
 if [ "$calls" = 1 ]; then
   warn "Настройки сервера скрипт не меняет. Снаружи должны быть открыты порты 80 и 443, для звонков ещё 7881/tcp и 50000–50200/udp. Если включён файрвол (ufw, firewalld или у провайдера), откройте их там."
@@ -340,7 +394,7 @@ cat <<INFO
 INFO
 fi
 if [ "$ai" = 1 ]; then
-  echo "  ИИ-навигатор:    модели $model и bge-m3 (вместе около 3 ГБ) качаются в фоне, следить: docker compose ${files[*]} --env-file $env_file logs -f ollama-models"
+  echo "  ИИ-навигатор:    модели $model и bge-m3, лимит памяти $ai_memory, качаются в фоне, следить: docker compose ${files[*]} --env-file $env_file logs -f ollama-models"
 fi
 echo "  Остановить:      docker compose ${files[*]} --env-file $env_file down  (./install-tester.sh снова обновит и запустит)"
 if [ "${#warnings[@]}" -gt 0 ]; then

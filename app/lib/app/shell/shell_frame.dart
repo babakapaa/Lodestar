@@ -43,7 +43,7 @@ class ShellFrame extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: palette.bg,
                   borderRadius: tokens.borderRadius,
-                  border: Border.all(color: palette.border),
+                  border: Border.all(color: palette.frameEdge),
                   boxShadow: palette.raised,
                 ),
                 child: ClipRRect(

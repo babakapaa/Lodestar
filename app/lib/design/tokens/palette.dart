@@ -34,7 +34,10 @@ class Palette {
 
   bool get isDark => bg.computeLuminance() < 0.3;
 
-  Color get frame => side;
+  Color get frame =>
+      isDark ? Color.lerp(bg, const Color(0xFF000000), 0.6)! : side;
+
+  Color get frameEdge => isDark ? Color.lerp(border, text, 0.18)! : border;
 
   List<BoxShadow> get raised => isDark
       ? const []

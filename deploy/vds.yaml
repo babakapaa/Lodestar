@@ -45,7 +45,7 @@ services:
       - "50000-50200:50000-50200/udp"
 
   ollama:
-    mem_limit: 5g
+    mem_limit: ${LODESTAR_AI_MEMORY:-5g}
     environment:
       OLLAMA_MAX_LOADED_MODELS: "2"
       OLLAMA_NUM_PARALLEL: "1"

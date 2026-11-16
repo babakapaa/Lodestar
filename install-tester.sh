@@ -101,14 +101,40 @@ port_busy() {
   command -v ss >/dev/null 2>&1 && ss -ltnH "( sport = :$1 )" 2>/dev/null | grep -q .
 }
 
+udp_busy() {
+  command -v ss >/dev/null 2>&1 && ss -lunH "( sport >= :$1 and sport <= :$2 )" 2>/dev/null | grep -q .
+}
+
+port_ours() {
+  docker ps -q --filter "label=com.docker.compose.project=$project" --filter "publish=$1" 2>/dev/null | grep -q .
+}
+
+port_taken() {
+  port_busy "$1" && ! port_ours "$1"
+}
+
+pick_port() {
+  local key="$1" port
+  port="$(get_key "$key")"
+  [ -n "$port" ] || port="$2"
+  while port_taken "$port"; do
+    port=$((port + 1))
+  done
+  if [ "$port" != "$(get_key "$key")" ] && [ "$port" != "$2" ]; then
+    warn "Порт $2 занят, $key = $port."
+  fi
+  set_key "$key" "$port"
+  picked="$port"
+}
+
 check_resources() {
   local mem_kb disk_kb
   if [ -r /proc/meminfo ]; then
-    mem_kb="$(awk '/MemTotal/ {print $2}' /proc/meminfo)"
-    if [ "$ai" = 1 ] && [ "$mem_kb" -lt 7500000 ]; then
-      warn "Памяти $((mem_kb / 1024 / 1024)) ГБ. С ИИ нужно от 8 ГБ: ИИ берёт до 5 ГБ, остальное сервер, база и звонки. Можно запустить с --no-ai."
-    elif [ "$mem_kb" -lt 3500000 ]; then
-      warn "Памяти $((mem_kb / 1024 / 1024)) ГБ. Без ИИ нужно от 4 ГБ."
+    mem_kb="$(awk '/MemAvailable/ {print $2}' /proc/meminfo)"
+    if [ "$ai" = 1 ] && [ "$mem_kb" -lt 7000000 ]; then
+      warn "Свободно памяти $((mem_kb / 1024 / 1024)) ГБ. С ИИ лучше от 7 ГБ свободных: ИИ берёт до 5 ГБ, остальное сервер, база и звонки. Если сервер начнёт тормозить, запустите с --model=qwen2.5:1.5b или --no-ai."
+    elif [ "$mem_kb" -lt 2000000 ]; then
+      warn "Свободно памяти $((mem_kb / 1024 / 1024)) ГБ. Без ИИ нужно от 2 ГБ свободных."
     fi
   fi
   disk_kb="$(df -Pk "$root" | awk 'NR == 2 {print $4}')"
@@ -127,7 +153,7 @@ render_nginx() {
     upstream_server="server:8080"; upstream_s3="minio:9000"; upstream_rtc="livekit:7880"; upstream_mail="mailpit:8025"
     htpasswd="/etc/nginx/htpasswd"
   else
-    upstream_server="127.0.0.1:8080"; upstream_s3="127.0.0.1:9000"; upstream_rtc="127.0.0.1:7880"; upstream_mail="127.0.0.1:8025"
+    upstream_server="127.0.0.1:$http_port"; upstream_s3="127.0.0.1:$s3_port"; upstream_rtc="127.0.0.1:$rtc_port"; upstream_mail="127.0.0.1:$mail_port"
     htpasswd="$rendered/htpasswd"
   fi
   certs="/etc/letsencrypt/live/$domain"
@@ -166,14 +192,43 @@ keep_key MINIO_ROOT_PASSWORD "$(word 24)"
 keep_key LIVEKIT_API_KEY lodestar
 keep_key LIVEKIT_API_SECRET "$(word 40)"
 
-files=(-f "$root/deploy/compose.yaml" -f "$root/deploy/tester.yaml")
+if [ "$server" = 1 ]; then
+  keep_key COMPOSE_PROJECT_NAME lodestar
+elif docker volume ls -q 2>/dev/null | grep -q '^deploy_'; then
+  keep_key COMPOSE_PROJECT_NAME deploy
+else
+  keep_key COMPOSE_PROJECT_NAME lodestar
+fi
+project="$(get_key COMPOSE_PROJECT_NAME)"
+files=(-p "$project" -f "$root/deploy/compose.yaml" -f "$root/deploy/tester.yaml")
+
+pick_port LODESTAR_HTTP_PORT 8080; http_port="$picked"
+pick_port LODESTAR_S3_PORT 9000; s3_port="$picked"
+pick_port MAILPIT_PORT 8025; mail_port="$picked"
+pick_port LIVEKIT_PORT 7880; rtc_port="$picked"
+if [ "$calls" = 1 ]; then
+  if port_taken 7881 || { udp_busy 50000 50200 && ! port_ours 7881; }; then
+    warn "Порт 7881/tcp или диапазон 50000–50200/udp уже занят. Звонки могут не заработать; без них: --no-calls."
+  fi
+fi
+
 if [ "$server" = 1 ]; then
   check_resources
   ip="$(public_ip)"
   [ -n "$domain" ] || domain="$(get_key LODESTAR_DOMAIN)"
   [ -n "$domain" ] || domain="${ip//./-}.sslip.io"
   [ -n "$proxy" ] || proxy="$(get_key LODESTAR_PROXY)"
-  [ -n "$proxy" ] || proxy=docker
+  if [ -z "$proxy" ]; then
+    proxy=docker
+    for port in 80 443; do
+      if port_taken "$port"; then
+        proxy=host
+      fi
+    done
+    if [ "$proxy" = host ]; then
+      warn "Порты 80 и 443 уже заняты, поэтому Lodestar не запускает свой nginx и подключается к вашему (режим --proxy=host)."
+    fi
+  fi
   set_key LODESTAR_DOMAIN "$domain"
   set_key LODESTAR_PROXY "$proxy"
   set_key LODESTAR_HOST_IP "$ip"
@@ -185,7 +240,7 @@ if [ "$server" = 1 ]; then
   render_nginx
   if [ "$proxy" = docker ]; then
     for port in 80 443; do
-      if port_busy "$port" && ! docker compose "${files[@]}" --env-file "$env_file" ps --status running nginx 2>/dev/null | grep -q nginx; then
+      if port_taken "$port"; then
         warn "Порт $port уже занят другой программой. Освободите его или запустите с --proxy=host, чтобы подключить Lodestar к своему nginx."
       fi
     done
@@ -195,8 +250,8 @@ else
   drop_key LODESTAR_DOMAIN
   drop_key LODESTAR_PROXY
   set_key LODESTAR_HOST_IP "$ip"
-  set_key LODESTAR_PUBLIC_URL "http://$ip:8080"
-  set_key LODESTAR_S3_PUBLIC_ENDPOINT "http://$ip:9000"
+  set_key LODESTAR_PUBLIC_URL "http://$ip:$http_port"
+  set_key LODESTAR_S3_PUBLIC_ENDPOINT "http://$ip:$s3_port"
 fi
 
 profiles=""
@@ -215,7 +270,7 @@ if [ "$calls" = 1 ]; then
   if [ "$server" = 1 ]; then
     set_key LODESTAR_LIVEKIT_URL "wss://rtc.$domain"
   else
-    set_key LODESTAR_LIVEKIT_URL "ws://$ip:7880"
+    set_key LODESTAR_LIVEKIT_URL "ws://$ip:$rtc_port"
   fi
 else
   set_key LODESTAR_LIVEKIT_URL ""
@@ -235,7 +290,7 @@ docker compose "${files[@]}" --env-file "$env_file" up -d --build --remove-orpha
 say "Жду сервер"
 ready=0
 for _ in $(seq 1 90); do
-  if curl -fsS "http://localhost:8080/healthz" >/dev/null 2>&1; then
+  if curl -fsS "http://localhost:$http_port/healthz" >/dev/null 2>&1; then
     ready=1
     break
   fi
@@ -260,10 +315,10 @@ else
 cat <<INFO
 
 Готово.
-  Lodestar:        http://localhost:8080  (с телефона в той же Wi-Fi: http://$ip:8080)
+  Lodestar:        http://localhost:$http_port  (с телефона в той же Wi-Fi: http://$ip:$http_port)
   Код вуза:        demo
   Вход:            раздел «Режим тестировщика» на экране входа
-  Письма:          http://localhost:8025
+  Письма:          http://localhost:$mail_port
 INFO
 fi
 if [ "$ai" = 1 ]; then

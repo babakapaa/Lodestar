@@ -5,7 +5,7 @@ root="$(cd "$(dirname "$0")" && pwd)"
 env_file="$root/deploy/.env"
 rendered="$root/deploy/nginx/rendered"
 ai=1
-calls=1
+calls=""
 model="qwen2.5:3b"
 server=""
 domain=""
@@ -14,6 +14,7 @@ proxy=""
 for arg in "$@"; do
   case "$arg" in
     --no-ai) ai=0 ;;
+    --calls) calls=1 ;;
     --no-calls) calls=0 ;;
     --model=*) model="${arg#--model=}" ;;
     --server) server=1 ;;
@@ -21,7 +22,7 @@ for arg in "$@"; do
     --proxy=docker|--proxy=host) server=1; proxy="${arg#--proxy=}" ;;
     --local) server=0 ;;
     -h|--help)
-      echo "Использование: ./install-tester.sh [--no-ai] [--no-calls] [--model=qwen2.5:3b] [--server] [--domain=lodestar.example.kz] [--proxy=docker|host] [--local]"
+      echo "Использование: ./install-tester.sh [--no-ai] [--calls|--no-calls] [--model=qwen2.5:3b] [--server] [--domain=lodestar.example.kz] [--proxy=docker|host] [--local]"
       exit 0 ;;
     *) echo "Неизвестный параметр: $arg" >&2; exit 1 ;;
   esac
@@ -158,9 +159,11 @@ render_nginx() {
   fi
   certs="/etc/letsencrypt/live/$domain"
   mkdir -p "$rendered"
-  sed -e "s|__DOMAIN__|$domain|g" -e "s|__SERVER__|$upstream_server|g" -e "s|__S3__|$upstream_s3|g" \
-    -e "s|__RTC__|$upstream_rtc|g" -e "s|__MAIL__|$upstream_mail|g" -e "s|__CERTS__|$certs|g" \
-    -e "s|__HTPASSWD__|$htpasswd|g" "$root/deploy/nginx/lodestar.conf.template" > "$rendered/lodestar.conf"
+  local templates=("$root/deploy/nginx/lodestar.conf.template")
+  [ "$calls" = 1 ] && templates+=("$root/deploy/nginx/rtc.conf.template")
+  cat "${templates[@]}" | sed -e "s|__NAMES__|${names[*]}|g" -e "s|__DOMAIN__|$domain|g" -e "s|__SERVER__|$upstream_server|g" \
+    -e "s|__S3__|$upstream_s3|g" -e "s|__RTC__|$upstream_rtc|g" -e "s|__MAIL__|$upstream_mail|g" -e "s|__CERTS__|$certs|g" \
+    -e "s|__HTPASSWD__|$htpasswd|g" > "$rendered/lodestar.conf"
   if [ ! -s "$rendered/htpasswd" ]; then
     docker run --rm httpd:2.4-alpine htpasswd -nbB tester "$mail_password" > "$rendered/htpasswd"
   fi
@@ -174,7 +177,7 @@ issue_certificate() {
   say "Получаю сертификат HTTPS для $domain"
   "${compose[@]}" stop nginx >/dev/null 2>&1 || true
   if ! "${compose[@]}" run --rm --no-deps -p 80:80 --entrypoint certbot certbot certonly --standalone -n --agree-tos \
-    --register-unsafely-without-email -d "$domain" -d "s3.$domain" -d "rtc.$domain" -d "mail.$domain"; then
+    --register-unsafely-without-email $(printf -- '-d %s ' "${names[@]}"); then
     warn "Сертификат не выдан. Проверьте, что порт 80 открыт снаружи и адрес $domain указывает на этот сервер, и запустите установщик снова."
     exit 1
   fi
@@ -202,6 +205,15 @@ fi
 project="$(get_key COMPOSE_PROJECT_NAME)"
 files=(-p "$project" -f "$root/deploy/compose.yaml" -f "$root/deploy/tester.yaml")
 
+if [ "$server" = 1 ]; then
+  [ -n "$calls" ] || calls="$(get_key LODESTAR_CALLS)"
+  [ -n "$calls" ] || calls=0
+  set_key LODESTAR_CALLS "$calls"
+else
+  drop_key LODESTAR_CALLS
+  [ -n "$calls" ] || calls=1
+fi
+
 pick_port LODESTAR_HTTP_PORT 8080; http_port="$picked"
 pick_port LODESTAR_S3_PORT 9000; s3_port="$picked"
 pick_port MAILPIT_PORT 8025; mail_port="$picked"
@@ -217,6 +229,8 @@ if [ "$server" = 1 ]; then
   ip="$(public_ip)"
   [ -n "$domain" ] || domain="$(get_key LODESTAR_DOMAIN)"
   [ -n "$domain" ] || domain="${ip//./-}.sslip.io"
+  names=("$domain" "s3.$domain" "mail.$domain")
+  [ "$calls" = 1 ] && names+=("rtc.$domain")
   [ -n "$proxy" ] || proxy="$(get_key LODESTAR_PROXY)"
   if [ -z "$proxy" ]; then
     proxy=docker
@@ -308,9 +322,13 @@ cat <<INFO
   Письма:          https://mail.$domain  (логин tester, пароль $mail_password)
 INFO
 if [ "$proxy" = host ]; then
-  warn "Lodestar не занимает порты 80 и 443. Подключите его к своему nginx: include $rendered/lodestar.conf, а сертификат на $domain, s3.$domain, rtc.$domain и mail.$domain выпустите сами (certbot --nginx или свой)."
+  warn "Lodestar не занимает порты 80 и 443. Подключите его к своему nginx: include $rendered/lodestar.conf, а сертификат на ${names[*]} выпустите сами (certbot --nginx или свой)."
 fi
-warn "Настройки сервера скрипт не меняет. Снаружи должны быть открыты порты 80 и 443, для звонков ещё 7881/tcp и 50000–50200/udp. Если включён файрвол (ufw, firewalld или у провайдера), откройте их там."
+if [ "$calls" = 1 ]; then
+  warn "Настройки сервера скрипт не меняет. Снаружи должны быть открыты порты 80 и 443, для звонков ещё 7881/tcp и 50000–50200/udp. Если включён файрвол (ufw, firewalld или у провайдера), откройте их там."
+else
+  warn "Настройки сервера скрипт не меняет. Снаружи должны быть открыты порты 80 и 443. Звонки выключены, включить: --calls (нужны ещё 7881/tcp и 50000–50200/udp)."
+fi
 else
 cat <<INFO
 

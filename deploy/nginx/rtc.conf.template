@@ -1,0 +1,16 @@
+server {
+    listen 443 ssl;
+    http2 on;
+    server_name rtc.__DOMAIN__;
+    ssl_certificate __CERTS__/fullchain.pem;
+    ssl_certificate_key __CERTS__/privkey.pem;
+
+    location / {
+        proxy_pass http://__RTC__;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection $lodestar_connection;
+        proxy_read_timeout 3600s;
+    }
+}

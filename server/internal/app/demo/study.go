@@ -2,6 +2,7 @@ package demo
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/babakapaa/lodestar/server/internal/app"
@@ -15,28 +16,28 @@ const (
 	GroupName  = "ДЕМО-21"
 )
 
-func seedStudy(ctx context.Context, core app.Core, tenantID string, ids map[string]string, now time.Time) error {
+func seedStudy(ctx context.Context, core app.Core, tenantID string, ids map[string]string, now time.Time) (string, bool, error) {
 	admin := auth.Principal{TenantID: tenantID, UserID: ids[Admin.Subject]}
 	teacher := auth.Principal{TenantID: tenantID, UserID: ids[Teacher.Subject]}
 	tx := core.Kernel.Tenants
 	courses := study.NewService(tx, core.Access)
 	existing, err := courses.Catalog(ctx, admin, nil, true)
 	if err != nil {
-		return err
+		return "", false, err
 	}
 	units := structure.NewService(tx, core.Access)
 	for _, c := range existing {
 		if c.Code != nil && *c.Code == CourseCode {
-			return joinGroup(ctx, units, admin, ids[Peer.Subject])
+			return c.ID, false, joinGroup(ctx, units, admin, ids[Peer.Subject])
 		}
 	}
 	group, err := units.Create(ctx, admin, structure.UnitInput{Kind: "group", Name: GroupName})
 	if err != nil {
-		return err
+		return "", false, err
 	}
 	for _, student := range []string{ids[Student.Subject], ids[Peer.Subject]} {
 		if err := units.AddMember(ctx, admin, group.ID, student); err != nil {
-			return err
+			return "", false, err
 		}
 	}
 	code := CourseCode
@@ -46,26 +47,16 @@ func seedStudy(ctx context.Context, core app.Core, tenantID string, ids map[stri
 		Description: "Клетка, ткани и обмен веществ. Курс для демонстрации Lodestar.",
 	})
 	if err != nil {
-		return err
+		return "", false, err
 	}
 	if err := courses.Change(ctx, admin, study.ListTeachers, course.ID, ids[Teacher.Subject], true); err != nil {
-		return err
+		return "", false, err
 	}
 	if err := courses.Change(ctx, admin, study.ListUnits, course.ID, group.ID, true); err != nil {
-		return err
+		return "", false, err
 	}
-	due := now.Add(5 * 24 * time.Hour).Truncate(time.Hour)
-	maxPoints := 10.0
-	_, err = study.NewAssignmentService(tx, core.Access, core.Kernel.Notifier).Create(ctx, teacher, course.ID, study.AssignmentInput{
-		Title:       "Эссе о строении клетки",
-		Description: "Опишите строение животной клетки и роль каждого органоида. Объём до двух страниц.",
-		DueAt:       &due,
-		Grading:     study.GradingPoints,
-		MaxPoints:   &maxPoints,
-		Published:   true,
-	})
-	if err != nil {
-		return err
+	if err := seedAssignments(ctx, core, teacher, course.ID, now); err != nil {
+		return "", false, fmt.Errorf("demo assignments: %w", err)
 	}
 	schedule := study.NewScheduleService(core.Kernel)
 	today := study.DayOf(now)
@@ -79,10 +70,10 @@ func seedStudy(ctx context.Context, core app.Core, tenantID string, ids map[stri
 		lesson.EndsOn = today.AddDays(120)
 		lesson.Minutes = 90
 		if _, err := schedule.Create(ctx, admin, course.ID, lesson); err != nil {
-			return err
+			return "", false, err
 		}
 	}
-	return nil
+	return course.ID, true, nil
 }
 
 func joinGroup(ctx context.Context, units structure.Service, admin auth.Principal, userID string) error {

@@ -7,6 +7,11 @@ on:
       - app/**
       - .github/workflows/desktop.yml
   workflow_dispatch:
+    inputs:
+      server:
+        description: Адрес сервера, например https://1-2-3-4.sslip.io
+        required: false
+        default: http://localhost:8080
 
 concurrency:
   group: desktop-${{ github.ref }}
@@ -28,7 +33,9 @@ jobs:
       - run: rustup toolchain install
         working-directory: app/packages/lodestar_crdt/rust
       - run: flutter pub get
-      - run: flutter build windows --release --dart-define=LODESTAR_SERVER=http://localhost:8080 --dart-define=LODESTAR_TENANT=demo
+      - run: flutter build windows --release --dart-define=LODESTAR_SERVER=$env:LODESTAR_SERVER --dart-define=LODESTAR_TENANT=demo
+        env:
+          LODESTAR_SERVER: ${{ inputs.server || 'http://localhost:8080' }}
       - uses: actions/upload-artifact@v4
         with:
           name: lodestar-windows

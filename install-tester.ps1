@@ -48,6 +48,10 @@ if (Test-Path $envFile) {
 
 function Keep($key, $value) { if (-not $values[$key]) { $values[$key] = $value } }
 
+if (-not $PSBoundParameters.ContainsKey('Model') -and $values['LODESTAR_LLM_MODEL']) {
+  $Model = $values['LODESTAR_LLM_MODEL']
+}
+
 Say "Настройки в deploy\.env"
 Keep "LODESTAR_SECRET_KEY" (New-Secret 32)
 Keep "POSTGRES_PASSWORD" (New-Word 24)
@@ -67,8 +71,9 @@ if ($NoAi) {
   $values["LODESTAR_EMBED_URL"] = ""
 } else {
   $profiles += "ai"
-  $values["LODESTAR_LLM_URL"] = "http://ollama:11434/v1"
+  if (-not $values["LODESTAR_LLM_URL"]) { $values["LODESTAR_LLM_URL"] = "http://ollama:11434/v1" }
   $values["LODESTAR_LLM_MODEL"] = $Model
+  $values["LODESTAR_OLLAMA_LLM_MODEL"] = if ($values["LODESTAR_LLM_URL"] -eq "http://ollama:11434/v1") { $Model } else { "" }
   $values["LODESTAR_EMBED_URL"] = "http://ollama:11434/v1"
   $values["LODESTAR_EMBED_MODEL"] = "bge-m3"
 }
@@ -104,6 +109,6 @@ Write-Host "  Код вуза:      demo"
 Write-Host "  Вход:          раздел «Режим тестировщика» на экране входа"
 Write-Host "  Письма:        http://localhost:8025"
 if (-not $NoAi) {
-  Write-Host "  ИИ-навигатор:  модели $Model и bge-m3 качаются в фоне несколько минут"
+  Write-Host "  ИИ-навигатор:  модель $Model ($($values['LODESTAR_LLM_URL'])), эмбеддинги bge-m3"
 }
 Write-Host "  Обновить или перезапустить: запустите установщик снова"

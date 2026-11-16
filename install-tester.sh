@@ -148,10 +148,12 @@ check_resources() {
   if [ "$disk_kb" -lt 20000000 ]; then
     warn "Свободно на диске $((disk_kb / 1024 / 1024)) ГБ. Нужно около 20 ГБ: образы, веб-сборка и модели ИИ."
   fi
-  case "$model" in
-    qwen2.5:0.5b|qwen2.5:1.5b|qwen2.5:3b|llama3.2:1b|llama3.2:3b|gemma2:2b) ;;
-    *) warn "Модель $model может не уложиться в $ai_memory памяти, отведённые ИИ. Проверенная модель: qwen2.5:3b." ;;
-  esac
+  if [ -z "$(get_key LODESTAR_LLM_URL)" ] || [ "$(get_key LODESTAR_LLM_URL)" = "http://ollama:11434/v1" ]; then
+    case "$model" in
+      qwen2.5:0.5b|qwen2.5:1.5b|qwen2.5:3b|llama3.2:1b|llama3.2:3b|gemma2:2b) ;;
+      *) warn "Модель $model может не уложиться в $ai_memory памяти, отведённые ИИ. Проверенная модель: qwen2.5:3b." ;;
+    esac
+  fi
 }
 
 real_ip() {
@@ -312,8 +314,15 @@ fi
 profiles=""
 if [ "$ai" = 1 ]; then
   profiles="ai"
-  set_key LODESTAR_LLM_URL "http://ollama:11434/v1"
+  llm_url="$(get_key LODESTAR_LLM_URL)"
+  [ -n "$llm_url" ] || llm_url="http://ollama:11434/v1"
+  set_key LODESTAR_LLM_URL "$llm_url"
   set_key LODESTAR_LLM_MODEL "$model"
+  if [ "$llm_url" = "http://ollama:11434/v1" ]; then
+    set_key LODESTAR_OLLAMA_LLM_MODEL "$model"
+  else
+    set_key LODESTAR_OLLAMA_LLM_MODEL ""
+  fi
   set_key LODESTAR_EMBED_URL "http://ollama:11434/v1"
   set_key LODESTAR_EMBED_MODEL "bge-m3"
 else
@@ -394,7 +403,7 @@ cat <<INFO
 INFO
 fi
 if [ "$ai" = 1 ]; then
-  echo "  ИИ-навигатор:    модели $model и bge-m3, лимит памяти $ai_memory, качаются в фоне, следить: docker compose ${files[*]} --env-file $env_file logs -f ollama-models"
+  echo "  ИИ-навигатор:    модель $model ($llm_url), эмбеддинги bge-m3; загрузка локальных моделей: docker compose ${files[*]} --env-file $env_file logs -f ollama-models"
 fi
 echo "  Остановить:      docker compose ${files[*]} --env-file $env_file down  (./install-tester.sh снова обновит и запустит)"
 if [ "${#warnings[@]}" -gt 0 ]; then

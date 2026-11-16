@@ -14,6 +14,7 @@ import '../../l10n/l10n_context.dart';
 import '../calls/active_call_banner.dart';
 import 'chat.dart';
 import 'chat_bubble.dart';
+import 'chat_wallpaper.dart';
 import 'chat_composer.dart';
 import 'chat_day_pill.dart';
 import 'chat_draft.dart';
@@ -245,8 +246,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       ),
       body: SafeArea(
         top: false,
-        child: ColoredBox(
-          color: context.tokens.palette.side,
+        child: ChatWallpaper(
           child: LayoutBuilder(
             builder: (context, constraints) {
               final side = max(Spacing.l, (constraints.maxWidth - 760) / 2);

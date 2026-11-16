@@ -51,12 +51,15 @@ class ChatBubble extends StatelessWidget {
           onSecondaryTap: message.deleted ? null : onLongPress,
           child: DecoratedBox(
             decoration: BoxDecoration(
-              color: mine ? tokens.palette.accentSoft : tokens.palette.surface,
+              color: mine
+                  ? Color.lerp(
+                      tokens.palette.accentSoft,
+                      tokens.palette.accent,
+                      0.14,
+                    )
+                  : tokens.palette.surface,
               borderRadius: BubbleShape.of(mine: mine, grouped: grouped),
-              border: Border.all(
-                color: mine ? tokens.palette.accentSoft : tokens.palette.border,
-              ),
-              boxShadow: tokens.palette.shadow,
+              boxShadow: tokens.palette.raised,
             ),
             child: Padding(
               padding: const EdgeInsets.fromLTRB(

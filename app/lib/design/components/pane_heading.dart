@@ -11,10 +11,10 @@ class PaneHeading extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final style = Theme.of(context).textTheme.labelMedium!.copyWith(
+    final style = Theme.of(context).textTheme.labelSmall!.copyWith(
       color: context.palette.muted,
       fontWeight: FontWeight.w600,
-      letterSpacing: 0.6,
+      letterSpacing: 0.4,
     );
     return Padding(
       padding: const EdgeInsets.fromLTRB(
@@ -25,7 +25,14 @@ class PaneHeading extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Expanded(child: Text(title.toUpperCase(), style: style)),
+          Expanded(
+            child: Text(
+              title.toUpperCase(),
+              style: style,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
           ?trailing,
         ],
       ),

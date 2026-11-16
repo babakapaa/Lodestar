@@ -1489,5 +1489,21 @@
   "tourDone": "Бастау",
   "tourReplay": "Турды қайта көрсету",
   "settingsHelp": "Көмек",
-  "scheduleEmptyBody": "Басқа аптаны көру үшін жоғарыдағы көрсеткілерді басыңыз."
+  "scheduleEmptyBody": "Басқа аптаны көру үшін жоғарыдағы көрсеткілерді басыңыз.",
+  "todayMorning": "Қайырлы таң",
+  "todayAfternoon": "Қайырлы күн",
+  "todayEvening": "Қайырлы кеш",
+  "todayNight": "Қайырлы түн",
+  "todayAskHint": "Тақырыпты қадаммен талдау",
+  "todayNoteHint": "Конспект, ойлар, сілтемелер",
+  "todayWeekHint": "Сабақтар мен тапсыру мерзімдері",
+  "todayPlan": "Бүгінгі жоспар",
+  "navigatorStarterExplain": "Дәріс тақырыбын қарапайым тілмен түсіндір",
+  "navigatorStarterEssay": "Курс бойынша эссені неден бастаймын?",
+  "navigatorStarterSources": "Жұмысқа қандай дереккөздер сай келеді?",
+  "navigatorStarterCheck": "Тақырыпты дұрыс түсіндім бе, тексер",
+  "entryTagline": "Оқу, жазбалар және ЖИ-навигатор бір жерде",
+  "entryFeatureStudy": "Курстар, тапсырмалар және кесте",
+  "entryFeatureNotes": "Байланысты жазбалар, граф және кенептер",
+  "entryFeatureNavigator": "Сіз үшін жазбайтын, үйрететін навигатор"
 }

@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:lodestar/app/shell/side_nav.dart';
 import 'package:lodestar/features/study/schedule_screen.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -10,7 +11,7 @@ void main() {
     await tester.tap(find.text('Расписание на неделю'));
     await tester.pumpAndSettle();
     expect(find.byType(ScheduleScreen), findsOneWidget);
-    expect(find.byType(NavigationRail), findsOneWidget);
+    expect(find.byType(SideNav), findsOneWidget);
     expect(find.byTooltip('Назад'), findsOneWidget);
 
     await tester.tap(find.byTooltip('Назад'));
@@ -29,6 +30,6 @@ void main() {
     await tester.tap(find.text('Расписание на неделю'));
     await tester.pumpAndSettle();
     expect(find.byType(ScheduleScreen), findsOneWidget);
-    expect(find.byType(NavigationRail), findsNothing);
+    expect(find.byType(SideNav), findsNothing);
   });
 }

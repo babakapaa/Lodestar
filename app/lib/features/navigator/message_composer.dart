@@ -84,6 +84,10 @@ class _MessageComposerState extends State<MessageComposer> {
                   hintText: l10n.navigatorAskHint,
                   counterText: '',
                   filled: false,
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: Spacing.m,
+                    vertical: Spacing.m,
+                  ),
                   border: InputBorder.none,
                   enabledBorder: InputBorder.none,
                   focusedBorder: InputBorder.none,

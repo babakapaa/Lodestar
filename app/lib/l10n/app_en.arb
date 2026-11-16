@@ -1489,5 +1489,21 @@
   "tourDone": "Get started",
   "tourReplay": "Replay the tour",
   "settingsHelp": "Help",
-  "scheduleEmptyBody": "Use the arrows at the top to see another week."
+  "scheduleEmptyBody": "Use the arrows at the top to see another week.",
+  "todayMorning": "Good morning",
+  "todayAfternoon": "Good afternoon",
+  "todayEvening": "Good evening",
+  "todayNight": "Good night",
+  "todayAskHint": "Work through a topic step by step",
+  "todayNoteHint": "Notes, ideas and links",
+  "todayWeekHint": "Classes and due dates",
+  "todayPlan": "Today's plan",
+  "navigatorStarterExplain": "Explain the lecture topic in simple words",
+  "navigatorStarterEssay": "Where do I start my course essay?",
+  "navigatorStarterSources": "Which sources fit my assignment?",
+  "navigatorStarterCheck": "Check whether I understood the topic",
+  "entryTagline": "Study, notes and an AI navigator in one place",
+  "entryFeatureStudy": "Courses, assignments and schedule",
+  "entryFeatureNotes": "Linked notes with a graph and canvases",
+  "entryFeatureNavigator": "A navigator that teaches instead of writing for you"
 }

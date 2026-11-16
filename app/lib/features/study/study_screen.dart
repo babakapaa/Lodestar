@@ -3,13 +3,12 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../core/navigation/app_routes.dart';
 import '../../core/navigation/tab_page.dart';
-import '../../design/components/tile_group.dart';
 import '../../design/components/empty_state.dart';
 import '../../design/components/section.dart';
 import '../../design/tokens/spacing.dart';
 import '../../l10n/l10n_context.dart';
 import '../admin/admin_providers.dart';
-import 'course_tile.dart';
+import 'course_grid.dart';
 import 'loaded_list_view.dart';
 import 'navigator_tile.dart';
 import 'outbox_section.dart';
@@ -31,6 +30,7 @@ class StudyScreen extends ConsumerWidget {
       title: l10n.tabStudy,
       child: LoadedListView(
         value: ref.watch(myCoursesProvider),
+        maxWidth: 1040,
         onRefresh: () => ref.refresh(myCoursesProvider.future),
         builder: (courses) => [
           const OutboxSection(),
@@ -43,12 +43,7 @@ class StudyScreen extends ConsumerWidget {
           else
             Section(
               title: l10n.studyCourses,
-              child: TileGroup(
-                children: [
-                  for (final course in courses)
-                    CourseTile(key: ValueKey(course.id), course: course),
-                ],
-              ),
+              child: CourseGrid(courses: courses),
             ),
           const SizedBox(height: Spacing.xl),
           NavigatorTile(

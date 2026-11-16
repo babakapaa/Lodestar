@@ -4,6 +4,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../core/navigation/layout_size.dart';
 import '../../core/navigation/tab_page.dart';
 import '../../design/components/empty_state.dart';
+import '../../design/components/lodestar_card.dart';
 import '../../design/components/section.dart';
 import '../../design/components/tile_group.dart';
 import '../../design/tokens/spacing.dart';
@@ -16,10 +17,9 @@ import '../study/deadline_tile.dart';
 import '../study/lesson_tile.dart';
 import '../study/loaded_list_view.dart';
 import '../study/outbox_section.dart';
-import '../study/study_day.dart';
-import '../study/study_labels_context.dart';
 import '../study/study_providers.dart';
 import 'today_actions.dart';
+import 'today_greeting.dart';
 import 'today_messages.dart';
 import 'today_notes.dart';
 
@@ -32,10 +32,15 @@ class TodayScreen extends ConsumerWidget {
     final l10n = context.l10n;
     return [
       if (agenda.lessons.isEmpty && agenda.deadlines.isEmpty)
-        EmptyState(
-          icon: Icons.wb_sunny_outlined,
-          title: l10n.emptyTodayTitle,
-          body: l10n.emptyTodayBody,
+        Section(
+          title: l10n.todayPlan,
+          child: LodestarCard(
+            child: EmptyState(
+              icon: Icons.wb_sunny_outlined,
+              title: l10n.emptyTodayTitle,
+              body: l10n.emptyTodayBody,
+            ),
+          ),
         ),
       if (agenda.lessons.isNotEmpty) ...[
         Section(
@@ -81,13 +86,10 @@ class TodayScreen extends ConsumerWidget {
       const SetupBanner(),
       const OutboxSection(),
       const OpenLessonsSection(),
-      Text(
-        context.studyLabels.day(StudyDay.parse(agenda.date)),
-        style: Theme.of(context).textTheme.titleLarge,
-      ),
-      const SizedBox(height: Spacing.m),
-      TodayActions(date: agenda.date),
+      TodayGreeting(date: agenda.date),
       const SizedBox(height: Spacing.xl),
+      TodayActions(date: agenda.date),
+      const SizedBox(height: Spacing.xxl),
       if (wide)
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -98,7 +100,7 @@ class TodayScreen extends ConsumerWidget {
                 children: _agenda(context, agenda),
               ),
             ),
-            const SizedBox(width: Spacing.xl),
+            const SizedBox(width: Spacing.xxl),
             SizedBox(
               width: sideWidth,
               child: Column(

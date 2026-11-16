@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:lodestar/app/shell/side_nav.dart';
 import 'package:material_ui/material_ui.dart';
 
 import 'app_harness.dart';
@@ -26,8 +27,8 @@ void main() {
   ) async {
     await pumpApp(tester, size: const Size(1280, 800));
 
-    final rail = tester.widget<NavigationRail>(find.byType(NavigationRail));
-    expect(rail.extended, isTrue);
+    expect(find.byType(SideNav), findsOneWidget);
+    expect(find.byType(NavigationRail), findsNothing);
     expect(find.text('Lodestar'), findsOneWidget);
     expect(find.text('Профиль и настройки'), findsOneWidget);
   });

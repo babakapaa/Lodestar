@@ -29,7 +29,11 @@ class OutgoingBubble extends StatelessWidget {
         constraints: const BoxConstraints(maxWidth: 520),
         child: DecoratedBox(
           decoration: BoxDecoration(
-            color: tokens.palette.accentSoft,
+            color: Color.lerp(
+              tokens.palette.accentSoft,
+              tokens.palette.accent,
+              0.14,
+            ),
             borderRadius: tokens.borderRadius,
             border: Border.all(
               color: failed ? tokens.palette.warn : tokens.palette.border,

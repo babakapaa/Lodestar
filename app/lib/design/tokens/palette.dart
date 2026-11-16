@@ -32,6 +32,28 @@ class Palette {
   final Color warnSoft;
   final List<BoxShadow> shadow;
 
+  bool get isDark => bg.computeLuminance() < 0.3;
+
+  Color get frame =>
+      isDark ? Color.lerp(bg, const Color(0xFF000000), 0.6)! : side;
+
+  Color get frameEdge => isDark ? Color.lerp(border, text, 0.18)! : border;
+
+  List<BoxShadow> get raised => isDark
+      ? const []
+      : const [
+          BoxShadow(
+            color: Color(0x0F000000),
+            offset: Offset(0, 1),
+            blurRadius: 2,
+          ),
+          BoxShadow(
+            color: Color(0x0A000000),
+            offset: Offset(0, 4),
+            blurRadius: 12,
+          ),
+        ];
+
   Palette withAccent({
     required Color accent,
     required Color onAccent,

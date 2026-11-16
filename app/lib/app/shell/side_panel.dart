@@ -5,6 +5,7 @@ import '../../l10n/l10n_context.dart';
 import '../router/app_tab.dart';
 import '../../design/components/brand_mark.dart';
 import '../../core/navigation/profile_button.dart';
+import 'side_nav.dart';
 
 class SidePanel extends StatelessWidget {
   const SidePanel({
@@ -20,6 +21,9 @@ class SidePanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (extended) {
+      return SideNav(currentIndex: currentIndex, onSelected: onSelected);
+    }
     final l10n = context.l10n;
     return NavigationRail(
       extended: extended,

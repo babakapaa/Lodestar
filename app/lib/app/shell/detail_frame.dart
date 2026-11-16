@@ -3,7 +3,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../core/navigation/layout_size.dart';
 import '../router/app_tab.dart';
-import 'side_panel.dart';
+import 'shell_frame.dart';
 
 class DetailFrame extends StatelessWidget {
   const DetailFrame({required this.location, required this.child, super.key});
@@ -17,18 +17,11 @@ class DetailFrame extends StatelessWidget {
     if (size == LayoutSize.compact) {
       return child;
     }
-    return Scaffold(
-      body: Row(
-        children: [
-          SidePanel(
-            currentIndex: AppTab.of(location)?.index,
-            onSelected: (index) => context.go(AppTab.values[index].path),
-            extended: size == LayoutSize.expanded,
-          ),
-          const VerticalDivider(width: 1),
-          Expanded(child: child),
-        ],
-      ),
+    return ShellFrame(
+      currentIndex: AppTab.of(location)?.index,
+      onSelected: (index) => context.go(AppTab.values[index].path),
+      extended: size == LayoutSize.expanded,
+      child: child,
     );
   }
 }

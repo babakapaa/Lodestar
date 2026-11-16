@@ -2,6 +2,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lodestar/features/notes/note_editor.dart';
 import 'package:lodestar/features/notes/note_inspector.dart';
+import 'package:lodestar/features/notes/notes_sidebar.dart';
 import 'package:lodestar/features/notes/notes_tab_chip.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -32,7 +33,7 @@ void main() {
   ) async {
     await pumpApp(tester, size: const Size(1440, 900));
     await openNotes(tester);
-    expect(find.text('ХРАНИЛИЩЕ'), findsOneWidget);
+    expect(find.byType(NotesSidebar), findsOneWidget);
 
     await tester.tap(find.widgetWithText(FilledButton, 'Новая заметка'));
     await settle(tester);

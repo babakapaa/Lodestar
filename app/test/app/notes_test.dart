@@ -57,7 +57,7 @@ void main() {
     await newNote(tester, 'Клетка состоит из ядра.');
     await tester.tap(find.byType(PopupMenuButton<String>));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Название и папка'));
+    await tester.tap(find.text('Переместить в папку'));
     await tester.pumpAndSettle();
     await tester.enterText(
       find.descendant(

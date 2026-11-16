@@ -4,6 +4,14 @@ import '../../design/tokens/tokens_context.dart';
 import 'markdown_styles.dart';
 
 class MarkdownController extends TextEditingController {
+  MarkdownController({this.livePreview = false});
+
+  final bool livePreview;
+  bool _hide = false;
+
+  TextStyle _marker(TextStyle base, MarkdownStyles styles) =>
+      _hide ? styles.hidden : base.merge(styles.marker);
+
   static final _heading = RegExp(r'^(#{1,6})(\s)');
   static final _quote = RegExp(r'^(\s*>\s?)');
   static final _list = RegExp(r'^(\s*(?:[-*+]|\d+[.)])\s)(\[[ xX]\]\s)?');
@@ -28,9 +36,15 @@ class MarkdownController extends TextEditingController {
     final styles = MarkdownStyles(style ?? const TextStyle(), context.palette);
     final lines = text.split('\n');
     final children = <InlineSpan>[];
+    final selection = value.selection;
+    final from = selection.isValid ? selection.start : -1;
+    final to = selection.isValid ? selection.end : -1;
     var fenced = false;
+    var offset = 0;
     for (var i = 0; i < lines.length; i++) {
       final line = lines[i];
+      final end = offset + line.length;
+      _hide = livePreview && !(from <= end && to >= offset);
       final fence = line.trimLeft().startsWith('```');
       if (fence || fenced) {
         children.add(TextSpan(text: line, style: styles.code));
@@ -40,6 +54,7 @@ class MarkdownController extends TextEditingController {
       } else {
         children.addAll(_line(line, styles));
       }
+      offset = end + 1;
       if (i < lines.length - 1) {
         children.add(TextSpan(text: '\n', style: style));
       }
@@ -54,7 +69,7 @@ class MarkdownController extends TextEditingController {
       final base = styles.heading(level);
       final marker = heading.group(0)!;
       return [
-        TextSpan(text: marker, style: base.merge(styles.marker)),
+        TextSpan(text: marker, style: _marker(base, styles)),
         ..._inlines(line.substring(marker.length), base, styles),
       ];
     }
@@ -62,7 +77,10 @@ class MarkdownController extends TextEditingController {
     if (quote != null) {
       final marker = quote.group(0)!;
       return [
-        TextSpan(text: marker, style: styles.accentMarker),
+        TextSpan(
+          text: marker,
+          style: _hide ? styles.hidden : styles.accentMarker,
+        ),
         ..._inlines(line.substring(marker.length), styles.quote, styles),
       ];
     }
@@ -108,9 +126,13 @@ class MarkdownController extends TextEditingController {
           styles.bold,
           styles,
         ),
-        _ when match.group(3) != null => [
-          TextSpan(text: token, style: base.merge(styles.inlineCode)),
-        ],
+        _ when match.group(3) != null => _wrapped(
+          token,
+          1,
+          base,
+          styles.inlineCode,
+          styles,
+        ),
         _ when match.group(4) != null => _wrapped(
           token,
           2,
@@ -142,7 +164,7 @@ class MarkdownController extends TextEditingController {
     TextStyle inner,
     MarkdownStyles styles,
   ) {
-    final marker = base.merge(styles.marker);
+    final marker = _marker(base, styles);
     return [
       TextSpan(text: token.substring(0, width), style: marker),
       TextSpan(

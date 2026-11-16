@@ -308,7 +308,7 @@
   "notesRestore": "Қайтару",
   "notesDelete": "Себетке",
   "notesInTrash": "Жазба себетте",
-  "notesRename": "Атауы мен бумасы",
+  "notesRename": "Бумаға жылжыту",
   "notesPathLabel": "Жол, мысалы Биология/Жасуша",
   "notesTags": "Тегтер",
   "notesTagsLabel": "Тегтер үтір арқылы",
@@ -1505,5 +1505,8 @@
   "entryTagline": "Оқу, жазбалар және ЖИ-навигатор бір жерде",
   "entryFeatureStudy": "Курстар, тапсырмалар және кесте",
   "entryFeatureNotes": "Байланысты жазбалар, граф және кенептер",
-  "entryFeatureNavigator": "Сіз үшін жазбайтын, үйрететін навигатор"
+  "entryFeatureNavigator": "Сіз үшін жазбайтын, үйрететін навигатор",
+  "notesNewFolder": "Жаңа бума",
+  "notesRenameShort": "Атын өзгерту",
+  "notesNewHere": "Осында жаңа жазба"
 }

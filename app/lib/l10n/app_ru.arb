@@ -449,7 +449,7 @@
   "notesRestore": "Вернуть",
   "notesDelete": "В корзину",
   "notesInTrash": "Заметка в корзине",
-  "notesRename": "Название и папка",
+  "notesRename": "Переместить в папку",
   "notesPathLabel": "Путь, например Биология/Клетка",
   "notesTags": "Теги",
   "notesTagsLabel": "Теги через запятую",
@@ -2642,5 +2642,8 @@
   "entryTagline": "Учёба, заметки и ИИ‑навигатор в одном месте",
   "entryFeatureStudy": "Курсы, задания и расписание",
   "entryFeatureNotes": "Заметки со связями, графом и холстами",
-  "entryFeatureNavigator": "Навигатор, который учит, а не пишет за вас"
+  "entryFeatureNavigator": "Навигатор, который учит, а не пишет за вас",
+  "notesNewFolder": "Новая папка",
+  "notesRenameShort": "Переименовать",
+  "notesNewHere": "Новая заметка здесь"
 }

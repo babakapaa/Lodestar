@@ -44,8 +44,8 @@ class _NotesWorkspaceState extends ConsumerState<NotesWorkspace> {
         );
   }
 
-  Future<void> _create() async {
-    final id = await NoteActions.add(context, ref);
+  Future<void> _create({String folder = ''}) async {
+    final id = await NoteActions.add(context, ref, folder: folder);
     _open(id, newTab: true);
   }
 
@@ -190,6 +190,7 @@ class _NotesWorkspaceState extends ConsumerState<NotesWorkspace> {
                 active: active,
                 onOpen: (note) => _open(note.id),
                 onCreate: _create,
+                onCreateIn: (folder) => _create(folder: folder),
                 onCanvas: _createCanvas,
                 onQuick: _quick,
                 onGraph: () => _open(NotesTabs.graph, newTab: true),

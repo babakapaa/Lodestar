@@ -12,6 +12,7 @@ import 'note.dart';
 import 'note_editor.dart';
 import 'note_menu.dart';
 import 'note_notices.dart';
+import 'note_title_field.dart';
 
 class NotePane extends ConsumerWidget {
   const NotePane({
@@ -52,16 +53,11 @@ class NotePane extends ConsumerWidget {
                 ),
               ],
               Flexible(
-                child: InkWell(
-                  onTap: canEdit
-                      ? () => NoteMenu.rename(context, ref, note)
-                      : null,
-                  child: Text(
-                    note.meta.label,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: textTheme.titleSmall,
-                  ),
+                child: Text(
+                  note.meta.label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: textTheme.titleSmall,
                 ),
               ),
               const Spacer(),
@@ -86,12 +82,32 @@ class NotePane extends ConsumerWidget {
                   readOnly: !canEdit,
                   onOpenNote: onFollow,
                 )
-              : NoteEditor(
-                  key: ValueKey(note.id),
-                  noteId: note.id,
-                  readOnly: !canEdit,
-                  jumps: jumps,
-                  onOpenLink: onFollow,
+              : Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Align(
+                      alignment: Alignment.topCenter,
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(
+                          maxWidth: NoteEditor.readableWidth,
+                        ),
+                        child: NoteTitleField(
+                          key: ValueKey('title-${note.id}'),
+                          note: note,
+                          readOnly: !canEdit,
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: NoteEditor(
+                        key: ValueKey(note.id),
+                        noteId: note.id,
+                        readOnly: !canEdit,
+                        jumps: jumps,
+                        onOpenLink: onFollow,
+                      ),
+                    ),
+                  ],
                 ),
         ),
       ],

@@ -38,7 +38,7 @@ class NoteEditor extends ConsumerStatefulWidget {
 }
 
 class _NoteEditorState extends ConsumerState<NoteEditor> {
-  final _controller = MarkdownController();
+  final _controller = MarkdownController(livePreview: true);
   late final _focus = FocusNode(onKeyEvent: _onKey);
   late final NotesStore _store;
   NoteDoc? _doc;
@@ -217,7 +217,7 @@ class _NoteEditorState extends ConsumerState<NoteEditor> {
                   filled: false,
                   contentPadding: const EdgeInsets.fromLTRB(
                     Spacing.xl,
-                    Spacing.l,
+                    Spacing.m,
                     Spacing.xl,
                     Spacing.xl,
                   ),

@@ -57,10 +57,48 @@ abstract final class NoteActions {
     BuildContext context,
     WidgetRef ref, {
     String? path,
+    String folder = '',
   }) {
     final notes = ref.read(notesProvider).value ?? const <Note>[];
-    final target = path ?? _untitled(context.l10n.notesUntitled, notes, '');
+    final base = folder.isEmpty
+        ? context.l10n.notesUntitled
+        : '$folder/${context.l10n.notesUntitled}';
+    final target = path ?? _untitled(base, notes, '');
     return ref.read(notesStoreProvider).create(NoteMeta(path: target));
+  }
+
+  static Future<void> move(WidgetRef ref, Note note, String folder) async {
+    final path = NoteMeta.normalizePath(
+      folder.isEmpty ? note.meta.name : '$folder/${note.meta.name}',
+    );
+    if (path != note.meta.path) {
+      await ref
+          .read(notesStoreProvider)
+          .setMeta(note.id, note.meta.copyWith(path: path));
+    }
+  }
+
+  static Future<void> renameFolder(
+    WidgetRef ref,
+    String from,
+    String to,
+  ) async {
+    final target = NoteMeta.normalizePath(to);
+    if (target.isEmpty || target == from) {
+      return;
+    }
+    final notes = ref.read(notesProvider).value ?? const <Note>[];
+    final store = ref.read(notesStoreProvider);
+    for (final note in notes) {
+      final path = note.meta.path;
+      if (note.deleted || !path.startsWith('$from/')) {
+        continue;
+      }
+      await store.setMeta(
+        note.id,
+        note.meta.copyWith(path: '$target/${path.substring(from.length + 1)}'),
+      );
+    }
   }
 
   static Future<void> follow(

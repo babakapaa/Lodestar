@@ -308,7 +308,7 @@
   "notesRestore": "Restore",
   "notesDelete": "Move to trash",
   "notesInTrash": "This note is in the trash",
-  "notesRename": "Name and folder",
+  "notesRename": "Move to folder",
   "notesPathLabel": "Path, for example Biology/Cell",
   "notesTags": "Tags",
   "notesTagsLabel": "Tags, separated by commas",
@@ -1505,5 +1505,8 @@
   "entryTagline": "Study, notes and an AI navigator in one place",
   "entryFeatureStudy": "Courses, assignments and schedule",
   "entryFeatureNotes": "Linked notes with a graph and canvases",
-  "entryFeatureNavigator": "A navigator that teaches instead of writing for you"
+  "entryFeatureNavigator": "A navigator that teaches instead of writing for you",
+  "notesNewFolder": "New folder",
+  "notesRenameShort": "Rename",
+  "notesNewHere": "New note here"
 }

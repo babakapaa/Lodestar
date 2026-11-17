@@ -87,21 +87,6 @@ class DefenseApi {
     'grade': grade?.toJson(),
   });
 
-  Future<List<DefenseQuestion>> draftQuestions(
-    String assignmentId,
-    String studentId,
-  ) async {
-    final body =
-        (await _api.post(
-              '${_student(assignmentId, studentId)}/questions-draft',
-            ))!
-            as Map<String, Object?>;
-    return [
-      for (final item in body['questions']! as List<Object?>)
-        DefenseQuestion.fromJson(item! as Map<String, Object?>),
-    ];
-  }
-
   Future<String> draftProtocol(
     String assignmentId,
     String studentId,

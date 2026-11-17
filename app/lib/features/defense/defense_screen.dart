@@ -91,14 +91,6 @@ class _DefenseScreenState extends ConsumerState<DefenseScreen> {
     }
   }
 
-  Future<void> _suggest() => _run(() async {
-    final drafts = await ref.read(defenseApiProvider).draftQuestions(_a, _s);
-    setState(() {
-      _questions = [...?_questions, ...drafts];
-      _revision++;
-    });
-  });
-
   Future<void> _add() async {
     final question = await NewQuestionDialog.show(context);
     if (question != null) {
@@ -208,28 +200,14 @@ class _DefenseScreenState extends ConsumerState<DefenseScreen> {
                             ),
                             const SizedBox(height: Spacing.m),
                           ],
-                          Wrap(
-                            spacing: Spacing.s,
-                            runSpacing: Spacing.s,
-                            children: [
-                              FilledButton.tonalIcon(
-                                key: const ValueKey('suggest-questions'),
-                                onPressed: _busy ? null : _suggest,
-                                icon: const Icon(Icons.auto_awesome_outlined),
-                                label: Text(l10n.defenseSuggest),
-                              ),
-                              OutlinedButton.icon(
-                                key: const ValueKey('add-question'),
-                                onPressed: _busy ? null : _add,
-                                icon: const Icon(Icons.add),
-                                label: Text(l10n.defenseAddQuestion),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: Spacing.s),
-                          Text(
-                            l10n.defenseSuggestHint,
-                            style: Theme.of(context).textTheme.bodySmall,
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: OutlinedButton.icon(
+                              key: const ValueKey('add-question'),
+                              onPressed: _busy ? null : _add,
+                              icon: const Icon(Icons.add),
+                              label: Text(l10n.defenseAddQuestion),
+                            ),
                           ),
                         ],
                       ),

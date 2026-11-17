@@ -634,8 +634,6 @@
   "defenseFinished": "Defense finished",
   "defenseQuestions": "Questions",
   "defenseNoQuestions": "No questions yet.",
-  "defenseSuggest": "Suggest questions",
-  "defenseSuggestHint": "AI suggests questions from the student's work and search map. Edit them before the defense.",
   "defenseProtocol": "Protocol",
   "defenseSummary": "Summary",
   "defenseDraftProtocol": "Draft from marks",

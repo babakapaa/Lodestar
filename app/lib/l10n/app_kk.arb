@@ -634,8 +634,6 @@
   "defenseFinished": "Қорғау аяқталды",
   "defenseQuestions": "Сұрақтар",
   "defenseNoQuestions": "Әзірге сұрақ жоқ.",
-  "defenseSuggest": "Сұрақтар ұсыну",
-  "defenseSuggestHint": "ЖИ студент жұмысы мен іздеу картасы бойынша сұрақтар ұсынады. Қорғауға дейін түзетіңіз.",
   "defenseProtocol": "Хаттама",
   "defenseSummary": "Қорғау қорытындысы",
   "defenseDraftProtocol": "Белгілер бойынша жоба",

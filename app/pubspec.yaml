@@ -46,15 +46,12 @@ flutter:
   uses-material-design: true
   generate: true
   fonts:
-    - family: Inter
+    - family: GoogleSans
       fonts:
-        - asset: assets/fonts/Inter.ttf
-    - family: SourceSerif4
+        - asset: assets/fonts/GoogleSans.ttf
+    - family: MartianMono
       fonts:
-        - asset: assets/fonts/SourceSerif4.ttf
+        - asset: assets/fonts/MartianMono.ttf
     - family: JetBrainsMono
       fonts:
         - asset: assets/fonts/JetBrainsMono.ttf
-    - family: Nunito
-      fonts:
-        - asset: assets/fonts/Nunito.ttf

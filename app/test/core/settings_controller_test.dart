@@ -21,7 +21,7 @@ void main() {
 
     final settings = container.read(settingsProvider);
 
-    expect(settings.family, ThemeFamily.graphite);
+    expect(settings.family, ThemeFamily.campus);
     expect(settings.appearance, AppearanceMode.system);
     expect(settings.language, AppLanguage.system);
   });
@@ -50,6 +50,6 @@ void main() {
     final container = await containerWith({'settings.family': 'neon'});
     addTearDown(container.dispose);
 
-    expect(container.read(settingsProvider).family, ThemeFamily.graphite);
+    expect(container.read(settingsProvider).family, ThemeFamily.campus);
   });
 }

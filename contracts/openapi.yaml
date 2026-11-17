@@ -3654,45 +3654,6 @@ paths:
           $ref: "#/components/responses/Error"
         default:
           $ref: "#/components/responses/Error"
-  /v1/study/assignments/{id}/defenses/{student}/questions-draft:
-    post:
-      tags: [study]
-      operationId: draftDefenseQuestions
-      summary: Предложить вопросы к защите
-      description: ИИ предлагает 5–7 вопросов по последней сданной работе и карте поиска. Ничего не сохраняет, преподаватель выбирает и правит вопросы сам. 503, если модель не настроена.
-      security:
-        - bearer: []
-      parameters:
-        - $ref: "#/components/parameters/Id"
-        - name: student
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-      responses:
-        "200":
-          description: Готово
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/QuestionsDraft"
-        "400":
-          $ref: "#/components/responses/Error"
-        "401":
-          $ref: "#/components/responses/Error"
-        "403":
-          $ref: "#/components/responses/Error"
-        "404":
-          $ref: "#/components/responses/Error"
-        "409":
-          $ref: "#/components/responses/Error"
-        "502":
-          $ref: "#/components/responses/Error"
-        "503":
-          $ref: "#/components/responses/Error"
-        default:
-          $ref: "#/components/responses/Error"
   /v1/study/assignments/{id}/defenses/{student}/protocol-draft:
     post:
       tags: [study]
@@ -10359,14 +10320,6 @@ components:
           oneOf:
             - $ref: "#/components/schemas/GradeInput"
             - type: "null"
-    QuestionsDraft:
-      type: object
-      required: [questions]
-      properties:
-        questions:
-          type: array
-          items:
-            $ref: "#/components/schemas/DefenseQuestion"
     ProtocolDraft:
       type: object
       required: [summary]

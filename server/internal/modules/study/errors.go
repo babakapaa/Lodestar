@@ -56,8 +56,6 @@ var ErrDefenseFinished = errors.New("defense is already finished")
 
 var ErrNotChosen = errors.New("student is not chosen for this defense")
 
-var ErrNoWork = errors.New("student has not submitted work yet")
-
 var ErrAIUnavailable = errors.New("language model is not configured")
 
 var ErrAIFailed = errors.New("language model did not give a usable answer")

@@ -384,39 +384,6 @@ func (s DefenseService) Finish(ctx context.Context, p auth.Principal, id, studen
 	return d, err
 }
 
-func (s DefenseService) DraftQuestions(ctx context.Context, p auth.Principal, id, studentID string) ([]DefenseQuestion, error) {
-	if !s.drafter.ready() {
-		return nil, ErrAIUnavailable
-	}
-	var m DefenseMaterial
-	err := s.tenants.Run(ctx, p.TenantID, func(tx pgx.Tx) error {
-		a, err := s.taughtStudent(ctx, tx, p, id, studentID)
-		if err != nil {
-			return err
-		}
-		attempts, err := s.work.submissions.Attempts(ctx, tx, id, studentID)
-		if err != nil {
-			return err
-		}
-		if len(attempts) == 0 {
-			return ErrNoWork
-		}
-		latest, err := s.work.withFiles(ctx, tx, attempts[0])
-		if err != nil {
-			return err
-		}
-		m = DefenseMaterial{Title: a.Title, Description: a.Description, Work: latest.Body, Map: latest.SearchMap}
-		for _, f := range latest.Files {
-			m.Files = append(m.Files, f.Name)
-		}
-		return nil
-	})
-	if err != nil {
-		return nil, err
-	}
-	return s.drafter.Questions(ctx, m)
-}
-
 func (s DefenseService) DraftProtocol(ctx context.Context, p auth.Principal, id, studentID string, in DefenseInput) (string, error) {
 	if !s.drafter.ready() {
 		return "", ErrAIUnavailable

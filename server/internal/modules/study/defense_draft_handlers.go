@@ -6,13 +6,6 @@ import (
 	"github.com/babakapaa/lodestar/server/internal/platform/jsonhttp"
 )
 
-type DraftQuestionsHandler struct{ service DefenseService }
-
-func (h DraftQuestionsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	questions, err := h.service.DraftQuestions(r.Context(), principal(r), r.PathValue("id"), r.PathValue("student"))
-	respond(w, http.StatusOK, map[string]any{"questions": questions}, err)
-}
-
 type DraftProtocolHandler struct{ service DefenseService }
 
 func (h DraftProtocolHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {

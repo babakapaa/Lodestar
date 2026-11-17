@@ -40,10 +40,14 @@ func (m *scriptedModel) lastUser() string {
 	return msgs[len(msgs)-1].Content
 }
 
-func TestDefenseQuestionsAndProtocolAreDraftedFromTheWork(t *testing.T) {
+func TestDefenseProtocolIsDraftedFromTheTeachersMarks(t *testing.T) {
 	d := newDefenseCase(t, study.DefenseFull)
 	w := d.w
-	if _, err := d.defenses.DraftQuestions(w.ctx, d.teacher, d.work.ID, d.first.UserID); !errors.Is(err, study.ErrAIUnavailable) {
+	in := study.DefenseInput{
+		Questions: []study.DefenseQuestion{{Kind: study.QuestionUnderstanding, Text: "Что такое 3НФ?", Mark: new(int), Note: "Без подсказок"}},
+	}
+	*in.Questions[0].Mark = 3
+	if _, err := d.defenses.DraftProtocol(w.ctx, d.teacher, d.work.ID, d.first.UserID, in); !errors.Is(err, study.ErrAIUnavailable) {
 		t.Fatalf("no model: %v", err)
 	}
 
@@ -51,66 +55,22 @@ func TestDefenseQuestionsAndProtocolAreDraftedFromTheWork(t *testing.T) {
 	k := w.kernel()
 	k.Model = model
 	defenses := study.NewDefenseService(k)
-	if _, err := defenses.DraftQuestions(w.ctx, d.teacher, d.work.ID, d.first.UserID); !errors.Is(err, study.ErrNoWork) {
-		t.Fatalf("no work: %v", err)
-	}
-
-	m := study.SearchMap{
-		Used:     []study.MapSource{{Reference: "Codd E. F. A relational model of data", Kind: "article", Found: "eLibrary", Why: "Основа теории"}},
-		Rejected: []study.MapSource{{Reference: "Блог про SQL", Kind: "web", Found: "Google", Why: "Нет ссылок на источники"}},
-		Path:     "Начала с учебника, потом нашла первоисточник.",
-	}
-	if _, _, err := w.work.Submit(w.ctx, d.first, d.work.ID, study.SubmissionInput{
-		ClientID: "4c2b1f0e-7a8d-4e3b-9c51-2d6f0a1b3e77", Body: "Третья нормальная форма убирает транзитивные зависимости.", SearchMap: &m,
-	}); err != nil {
-		t.Fatalf("submit: %v", err)
-	}
-
-	model.reply = "```json\n" + `{"questions":[
-		{"kind":"path","text":"Почему вы отбросили блог про SQL?"},
-		{"kind":"understanding","text":"Что такое транзитивная зависимость?","mark":3,"note":"лишнее"},
-		{"kind":"guess","text":"Списали ли вы работу?"},
-		{"kind":"analysis","text":"Почему 3НФ, а не НФБК?"},
-		{"kind":"application","text":"Как нормализовать таблицу заказов?"},
-		{"kind":"analysis","text":"Чем первоисточник лучше учебника?"},
-		{"kind":"understanding","text":"Что такое ключ?"},
-		{"kind":"understanding","text":"Что такое 2НФ?"},
-		{"kind":"path","text":"Как вы нашли статью Кодда?"}
-	]}` + "\n```"
-	questions, err := defenses.DraftQuestions(w.ctx, d.teacher, d.work.ID, d.first.UserID)
-	if err != nil || len(questions) != 7 {
-		t.Fatalf("questions = %+v, %v", questions, err)
-	}
-	for _, q := range questions {
-		if q.Kind == "guess" || q.Mark != nil || q.Note != "" {
-			t.Fatalf("draft kept %+v", q)
-		}
-	}
-	sent := model.lastUser()
-	for _, want := range []string{"транзитивные зависимости", "Codd E. F.", "Нет ссылок на источники", "первоисточник"} {
-		if !strings.Contains(sent, want) {
-			t.Fatalf("model did not get %q:\n%s", want, sent)
-		}
-	}
-	if _, err := defenses.DraftQuestions(w.ctx, d.second, d.work.ID, d.first.UserID); err == nil {
-		t.Fatal("student drafted questions")
-	}
 
 	model.reply = "  Студентка уверенно объяснила нормальные формы.  "
-	mark := 3
-	summary, err := defenses.DraftProtocol(w.ctx, d.teacher, d.work.ID, d.first.UserID, study.DefenseInput{
-		Questions: []study.DefenseQuestion{{Kind: study.QuestionUnderstanding, Text: "Что такое 3НФ?", Mark: &mark, Note: "Без подсказок"}},
-	})
+	summary, err := defenses.DraftProtocol(w.ctx, d.teacher, d.work.ID, d.first.UserID, in)
 	if err != nil || summary != "Студентка уверенно объяснила нормальные формы." {
 		t.Fatalf("protocol = %q, %v", summary, err)
 	}
 	if sent := model.lastUser(); !strings.Contains(sent, "Отметка: 3") || !strings.Contains(sent, "Без подсказок") {
 		t.Fatalf("protocol input:\n%s", sent)
 	}
+	if _, err := defenses.DraftProtocol(w.ctx, d.second, d.work.ID, d.first.UserID, in); err == nil {
+		t.Fatal("student drafted a protocol")
+	}
 
-	model.reply = "не JSON"
-	if _, err := defenses.DraftQuestions(w.ctx, d.teacher, d.work.ID, d.first.UserID); !errors.Is(err, study.ErrAIFailed) {
-		t.Fatalf("bad answer: %v", err)
+	model.reply = "   "
+	if _, err := defenses.DraftProtocol(w.ctx, d.teacher, d.work.ID, d.first.UserID, in); !errors.Is(err, study.ErrAIFailed) {
+		t.Fatalf("empty answer: %v", err)
 	}
 }
 

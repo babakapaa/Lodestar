@@ -2,17 +2,11 @@ package study
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"strconv"
 	"strings"
 
 	"github.com/babakapaa/lodestar/server/internal/platform/llm"
-)
-
-const (
-	minDraftQuestions = 5
-	maxDraftQuestions = 7
 )
 
 type DefenseDrafter struct {
@@ -21,38 +15,6 @@ type DefenseDrafter struct {
 
 func (d DefenseDrafter) ready() bool {
 	return d.model != nil
-}
-
-func (d DefenseDrafter) Questions(ctx context.Context, m DefenseMaterial) ([]DefenseQuestion, error) {
-	raw, err := d.model.Complete(ctx, llm.Request{
-		Messages: []llm.Message{
-			{Role: llm.RoleSystem, Content: questionsPrompt},
-			{Role: llm.RoleUser, Content: m.Text()},
-		},
-		Temperature: 0.4,
-		MaxTokens:   1200,
-		JSON:        true,
-	})
-	if err != nil {
-		return nil, ErrAIFailed
-	}
-	var out struct {
-		Questions []DefenseQuestion `json:"questions"`
-	}
-	if json.Unmarshal([]byte(objectIn(raw)), &out) != nil {
-		return nil, ErrAIFailed
-	}
-	questions := make([]DefenseQuestion, 0, maxDraftQuestions)
-	for _, q := range out.Questions {
-		q.Mark, q.Note = nil, ""
-		if q, ok := q.normalized(); ok && len(questions) < maxDraftQuestions {
-			questions = append(questions, q)
-		}
-	}
-	if len(questions) == 0 {
-		return nil, ErrAIFailed
-	}
-	return questions, nil
 }
 
 func (d DefenseDrafter) Protocol(ctx context.Context, title string, questions []DefenseQuestion, notes string) (string, error) {
@@ -83,12 +45,4 @@ func (d DefenseDrafter) Protocol(ctx context.Context, title string, questions []
 		return "", ErrAIFailed
 	}
 	return strings.TrimSpace(raw), nil
-}
-
-func objectIn(raw string) string {
-	raw = strings.TrimSpace(raw)
-	if start, end := strings.Index(raw, "{"), strings.LastIndex(raw, "}"); start >= 0 && end > start {
-		return raw[start : end+1]
-	}
-	return raw
 }

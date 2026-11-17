@@ -936,8 +936,6 @@
   "defenseFinished": "Защита завершена",
   "defenseQuestions": "Вопросы",
   "defenseNoQuestions": "Вопросов пока нет.",
-  "defenseSuggest": "Предложить вопросы",
-  "defenseSuggestHint": "ИИ предложит вопросы по работе студента и его карте поиска. Отредактируйте их до защиты.",
   "defenseProtocol": "Протокол",
   "defenseSummary": "Итог защиты",
   "defenseDraftProtocol": "Черновик по отметкам",

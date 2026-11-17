@@ -53,7 +53,7 @@ void main() {
     expect(find.text('Вы ещё не записались.'), findsOneWidget);
   });
 
-  testWidgets('a teacher holds a defense with AI questions and a grade', (
+  testWidgets('a teacher holds a defense with own questions and a grade', (
     tester,
   ) async {
     final server = FakeServer();
@@ -75,8 +75,16 @@ void main() {
     await tester.tap(find.text('Ерлан Ким'));
     await tester.pumpAndSettle();
     expect(find.text('Вопросов пока нет.'), findsOneWidget);
-    await tester.tap(find.byKey(const ValueKey('suggest-questions')));
-    await tester.pumpAndSettle();
+    for (final text in [
+      'Что такое мембрана клетки?',
+      'Как вы нашли главный источник?',
+    ]) {
+      await tester.tap(find.byKey(const ValueKey('add-question')));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byKey(const ValueKey('question-text')), text);
+      await tester.tap(find.text('Добавить'));
+      await tester.pumpAndSettle();
+    }
     expect(find.text('1. Что такое мембрана клетки?'), findsOneWidget);
     expect(find.text('2. Как вы нашли главный источник?'), findsOneWidget);
 

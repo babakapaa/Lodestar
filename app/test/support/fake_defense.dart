@@ -21,11 +21,6 @@ class FakeDefense {
     'email': 'erlan@kaznu.kz',
   };
 
-  static const drafts = [
-    {'kind': 'understanding', 'text': 'Что такое мембрана клетки?'},
-    {'kind': 'path', 'text': 'Как вы нашли главный источник?'},
-  ];
-
   http.Response? handle(
     http.Request request,
     List<String> segments,
@@ -47,9 +42,6 @@ class FakeDefense {
       ('PUT', ['defenses', 'u2']) => _save(request, id),
       ('PUT', ['defenses', 'u2', 'selection']) => _select(request, id),
       ('POST', ['defenses', 'u2', 'finish']) => _finish(request, id),
-      ('POST', ['defenses', 'u2', 'questions-draft']) => _json(200, {
-        'questions': drafts,
-      }),
       ('POST', ['defenses', 'u2', 'protocol-draft']) => _json(200, {
         'summary': 'Студент уверенно объяснил строение клетки.',
       }),

@@ -17,25 +17,28 @@ type Verifier struct {
 }
 
 func (v Verifier) Check(ctx context.Context, draft string, prompt Prompt) Verdict {
+	all := sentences(draft)
+	drop := make([]bool, len(all))
 	var kept []sentence
+	var index []int
 	removed := 0
-	for _, s := range sentences(draft) {
+	for i, s := range all {
 		if grounded(s.text, prompt.Fragments) {
 			kept = append(kept, s)
+			index = append(index, i)
 		} else {
+			drop[i] = true
 			removed++
 		}
 	}
 	reply := v.ask(ctx, kept, prompt)
-	var final []sentence
-	for i, s := range kept {
-		if slices.Contains(reply.Unsupported, i+1) {
+	for _, n := range reply.Unsupported {
+		if n >= 1 && n <= len(index) && !drop[index[n-1]] {
+			drop[index[n-1]] = true
 			removed++
-			continue
 		}
-		final = append(final, s)
 	}
-	text := joinSentences(final)
+	text := tidyMarkup(joinSentences(keepSentences(all, drop)))
 	leak := reply.Leak && (prompt.Brief == nil || prompt.Brief.Mode != module.ModeProject)
 	return Verdict{Text: text, Citations: citations(text, prompt.Fragments), Leak: leak, Removed: removed}
 }

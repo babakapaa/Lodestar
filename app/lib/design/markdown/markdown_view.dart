@@ -7,6 +7,7 @@ import '../typography/font_families.dart';
 import 'md_block.dart';
 import 'md_inline.dart';
 import 'md_parser.dart';
+import 'md_table_view.dart';
 
 class MarkdownView extends StatelessWidget {
   const MarkdownView(this.text, {this.style, super.key});
@@ -131,6 +132,11 @@ class MarkdownView extends StatelessWidget {
               ),
             ),
           ),
+        );
+      case MdKind.table:
+        return Align(
+          alignment: Alignment.centerLeft,
+          child: MdTableView(rows: block.rows, base: base, inline: inline),
         );
       case MdKind.rule:
         return Divider(color: palette.border, height: Spacing.l);

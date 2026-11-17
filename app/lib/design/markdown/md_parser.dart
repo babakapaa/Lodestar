@@ -5,6 +5,9 @@ abstract final class MdParser {
   static final _item = RegExp(r'^(\s*)([-*+]|\d+[.)])\s+(\[[ xX]\]\s+)?(.*)$');
   static final _quote = RegExp(r'^\s*>\s?(.*)$');
   static final _rule = RegExp(r'^\s*([-*_])(\s*\1){2,}\s*$');
+  static final _divider = RegExp(
+    r'^\s*\|?\s*:?-+:?\s*(\|\s*:?-+:?\s*)*\|?\s*$',
+  );
 
   static List<MdBlock> parse(String source) {
     final lines = source.replaceAll('\r\n', '\n').split('\n');
@@ -70,6 +73,20 @@ abstract final class MdParser {
         i++;
         continue;
       }
+      if (trimmed.startsWith('|') &&
+          i + 1 < lines.length &&
+          _divider.hasMatch(lines[i + 1]) &&
+          lines[i + 1].contains('|')) {
+        flush();
+        final rows = [_cells(line)];
+        i += 2;
+        while (i < lines.length && lines[i].trim().startsWith('|')) {
+          rows.add(_cells(lines[i]));
+          i++;
+        }
+        blocks.add(MdBlock(MdKind.table, '', rows: rows));
+        continue;
+      }
       if (_rule.hasMatch(line)) {
         flush();
         blocks.add(const MdBlock(MdKind.rule, ''));
@@ -127,5 +144,16 @@ abstract final class MdParser {
     }
     flush();
     return blocks;
+  }
+
+  static List<String> _cells(String line) {
+    var text = line.trim();
+    if (text.startsWith('|')) {
+      text = text.substring(1);
+    }
+    if (text.endsWith('|')) {
+      text = text.substring(0, text.length - 1);
+    }
+    return [for (final cell in text.split('|')) cell.trim()];
   }
 }

@@ -16,7 +16,7 @@ func sentences(text string) []sentence {
 	start := 0
 	for i := 0; i < len(runes); i++ {
 		end := strings.ContainsRune(".!?…", runes[i]) || runes[i] == '\n'
-		if !end || (runes[i] != '\n' && i+1 < len(runes) && !unicode.IsSpace(runes[i+1])) {
+		if !end || (runes[i] != '\n' && i+1 < len(runes) && !unicode.IsSpace(runes[i+1])) || listMarker(runes, i) {
 			continue
 		}
 		j := i + 1

@@ -1,8 +1,7 @@
 abstract final class FontFamilies {
-  static const inter = 'Inter';
-  static const sourceSerif = 'SourceSerif4';
+  static const googleSans = 'GoogleSans';
+  static const martianMono = 'MartianMono';
   static const jetBrainsMono = 'JetBrainsMono';
-  static const nunito = 'Nunito';
 
-  static const fallback = [inter];
+  static const fallback = [googleSans];
 }

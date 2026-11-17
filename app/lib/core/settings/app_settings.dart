@@ -8,7 +8,7 @@ import 'appearance_mode.dart';
 @immutable
 class AppSettings {
   const AppSettings({
-    this.family = ThemeFamily.graphite,
+    this.family = ThemeFamily.campus,
     this.accent = AccentChoice.auto,
     this.appearance = AppearanceMode.system,
     this.language = AppLanguage.system,

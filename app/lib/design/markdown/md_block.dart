@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 
-enum MdKind { heading, paragraph, item, quote, rule, code, math }
+enum MdKind { heading, paragraph, item, quote, rule, code, math, table }
 
 @immutable
 class MdBlock {
@@ -10,6 +10,7 @@ class MdBlock {
     this.level = 0,
     this.marker = '',
     this.done,
+    this.rows = const [],
   });
 
   final MdKind kind;
@@ -17,4 +18,5 @@ class MdBlock {
   final int level;
   final String marker;
   final bool? done;
+  final List<List<String>> rows;
 }

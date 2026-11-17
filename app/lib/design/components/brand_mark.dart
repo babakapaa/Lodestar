@@ -3,6 +3,7 @@ import 'package:material_ui/material_ui.dart';
 import '../tokens/spacing.dart';
 import '../tokens/tokens_context.dart';
 import '../../l10n/l10n_context.dart';
+import 'lodestar_mark.dart';
 
 class BrandMark extends StatelessWidget {
   const BrandMark({required this.showName, this.width, super.key});
@@ -13,15 +14,7 @@ class BrandMark extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokens = context.tokens;
-    final mark = Container(
-      width: 32,
-      height: 32,
-      decoration: BoxDecoration(
-        color: tokens.palette.accent,
-        borderRadius: tokens.borderRadiusSmall,
-      ),
-      child: Icon(Icons.explore, color: tokens.palette.onAccent, size: 18),
-    );
+    final mark = LodestarMark(size: 32, color: tokens.palette.accent);
     if (!showName) {
       return mark;
     }

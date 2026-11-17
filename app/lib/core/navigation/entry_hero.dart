@@ -1,5 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 
+import '../../design/components/lodestar_mark.dart';
 import '../../design/tokens/spacing.dart';
 import '../../design/tokens/tokens_context.dart';
 import '../../l10n/l10n_context.dart';
@@ -34,15 +35,7 @@ class EntryHero extends StatelessWidget {
           children: [
             Row(
               children: [
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: ink.withValues(alpha: 0.16),
-                    borderRadius: context.tokens.borderRadiusSmall,
-                  ),
-                  child: Icon(Icons.explore, color: ink, size: 22),
-                ),
+                LodestarMark(size: 40, color: ink),
                 const SizedBox(width: Spacing.m),
                 Text(
                   l10n.appTitle,

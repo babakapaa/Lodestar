@@ -40,6 +40,7 @@ class SettingLabels {
     'navigator.support_contacts' => l10n.settingNavigatorSupport,
     'navigator.memory_messages' => l10n.settingNavigatorMemory,
     'navigator.open_library' => l10n.settingNavigatorLibrary,
+    'navigator.min_similarity' => l10n.settingNavigatorMatch,
     'league.division_gpu_hours' => l10n.settingLeagueGpu,
     _ => key,
   };

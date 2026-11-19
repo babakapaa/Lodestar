@@ -35,6 +35,7 @@ class HelpSummaryView extends StatelessWidget {
             ),
             style: muted,
           ),
+          Text(l10n.helpSummaryRule, style: muted),
         ],
         if (summary.sources.isNotEmpty) ...[
           const SizedBox(height: Spacing.s),

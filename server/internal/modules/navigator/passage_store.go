@@ -32,12 +32,13 @@ func (PassageStore) Embed(ctx context.Context, tx pgx.Tx, model string, p passag
 	return nil
 }
 
-func (PassageStore) Search(ctx context.Context, tx pgx.Tx, model, courseID string, v []float32, limit int) ([]Fragment, error) {
+func (PassageStore) Search(ctx context.Context, tx pgx.Tx, model, courseID string, v []float32, limit int, maxDistance float64) ([]Fragment, error) {
 	rows, err := tx.Query(ctx, `
 		SELECT m.id::text, p.seq, m.title, m.reference, m.url, p.text
 		FROM navigator.passages p JOIN navigator.materials m ON m.id = p.material_id
 		WHERE m.course_id::text = $1 AND p.model = $2 AND vector_dims(p.embedding) = vector_dims($3::vector)
-		ORDER BY p.embedding <=> $3::vector LIMIT $4`, courseID, model, vectorLiteral(v), limit)
+			AND p.embedding <=> $3::vector <= $5
+		ORDER BY p.embedding <=> $3::vector LIMIT $4`, courseID, model, vectorLiteral(v), limit, maxDistance)
 	if err != nil {
 		return nil, fmt.Errorf("search passages: %w", err)
 	}

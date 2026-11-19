@@ -19,6 +19,7 @@ type Prompt struct {
 	Retry     string
 	Now       time.Time
 	Library   bool
+	Match     int
 }
 
 func (p Prompt) Messages() []llm.Message {

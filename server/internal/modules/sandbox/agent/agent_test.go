@@ -206,6 +206,9 @@ func TestAgentStartsReportsAndStopsSession(t *testing.T) {
 	}
 	host := c.spec["HostConfig"].(map[string]any)
 	device := host["DeviceRequests"].([]any)[0].(map[string]any)
+	if host["SecurityOpt"].([]any)[0] != "no-new-privileges" || host["PidsLimit"] != float64(4096) {
+		t.Fatalf("host = %+v", host)
+	}
 	if ids := device["DeviceIDs"].([]any); ids[0] != "0" || host["Binds"].([]any)[0] != r.data+"/user-u1:/workspace" {
 		t.Fatalf("host config = %+v", host)
 	}

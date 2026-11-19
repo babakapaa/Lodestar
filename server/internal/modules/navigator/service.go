@@ -146,6 +146,9 @@ func (s Service) Ask(ctx context.Context, p auth.Principal, id string, in Messag
 		if prompt.Library, err = s.flag(ctx, tx, LibrarySetting); err != nil {
 			return err
 		}
+		if prompt.Match, err = s.number(ctx, tx, MatchSetting); err != nil {
+			return err
+		}
 		support, err = s.text(ctx, tx, SupportSetting)
 		return err
 	})
@@ -238,7 +241,7 @@ func (s Service) answer(ctx context.Context, p auth.Principal, prompt Prompt, st
 		return Verdict{}, err
 	}
 	if prompt.Brief != nil {
-		prompt.Fragments = s.retriever.Find(ctx, p.TenantID, prompt.Brief.CourseID, prompt.query())
+		prompt.Fragments = s.retriever.Find(ctx, p.TenantID, prompt.Brief.CourseID, prompt.query(), prompt.Match)
 	}
 	articles := s.articles(ctx, prompt)
 	var verdict Verdict
@@ -297,7 +300,11 @@ func (s Service) brief(ctx context.Context, tx pgx.Tx, p auth.Principal, kind, i
 }
 
 func (s Service) memoryLimit(ctx context.Context, tx pgx.Tx) (int, error) {
-	raw, err := s.k.Settings.Value(ctx, tx, MemorySetting)
+	return s.number(ctx, tx, MemorySetting)
+}
+
+func (s Service) number(ctx context.Context, tx pgx.Tx, key string) (int, error) {
+	raw, err := s.k.Settings.Value(ctx, tx, key)
 	if err != nil {
 		return 0, err
 	}

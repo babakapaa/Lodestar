@@ -7,7 +7,7 @@ import '../../core/navigation/app_routes.dart';
 import '../../design/components/empty_state.dart';
 import '../../l10n/l10n_context.dart';
 import '../study/loaded_list_view.dart';
-import '../../core/sources/gost_reference.dart';
+import '../../core/sources/reference_style.dart';
 import 'notes_providers.dart';
 import '../../core/sources/source.dart';
 import 'source_find_dialog.dart';
@@ -23,10 +23,14 @@ class SourcesScreen extends ConsumerWidget {
     }
   }
 
-  Future<void> _copy(BuildContext context, List<Source> sources) async {
+  Future<void> _copy(
+    BuildContext context,
+    List<Source> sources,
+    ReferenceStyle style,
+  ) async {
     final messenger = ScaffoldMessenger.of(context);
     final copied = context.l10n.sourcesCopied;
-    await Clipboard.setData(ClipboardData(text: GostReference.list(sources)));
+    await Clipboard.setData(ClipboardData(text: style.list(sources)));
     messenger.showSnackBar(SnackBar(content: Text(copied)));
   }
 
@@ -40,10 +44,20 @@ class SourcesScreen extends ConsumerWidget {
         title: Text(l10n.sourcesTitle),
         actions: [
           if (sources.isNotEmpty)
-            IconButton(
+            PopupMenuButton<ReferenceStyle>(
               tooltip: l10n.sourcesCopyList,
               icon: const Icon(Icons.copy_all_outlined),
-              onPressed: () => _copy(context, sources),
+              onSelected: (style) => _copy(context, sources, style),
+              itemBuilder: (context) => [
+                PopupMenuItem(
+                  value: ReferenceStyle.gost,
+                  child: Text(l10n.sourcesCopyGost),
+                ),
+                PopupMenuItem(
+                  value: ReferenceStyle.apa,
+                  child: Text(l10n.sourcesCopyApa),
+                ),
+              ],
             ),
           IconButton(
             tooltip: l10n.sourcesManual,

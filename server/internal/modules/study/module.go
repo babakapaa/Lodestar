@@ -20,7 +20,7 @@ func (Module) Manifest() module.Manifest {
 func (Module) Mount(mux *http.ServeMux, k module.Kernel) {
 	Routes{
 		Service:     NewService(k.Tenants, k.Access),
-		Assignments: NewAssignmentService(k.Tenants, k.Access, k.Notifier).WithTeams(k.Teams),
+		Assignments: NewAssignmentService(k.Tenants, k.Access, k.Notifier).WithTeams(k.Teams).WithHelp(k.Help),
 		Schedule:    NewScheduleService(k),
 		Defenses:    NewDefenseService(k),
 		Gradebook:   NewGradebookService(k.Tenants, k.Access),
@@ -60,7 +60,7 @@ func (Module) RosterSources(module.Kernel) []module.RosterSource {
 }
 
 func (Module) TeamScopeSources(k module.Kernel) []module.TeamScopeSource {
-	return []module.TeamScopeSource{AssignmentTeamScopes{work: NewAssignmentService(k.Tenants, k.Access, k.Notifier)}}
+	return []module.TeamScopeSource{AssignmentTeamScopes{work: NewAssignmentService(k.Tenants, k.Access, k.Notifier).WithHelp(k.Help)}}
 }
 
 func (Module) ScoreSources(module.Kernel) []module.ScoreSource {

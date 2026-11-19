@@ -1,3 +1,4 @@
+import 'article.dart';
 import 'citation.dart';
 import 'hint_step.dart';
 import 'navigator_intent.dart';
@@ -12,6 +13,7 @@ class NavigatorMessage {
     required this.lastStep,
     required this.support,
     required this.citations,
+    this.articles = const [],
   });
 
   factory NavigatorMessage.fromJson(Map<String, Object?> json) =>
@@ -27,6 +29,10 @@ class NavigatorMessage {
           for (final item in json['citations'] as List<Object?>? ?? const [])
             Citation.fromJson(item! as Map<String, Object?>),
         ],
+        articles: [
+          for (final item in json['articles'] as List<Object?>? ?? const [])
+            Article.fromJson(item! as Map<String, Object?>),
+        ],
       );
 
   final int seq;
@@ -37,4 +43,5 @@ class NavigatorMessage {
   final bool lastStep;
   final String support;
   final List<Citation> citations;
+  final List<Article> articles;
 }

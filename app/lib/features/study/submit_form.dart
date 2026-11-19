@@ -11,6 +11,7 @@ import '../../design/tokens/spacing.dart';
 import '../../l10n/l10n_context.dart';
 import 'assignment_details.dart';
 import 'attached_file.dart';
+import 'help_preview.dart';
 import 'search_map.dart';
 import 'study_providers.dart';
 import 'submission_draft.dart';
@@ -169,6 +170,10 @@ class _SubmitFormState extends ConsumerState<SubmitForm> {
         ] else if (attached) ...[
           const SizedBox(height: Spacing.m),
           Text(l10n.mapAttached),
+        ],
+        if (widget.details.assignment.navigatorSummary) ...[
+          const SizedBox(height: Spacing.m),
+          HelpPreview(assignmentId: widget.details.assignment.id),
         ],
         const SizedBox(height: Spacing.l),
         Wrap(

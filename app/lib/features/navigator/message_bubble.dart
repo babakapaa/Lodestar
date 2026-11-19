@@ -3,6 +3,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../design/tokens/spacing.dart';
 import '../../design/tokens/tokens_context.dart';
 import '../../design/markdown/markdown_view.dart';
+import 'article_list.dart';
 import 'citation_list.dart';
 import 'navigator_avatar.dart';
 import 'navigator_labels_context.dart';
@@ -67,6 +68,10 @@ class MessageBubble extends StatelessWidget {
               if (message.citations.isNotEmpty) ...[
                 const SizedBox(height: Spacing.m),
                 CitationList(citations: message.citations),
+              ],
+              if (message.articles.isNotEmpty) ...[
+                const SizedBox(height: Spacing.m),
+                ArticleList(articles: message.articles),
               ],
             ],
           ),

@@ -5031,6 +5031,40 @@ paths:
           $ref: "#/components/responses/Error"
         default:
           $ref: "#/components/responses/Error"
+  /v1/navigator/help:
+    get:
+      tags: [navigator]
+      operationId: getHelpSummary
+      summary: Сводка помощи навигатора по заданию
+      description: |
+        Только своя. Сервер прикладывает её к сдаче, если лектор включил navigatorSummary в задании.
+        Студент видит её до сдачи. Удаление диалогов сводку не меняет. Текста вопросов и ответов в ней нет.
+      security:
+        - bearer: []
+      parameters:
+        - name: scopeKind
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [assignment]
+        - name: scopeId
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Готово
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HelpSummary"
+        "401":
+          $ref: "#/components/responses/Error"
+        default:
+          $ref: "#/components/responses/Error"
   /v1/chat/chats:
     get:
       tags: [chat]
@@ -9805,7 +9839,7 @@ components:
       description: points баллы до maxPoints, pass зачёт или незачёт, none только отзыв
     Assignment:
       type: object
-      required: [id, courseId, title, description, dueAt, grading, maxPoints, searchMap, navigatorMode, defense, team, publishedAt, createdAt]
+      required: [id, courseId, title, description, dueAt, grading, maxPoints, searchMap, navigatorMode, navigatorSummary, defense, team, publishedAt, createdAt]
       properties:
         id:
           type: string
@@ -9834,6 +9868,9 @@ components:
             - $ref: "#/components/schemas/NavigatorMode"
             - type: "null"
           description: Пусто, если действует режим курса
+        navigatorSummary:
+          type: boolean
+          description: Приложить к сдаче сводку помощи навигатора
         defense:
           oneOf:
             - $ref: "#/components/schemas/DefenseFormat"
@@ -9878,6 +9915,9 @@ components:
           oneOf:
             - $ref: "#/components/schemas/NavigatorMode"
             - type: "null"
+        navigatorSummary:
+          type: boolean
+          default: false
         defense:
           oneOf:
             - $ref: "#/components/schemas/DefenseFormat"
@@ -9953,7 +9993,7 @@ components:
                 - type: "null"
     Submission:
       type: object
-      required: [id, assignmentId, studentId, clientId, body, composedAt, searchMap, submittedAt, files, team]
+      required: [id, assignmentId, studentId, clientId, body, composedAt, searchMap, submittedAt, files, team, navigatorSummary]
       properties:
         id:
           type: string
@@ -9988,6 +10028,11 @@ components:
             - $ref: "#/components/schemas/TeamReceipt"
             - type: "null"
           description: Квитанция командной сдачи, кто согласился и кто возразил
+        navigatorSummary:
+          oneOf:
+            - $ref: "#/components/schemas/HelpSummary"
+            - type: "null"
+          description: Сводка помощи навигатора на момент сдачи. Пусто, если лектор её не включал
     SubmissionInput:
       type: object
       required: [clientId]
@@ -12043,7 +12088,7 @@ components:
                 $ref: "#/components/schemas/NavigatorMessage"
     NavigatorMessage:
       type: object
-      required: [seq, role, text, intent, step, lastStep, support, citations, createdAt]
+      required: [seq, role, text, intent, step, lastStep, support, citations, articles, createdAt]
       properties:
         seq:
           type: integer
@@ -12065,6 +12110,11 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/Citation"
+        articles:
+          type: array
+          description: Статьи из открытой базы OpenAlex, если в материалах курса ничего не нашлось
+          items:
+            $ref: "#/components/schemas/Article"
         createdAt:
           type: string
           format: date-time
@@ -12111,6 +12161,58 @@ components:
         text:
           type: string
           description: Фрагмент источника
+    Article:
+      type: object
+      required: [title, authors, year, venue, doi, url]
+      properties:
+        title:
+          type: string
+        authors:
+          type: array
+          maxItems: 3
+          items:
+            type: string
+        year:
+          type: integer
+          description: 0, если год неизвестен
+        venue:
+          type: string
+        doi:
+          type: string
+        url:
+          type: string
+    HelpSummary:
+      type: object
+      required: [replies, steps, sources, articles]
+      properties:
+        replies:
+          type: integer
+          description: Сколько ответов навигатора получено по заданию
+        steps:
+          type: object
+          required: [question, direction, source, fragment, example]
+          description: Сколько раз выдана каждая ступень лестницы
+          properties:
+            question:
+              type: integer
+            direction:
+              type: integer
+            source:
+              type: integer
+            fragment:
+              type: integer
+            example:
+              type: integer
+        sources:
+          type: array
+          description: Материалы курса, на которые ссылался навигатор
+          items:
+            type: string
+        articles:
+          type: array
+          description: Статьи из OpenAlex, которые показал навигатор
+          items:
+            type: string
     Material:
       type: object
       required: [id, courseId, title, reference, url, passages, indexed, createdAt]

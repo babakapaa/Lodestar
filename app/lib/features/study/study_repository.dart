@@ -11,6 +11,7 @@ import 'assignment_item.dart';
 import 'course.dart';
 import 'course_details.dart';
 import 'grade_input.dart';
+import 'help_summary.dart';
 import 'lesson.dart';
 import 'search_map.dart';
 import 'search_map_draft.dart';
@@ -64,6 +65,14 @@ class StudyRepository {
   Future<void> submit(SubmissionDraft draft) => _api.post(
     '/v1/study/assignments/${_id(draft.assignmentId)}/submissions',
     draft.toRequest(),
+  );
+
+  Future<HelpSummary> help(String assignmentId) async => HelpSummary.fromJson(
+    (await _api.get('/v1/navigator/help', {
+          'scopeKind': 'assignment',
+          'scopeId': assignmentId,
+        }))!
+        as Map<String, Object?>,
   );
 
   Future<Loaded<SearchMapDraft>> searchMap(String assignmentId) async => _one(

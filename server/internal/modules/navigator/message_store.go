@@ -104,5 +104,9 @@ func (s MessageStore) scan(row pgx.CollectableRow) (Message, error) {
 	if m.Citations == nil {
 		m.Citations = []Citation{}
 	}
+	m.Articles = body.Articles
+	if m.Articles == nil {
+		m.Articles = []Article{}
+	}
 	return m, nil
 }

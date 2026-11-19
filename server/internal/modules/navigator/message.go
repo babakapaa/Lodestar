@@ -16,5 +16,6 @@ type Message struct {
 	LastStep  bool       `json:"lastStep"`
 	Support   string     `json:"support"`
 	Citations []Citation `json:"citations"`
+	Articles  []Article  `json:"articles"`
 	CreatedAt time.Time  `json:"createdAt"`
 }

@@ -34,4 +34,5 @@ type Kernel struct {
 	Scores      ScoreSources
 	GPU         GPUSources
 	Lessons     LessonSource
+	Help        HelpSource
 }

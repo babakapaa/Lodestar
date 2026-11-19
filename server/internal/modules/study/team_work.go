@@ -88,7 +88,11 @@ func (s AssignmentService) DeliverTeamWork(ctx context.Context, tx pgx.Tx, d mod
 		} else if !errors.Is(err, ErrAssignmentNotFound) {
 			return err
 		}
-		sub, err := s.submissions.Insert(ctx, tx, a.ID, v.UserID, in, &receipt)
+		help, err := s.helpFor(ctx, tx, a, v.UserID)
+		if err != nil {
+			return err
+		}
+		sub, err := s.submissions.Insert(ctx, tx, a.ID, v.UserID, in, &receipt, help)
 		if err != nil {
 			return err
 		}

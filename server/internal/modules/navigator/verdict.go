@@ -5,6 +5,7 @@ type Verdict struct {
 	Citations []Citation
 	Leak      bool
 	Removed   int
+	Articles  []Article
 }
 
 func (v Verdict) Passed() bool {

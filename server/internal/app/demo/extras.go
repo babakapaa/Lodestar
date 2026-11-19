@@ -12,6 +12,7 @@ import (
 
 func seedExtras(ctx context.Context, core app.Core, registry *module.Registry, tenantID string, ids map[string]string, courseID string, now time.Time) error {
 	k := core.Kernel
+	k.Help = registry.HelpSource(k)
 	k.Briefs = registry.Briefs(k)
 	k.Scores = registry.ScoreSources(k)
 	k.TeamScopes = registry.TeamScopes(k)

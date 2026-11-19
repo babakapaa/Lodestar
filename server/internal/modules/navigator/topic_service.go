@@ -71,6 +71,11 @@ func (s TopicService) Course(ctx context.Context, p auth.Principal, courseID str
 			}
 			out.Trend = append(out.Trend, c)
 		}
+		for i := range out.Topics {
+			if out.Topics[i].Recent < privacyFloor {
+				out.Topics[i].Recent = 0
+			}
+		}
 		for i, t := range out.Topics {
 			if t.Recent >= privacyFloor && (out.Suggestion == nil || t.Recent > out.Suggestion.Recent) {
 				out.Suggestion = &out.Topics[i]

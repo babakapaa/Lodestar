@@ -156,6 +156,17 @@ func (m *fakeModel) Stream(ctx context.Context, req llm.Request, delta func(stri
 	return full, nil
 }
 
+func (m *fakeModel) verifier() llm.Request {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	for i := len(m.requests) - 1; i >= 0; i-- {
+		if m.requests[i].JSON && strings.Contains(m.requests[i].Messages[0].Content, "проверяешь") {
+			return m.requests[i]
+		}
+	}
+	return llm.Request{}
+}
+
 func (m *fakeModel) last() llm.Request {
 	m.mu.Lock()
 	defer m.mu.Unlock()

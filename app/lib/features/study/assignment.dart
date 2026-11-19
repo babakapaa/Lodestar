@@ -1,4 +1,5 @@
 import 'defense_format.dart';
+import 'grade_weights.dart';
 import 'grading.dart';
 import 'map_rules.dart';
 import 'navigator_mode.dart';
@@ -14,6 +15,7 @@ class Assignment {
     required this.grading,
     required this.maxPoints,
     required this.published,
+    this.gradeWeights,
     this.searchMap,
     this.navigatorMode = NavigatorMode.course,
     this.navigatorSummary = false,
@@ -31,6 +33,7 @@ class Assignment {
       dueAt: dueAt is String ? DateTime.parse(dueAt) : null,
       grading: Grading.parse(json['grading']),
       maxPoints: (json['maxPoints'] as num?)?.toDouble(),
+      gradeWeights: GradeWeights.maybe(json['gradeWeights']),
       published: json['publishedAt'] != null,
       searchMap: MapRules.maybe(json['searchMap']),
       navigatorMode: NavigatorMode.parse(json['navigatorMode']),
@@ -47,6 +50,7 @@ class Assignment {
   final DateTime? dueAt;
   final Grading grading;
   final double? maxPoints;
+  final GradeWeights? gradeWeights;
   final bool published;
   final MapRules? searchMap;
   final NavigatorMode navigatorMode;

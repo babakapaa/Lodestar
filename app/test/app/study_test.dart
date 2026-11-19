@@ -163,6 +163,7 @@ void main() {
       'Лабораторная 1',
     );
     await tester.tap(find.text('Зачёт'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Опубликовать'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Короткая беседа'));
@@ -175,6 +176,7 @@ void main() {
     expect(created['title'], 'Лабораторная 1');
     expect(created['grading'], 'pass');
     expect(created['maxPoints'], isNull);
+    expect(created['gradeWeights'], isNull);
     expect(created['publishedAt'], isNotNull);
 
     await tester.ensureVisible(find.text('Лабораторная 1'));

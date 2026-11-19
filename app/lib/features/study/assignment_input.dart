@@ -1,4 +1,5 @@
 import 'defense_format.dart';
+import 'grade_weights.dart';
 import 'grading.dart';
 import 'map_rules.dart';
 import 'navigator_mode.dart';
@@ -13,6 +14,7 @@ class AssignmentInput {
     required this.maxPoints,
     required this.published,
     required this.files,
+    this.gradeWeights,
     this.searchMap,
     this.navigatorMode = NavigatorMode.course,
     this.navigatorSummary = false,
@@ -25,6 +27,7 @@ class AssignmentInput {
   final DateTime? dueAt;
   final Grading grading;
   final double? maxPoints;
+  final GradeWeights? gradeWeights;
   final bool published;
   final List<String> files;
   final MapRules? searchMap;
@@ -39,6 +42,7 @@ class AssignmentInput {
     'dueAt': dueAt?.toUtc().toIso8601String(),
     'grading': grading.name,
     'maxPoints': grading == Grading.points ? maxPoints : null,
+    'gradeWeights': grading == Grading.points ? gradeWeights?.toJson() : null,
     'published': published,
     'files': files,
     'searchMap': searchMap?.toJson(),

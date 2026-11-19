@@ -54,6 +54,12 @@ class AssignmentScreen extends ConsumerWidget {
         [
           labels.due(assignment.dueAt),
           labels.grading(assignment.grading),
+          if (assignment.gradeWeights case final weights?)
+            l10n.assignmentWeightsLine(
+              weights.defense,
+              weights.map,
+              weights.work,
+            ),
           if (!assignment.published) l10n.assignmentDraft,
         ].join(', '),
         style: textTheme.bodyMedium!.copyWith(color: context.palette.muted),

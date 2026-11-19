@@ -1519,5 +1519,16 @@
   "helpSummarySources": "Курс материалдары",
   "helpSummaryArticles": "Мақалалар",
   "helpSummaryAttached": "Бұл қорытынды жұмысқа тіркеледі. Оны өзгертуге болмайды, диалог мәтіні берілмейді.",
-  "settingNavigatorLibrary": "Навигатор: курс материалдарында ештеңе болмаса, OpenAlex-тен мақала іздеу"
+  "settingNavigatorLibrary": "Навигатор: курс материалдарында ештеңе болмаса, OpenAlex-тен мақала іздеу",
+  "assignmentWeights": "Бағаны бөліктерден құрау",
+  "assignmentWeightsHint": "Қорғау, іздеу картасы және жұмыс үшін пайыз қоясыз, қосымша ұпайды салмақпен есептейді. Ұсыныс: 50/30/20",
+  "assignmentWeightsSum": "Салмақтар бүтін сан және қосындысы 100 болуы керек",
+  "assignmentWeightsLine": "қорғау {defense}%, карта {map}%, жұмыс {work}%",
+  "gradePartDefense": "Қорғау",
+  "gradePartMap": "Іздеу картасы",
+  "gradePartWork": "Жұмыс",
+  "gradePartLabel": "{part}, салмағы {weight}%",
+  "gradePartsHint": "Әр бөлік үшін 0-ден 100%-ға дейін нәтиже енгізіңіз",
+  "gradePartsTotal": "Қорытынды: {points} / {max}",
+  "gradeByParts": "Бөліктерден есептеу"
 }

@@ -1519,5 +1519,16 @@
   "helpSummarySources": "Course materials",
   "helpSummaryArticles": "Articles",
   "helpSummaryAttached": "This summary will be attached to your work. It can't be edited, and dialog text is not shared.",
-  "settingNavigatorLibrary": "Navigator: search OpenAlex articles when course materials have nothing"
+  "settingNavigatorLibrary": "Navigator: search OpenAlex articles when course materials have nothing",
+  "assignmentWeights": "Add up the grade from parts",
+  "assignmentWeightsHint": "You enter percentages for the defence, the search map and the work; the app adds up the points by weight. We suggest 50/30/20",
+  "assignmentWeightsSum": "Weights must be whole numbers adding up to 100",
+  "assignmentWeightsLine": "defence {defense}%, map {map}%, work {work}%",
+  "gradePartDefense": "Defence",
+  "gradePartMap": "Search map",
+  "gradePartWork": "Work",
+  "gradePartLabel": "{part}, weight {weight}%",
+  "gradePartsHint": "Enter a result from 0 to 100% for each part",
+  "gradePartsTotal": "Total: {points} of {max}",
+  "gradeByParts": "Add up from parts"
 }

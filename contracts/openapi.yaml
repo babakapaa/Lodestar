@@ -13312,7 +13312,7 @@ components:
           type: integer
         recent:
           type: integer
-          description: Студентов за последние 14 дней
+          description: Студентов за последние 14 дней; 0, если их меньше порога анонимности
     CourseTopics:
       type: object
       required: [threshold, weeks, students, topics, intents, trend, suggestion]

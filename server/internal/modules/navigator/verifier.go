@@ -39,8 +39,7 @@ func (v Verifier) Check(ctx context.Context, draft string, prompt Prompt) Verdic
 		}
 	}
 	text := tidyMarkup(joinSentences(keepSentences(all, drop)))
-	leak := reply.Leak && (prompt.Brief == nil || prompt.Brief.Mode != module.ModeProject)
-	return Verdict{Text: text, Citations: citations(text, prompt.Fragments), Leak: leak, Removed: removed}
+	return Verdict{Text: text, Citations: citations(text, prompt.Fragments), Leak: reply.Leak, Removed: removed}
 }
 
 func (v Verifier) ask(ctx context.Context, kept []sentence, prompt Prompt) checkReply {
@@ -55,9 +54,13 @@ func (v Verifier) ask(ctx context.Context, kept []sentence, prompt Prompt) check
 	for i, s := range kept {
 		b.WriteString("\n" + strconv.Itoa(i+1) + ". " + s.text)
 	}
+	system := verifierPrompt
+	if prompt.Brief != nil && prompt.Brief.Mode == module.ModeProject {
+		system += "\n\n" + projectVerifier
+	}
 	raw, err := v.model.Complete(ctx, llm.Request{
 		Messages: []llm.Message{
-			{Role: llm.RoleSystem, Content: verifierPrompt},
+			{Role: llm.RoleSystem, Content: system},
 			{Role: llm.RoleUser, Content: b.String()},
 		},
 		MaxTokens: 400,

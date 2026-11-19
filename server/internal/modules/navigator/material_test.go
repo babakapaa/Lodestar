@@ -129,8 +129,13 @@ func TestAnswersStayWithinFragments(t *testing.T) {
 	}
 
 	w.enrol(module.ModeProject, student)
-	project := ask("q6", "Вот пример кода для разбора.")
+	whole := ask("q6", "Вот готовый код задания целиком.")
+	if strings.Contains(whole.Text, "готовый код") || !strings.Contains(w.model.verifier().Messages[0].Content, "Режим проектный") {
+		t.Fatalf("project mode leak check = %+v", whole)
+	}
+	w.model.leak = false
+	project := ask("q7", "Вот пример кода для разбора.")
 	if project.Text != "Вот пример кода для разбора." {
-		t.Fatalf("project mode leak check = %+v", project)
+		t.Fatalf("project mode snippet = %+v", project)
 	}
 }

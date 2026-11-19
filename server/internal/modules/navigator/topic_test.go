@@ -85,13 +85,9 @@ func TestTopicsShowOnlyFromFiveStudents(t *testing.T) {
 	if err != nil || len(metrics) != 1 || metrics[0].Key != navigator.MetricUsers || metrics[0].Value != 6.0/7 {
 		t.Fatalf("stats = %+v, %v", metrics, err)
 	}
-	err = w.kernel.Tenants.Run(w.ctx, w.tenant, func(tx pgx.Tx) error {
-		_, err := tx.Exec(w.ctx, `
-			UPDATE navigator.topic_hits SET asked_on = asked_on - 20
-			WHERE user_id IN (SELECT DISTINCT user_id FROM navigator.topic_hits ORDER BY user_id LIMIT 2)`)
-		return err
-	})
-	if err != nil {
+	if _, err := w.kernel.Pool.Exec(w.ctx, `
+		UPDATE navigator.topic_hits SET asked_on = asked_on - 20
+		WHERE user_id IN (SELECT DISTINCT user_id FROM navigator.topic_hits ORDER BY user_id LIMIT 2)`); err != nil {
 		t.Fatalf("backdate: %v", err)
 	}
 	quiet, err := w.topics.Course(w.ctx, teacher, courseID, 8)

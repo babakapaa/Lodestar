@@ -9839,7 +9839,7 @@ components:
       description: points баллы до maxPoints, pass зачёт или незачёт, none только отзыв
     Assignment:
       type: object
-      required: [id, courseId, title, description, dueAt, grading, maxPoints, searchMap, navigatorMode, navigatorSummary, defense, team, publishedAt, createdAt]
+      required: [id, courseId, title, description, dueAt, grading, maxPoints, gradeWeights, searchMap, navigatorMode, navigatorSummary, defense, team, publishedAt, createdAt]
       properties:
         id:
           type: string
@@ -9858,6 +9858,11 @@ components:
           $ref: "#/components/schemas/Grading"
         maxPoints:
           type: [number, "null"]
+        gradeWeights:
+          oneOf:
+            - $ref: "#/components/schemas/GradeWeights"
+            - type: "null"
+          description: Веса частей оценки. Пусто, если лектор ставит баллы сам
         searchMap:
           oneOf:
             - $ref: "#/components/schemas/MapRules"
@@ -9907,6 +9912,11 @@ components:
         maxPoints:
           type: [number, "null"]
           exclusiveMinimum: 0
+        gradeWeights:
+          oneOf:
+            - $ref: "#/components/schemas/GradeWeights"
+            - type: "null"
+          description: Только при оценке в баллах, сумма весов 100
         searchMap:
           oneOf:
             - $ref: "#/components/schemas/MapRules"
@@ -10057,6 +10067,38 @@ components:
             - $ref: "#/components/schemas/SearchMap"
             - type: "null"
           description: Обязательна, если в задании есть требования к карте
+    GradeWeights:
+      type: object
+      required: [defense, map, work]
+      properties:
+        defense:
+          type: integer
+          minimum: 0
+          maximum: 100
+        map:
+          type: integer
+          minimum: 0
+          maximum: 100
+        work:
+          type: integer
+          minimum: 0
+          maximum: 100
+    GradeParts:
+      type: object
+      description: Результат по каждой части в процентах. Указываются части с ненулевым весом
+      properties:
+        defense:
+          type: number
+          minimum: 0
+          maximum: 100
+        map:
+          type: number
+          minimum: 0
+          maximum: 100
+        work:
+          type: number
+          minimum: 0
+          maximum: 100
     MapRules:
       type: object
       required: [minSources, minScholarly]
@@ -10137,7 +10179,7 @@ components:
           format: date-time
     Grade:
       type: object
-      required: [assignmentId, studentId, points, passed, comment, gradedBy, gradedAt]
+      required: [assignmentId, studentId, points, passed, parts, comment, gradedBy, gradedAt]
       properties:
         assignmentId:
           type: string
@@ -10149,6 +10191,11 @@ components:
           type: [number, "null"]
         passed:
           type: [boolean, "null"]
+        parts:
+          oneOf:
+            - $ref: "#/components/schemas/GradeParts"
+            - type: "null"
+          description: Части, из которых сложены баллы. Пусто, если лектор поставил баллы сам
         comment:
           type: string
         gradedBy:
@@ -10165,6 +10212,11 @@ components:
           minimum: 0
         passed:
           type: [boolean, "null"]
+        parts:
+          oneOf:
+            - $ref: "#/components/schemas/GradeParts"
+            - type: "null"
+          description: Если задание с весами, баллы считает сервер по частям
         comment:
           type: string
           maxLength: 20000

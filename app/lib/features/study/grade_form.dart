@@ -12,6 +12,8 @@ import '../../l10n/l10n_context.dart';
 import 'assignment.dart';
 import 'grade.dart';
 import 'grade_input.dart';
+import 'grade_parts.dart';
+import 'grade_parts_fields.dart';
 import 'grading.dart';
 import 'points_text.dart';
 import 'study_labels_context.dart';
@@ -44,6 +46,10 @@ class _GradeFormState extends ConsumerState<GradeForm> {
     text: widget.grade?.comment ?? '',
   );
   late bool _passed = widget.grade?.passed ?? true;
+  late bool _byParts =
+      widget.assignment.gradeWeights != null &&
+      (widget.grade == null || widget.grade?.parts != null);
+  late GradeParts _parts = widget.grade?.parts ?? const GradeParts();
   String? _error;
   bool _busy = false;
 
@@ -59,6 +65,18 @@ class _GradeFormState extends ConsumerState<GradeForm> {
     final comment = _comment.text.trim();
     switch (assignment.grading) {
       case Grading.points:
+        final weights = assignment.gradeWeights;
+        if (_byParts && weights != null) {
+          if (weights.points(_parts, assignment.maxPoints ?? 0) == null) {
+            return null;
+          }
+          return GradeInput(
+            points: null,
+            passed: null,
+            comment: comment,
+            parts: _parts,
+          );
+        }
         final points = double.tryParse(
           _points.text.trim().replaceAll(',', '.').replaceAll(' ', ''),
         );
@@ -118,7 +136,25 @@ class _GradeFormState extends ConsumerState<GradeForm> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        if (assignment.grading == Grading.points &&
+            assignment.gradeWeights != null) ...[
+          SwitchListTile(
+            key: const ValueKey('grade-by-parts'),
+            contentPadding: EdgeInsets.zero,
+            title: Text(l10n.gradeByParts),
+            value: _byParts,
+            onChanged: (value) => setState(() => _byParts = value),
+          ),
+          const SizedBox(height: Spacing.s),
+        ],
         switch (assignment.grading) {
+          Grading.points when _byParts && assignment.gradeWeights != null =>
+            GradePartsFields(
+              weights: assignment.gradeWeights!,
+              maxPoints: assignment.maxPoints ?? 0,
+              initial: widget.grade?.parts,
+              onChanged: (value) => _parts = value,
+            ),
           Grading.points => TextField(
             controller: _points,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),

@@ -13,6 +13,8 @@ import '../../design/tokens/spacing.dart';
 import '../../l10n/l10n_context.dart';
 import 'assignment_details.dart';
 import 'assignment_input.dart';
+import 'grade_weights.dart';
+import 'grade_weights_editor.dart';
 import 'grading.dart';
 import 'map_rules.dart';
 import 'defense_format.dart';
@@ -45,6 +47,9 @@ class _AssignmentFormState extends ConsumerState<AssignmentForm> {
   late DateTime? _dueAt = _assignment?.dueAt?.toLocal();
   late Grading _grading = _assignment?.grading ?? Grading.points;
   late bool _published = _assignment?.published ?? false;
+  late GradeWeights? _weights = _assignment == null
+      ? GradeWeights.suggested
+      : _assignment.gradeWeights;
   late bool _mapRequired = _assignment?.searchMap != null;
   late NavigatorMode _navigatorMode =
       _assignment?.navigatorMode ?? NavigatorMode.course;
@@ -147,6 +152,7 @@ class _AssignmentFormState extends ConsumerState<AssignmentForm> {
     if (_title.text.trim().isEmpty ||
         mapInvalid ||
         !(_team?.valid ?? true) ||
+        (_grading == Grading.points && !(_weights?.valid ?? true)) ||
         (_grading == Grading.points && (maxPoints == null || maxPoints <= 0))) {
       setState(() => _error = l10n.errorInvalidAssignment);
       return;
@@ -158,6 +164,7 @@ class _AssignmentFormState extends ConsumerState<AssignmentForm> {
       dueAt: _dueAt,
       grading: _grading,
       maxPoints: maxPoints,
+      gradeWeights: _weights,
       published: _published,
       files: [...?widget.details?.files.map((file) => file.id)],
       searchMap: _mapRequired
@@ -266,6 +273,11 @@ class _AssignmentFormState extends ConsumerState<AssignmentForm> {
             controller: _maxPoints,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
             decoration: InputDecoration(labelText: l10n.assignmentMaxPoints),
+          ),
+          const SizedBox(height: Spacing.s),
+          GradeWeightsEditor(
+            initial: _weights,
+            onChanged: (value) => setState(() => _weights = value),
           ),
         ],
         const SizedBox(height: Spacing.l),

@@ -2682,5 +2682,49 @@
   "helpSummarySources": "Материалы курса",
   "helpSummaryArticles": "Статьи",
   "helpSummaryAttached": "Эта сводка приложится к работе. Изменить её нельзя, текст диалогов не передаётся.",
-  "settingNavigatorLibrary": "Навигатор: искать статьи в OpenAlex, если в материалах курса ничего нет"
+  "settingNavigatorLibrary": "Навигатор: искать статьи в OpenAlex, если в материалах курса ничего нет",
+  "assignmentWeights": "Складывать оценку из частей",
+  "assignmentWeightsHint": "Вы ставите проценты за защиту, карту поиска и работу, приложение считает баллы по весам. Рекомендуем 50/30/20",
+  "assignmentWeightsSum": "Веса должны быть целыми и в сумме давать 100",
+  "assignmentWeightsLine": "защита {defense}%, карта {map}%, работа {work}%",
+  "@assignmentWeightsLine": {
+    "placeholders": {
+      "defense": {
+        "type": "int"
+      },
+      "map": {
+        "type": "int"
+      },
+      "work": {
+        "type": "int"
+      }
+    }
+  },
+  "gradePartDefense": "Защита",
+  "gradePartMap": "Карта поиска",
+  "gradePartWork": "Работа",
+  "gradePartLabel": "{part}, вес {weight}%",
+  "@gradePartLabel": {
+    "placeholders": {
+      "part": {
+        "type": "String"
+      },
+      "weight": {
+        "type": "int"
+      }
+    }
+  },
+  "gradePartsHint": "Укажите результат по каждой части от 0 до 100%",
+  "gradePartsTotal": "Итог: {points} из {max}",
+  "@gradePartsTotal": {
+    "placeholders": {
+      "points": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "gradeByParts": "Считать по частям"
 }

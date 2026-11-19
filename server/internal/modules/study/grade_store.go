@@ -7,18 +7,18 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-const gradeColumns = `g.assignment_id::text, g.student_id::text, g.points::float8, g.passed, g.comment, g.graded_by::text, g.graded_at`
+const gradeColumns = `g.assignment_id::text, g.student_id::text, g.points::float8, g.passed, g.parts, g.comment, g.graded_by::text, g.graded_at`
 
 type GradeStore struct{}
 
 func (GradeStore) Upsert(ctx context.Context, tx pgx.Tx, assignmentID, studentID, graderID string, in GradeInput) (Grade, error) {
 	rows, err := tx.Query(ctx, `
-		INSERT INTO study.grades AS g (assignment_id, student_id, points, passed, comment, graded_by)
-		VALUES ($1, $2, $3, $4, $5, $6)
+		INSERT INTO study.grades AS g (assignment_id, student_id, points, passed, parts, comment, graded_by)
+		VALUES ($1, $2, $3, $4, $7, $5, $6)
 		ON CONFLICT (assignment_id, student_id) DO UPDATE
-		SET points = EXCLUDED.points, passed = EXCLUDED.passed, comment = EXCLUDED.comment,
+		SET points = EXCLUDED.points, passed = EXCLUDED.passed, parts = EXCLUDED.parts, comment = EXCLUDED.comment,
 		    graded_by = EXCLUDED.graded_by, graded_at = now()
-		RETURNING `+gradeColumns, assignmentID, studentID, in.Points, in.Passed, in.Comment, graderID)
+		RETURNING `+gradeColumns, assignmentID, studentID, in.Points, in.Passed, in.Comment, graderID, in.Parts)
 	if err != nil {
 		return Grade{}, fmt.Errorf("save grade: %w", err)
 	}
@@ -41,6 +41,6 @@ func (GradeStore) ByAssignment(ctx context.Context, tx pgx.Tx, assignmentIDs []s
 
 func scanGrade(row pgx.CollectableRow) (Grade, error) {
 	var g Grade
-	err := row.Scan(&g.AssignmentID, &g.StudentID, &g.Points, &g.Passed, &g.Comment, &g.GradedBy, &g.GradedAt)
+	err := row.Scan(&g.AssignmentID, &g.StudentID, &g.Points, &g.Passed, &g.Parts, &g.Comment, &g.GradedBy, &g.GradedAt)
 	return g, err
 }

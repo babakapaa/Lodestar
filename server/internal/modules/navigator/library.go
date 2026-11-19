@@ -37,7 +37,7 @@ func (l Library) Search(ctx context.Context, query string) ([]Article, error) {
 	defer cancel()
 	params := url.Values{
 		"search":   {query},
-		"filter":   {"has_doi:true"},
+		"filter":   {"has_doi:true,is_retracted:false"},
 		"per-page": {strconv.Itoa(maxArticles)},
 		"select":   {"display_name,doi,publication_year,authorships,primary_location"},
 	}

@@ -46,8 +46,11 @@ func link(scheme, host string, c Container) string {
 
 func containerSpec(spec sandbox.RunSpec, gpu int, token, workspace string) map[string]any {
 	host := map[string]any{
-		"Binds":   []string{workspace + ":/workspace"},
-		"ShmSize": 2 << 30,
+		"Binds":       []string{workspace + ":/workspace"},
+		"ShmSize":     2 << 30,
+		"SecurityOpt": []string{"no-new-privileges"},
+		"CapDrop":     []string{"NET_RAW", "SYS_ADMIN", "SYS_PTRACE", "MKNOD", "AUDIT_WRITE"},
+		"PidsLimit":   4096,
 		"DeviceRequests": []map[string]any{{
 			"Driver": "nvidia", "DeviceIDs": []string{strconv.Itoa(gpu)}, "Capabilities": [][]string{{"gpu"}},
 		}},

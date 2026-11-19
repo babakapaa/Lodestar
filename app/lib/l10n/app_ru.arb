@@ -523,6 +523,8 @@
   "sourcesFindLabel": "DOI или адрес страницы",
   "sourcesFindAction": "Найти",
   "sourcesCopyList": "Скопировать список литературы",
+  "sourcesCopyGost": "ГОСТ Р 7.0.100",
+  "sourcesCopyApa": "APA 7",
   "sourcesCopied": "Список скопирован",
   "sourcesCopiedOne": "Ссылка скопирована",
   "sourcesCopyOne": "Скопировать ссылку",
@@ -2679,9 +2681,11 @@
       }
     }
   },
+  "helpSummaryRule": "Подсказки разрешены. Сводка нужна для вопросов на защите, а не для снижения оценки.",
   "helpSummarySources": "Материалы курса",
   "helpSummaryArticles": "Статьи",
   "helpSummaryAttached": "Эта сводка приложится к работе. Изменить её нельзя, текст диалогов не передаётся.",
+  "settingNavigatorMatch": "Навигатор: минимальное сходство фрагмента курса, % (ниже ищутся статьи в OpenAlex; 0 выключает порог)",
   "settingNavigatorLibrary": "Навигатор: искать статьи в OpenAlex, если в материалах курса ничего нет",
   "assignmentWeights": "Складывать оценку из частей",
   "assignmentWeightsHint": "Вы ставите проценты за защиту, карту поиска и работу, приложение считает баллы по весам. Рекомендуем 50/30/20",

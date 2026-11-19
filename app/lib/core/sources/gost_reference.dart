@@ -1,3 +1,4 @@
+import 'author_name.dart';
 import 'source.dart';
 import 'source_kind.dart';
 
@@ -105,20 +106,8 @@ abstract final class GostReference {
   }
 
   static (String, String) _split(String author) {
-    final at = author.indexOf(',');
-    if (at < 0) {
-      return (author.trim(), '');
-    }
-    final family = author.substring(0, at).trim();
-    final given = author.substring(at + 1).trim();
-    final initials = [
-      for (final part in given.split(RegExp(r'[\s.]+')))
-        if (part.isNotEmpty)
-          part.contains('-')
-              ? part.split('-').map((p) => '${p[0]}.').join('-')
-              : '${part[0]}.',
-    ].join(' ');
-    return (family, initials);
+    final name = AuthorName.parse(author);
+    return (name.family, name.initials);
   }
 
   static String? _date(String iso) {

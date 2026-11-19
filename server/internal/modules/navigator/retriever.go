@@ -23,7 +23,7 @@ type Retriever struct {
 	passages PassageStore
 }
 
-func (r Retriever) Find(ctx context.Context, tenantID, courseID, query string) []Fragment {
+func (r Retriever) Find(ctx context.Context, tenantID, courseID, query string, match int) []Fragment {
 	if r.embedder == nil || courseID == "" || query == "" {
 		return nil
 	}
@@ -34,7 +34,7 @@ func (r Retriever) Find(ctx context.Context, tenantID, courseID, query string) [
 	}
 	var found []Fragment
 	err = r.tenants.Run(ctx, tenantID, func(tx pgx.Tx) error {
-		found, err = r.passages.Search(ctx, tx, r.embedder.Name(), courseID, vectors[0], searchPool)
+		found, err = r.passages.Search(ctx, tx, r.embedder.Name(), courseID, vectors[0], searchPool, distance(match))
 		return err
 	})
 	if err != nil {
@@ -70,4 +70,11 @@ func (r Retriever) rerank(ctx context.Context, query string, found []Fragment) [
 		found = found[:fragmentLimit]
 	}
 	return found
+}
+
+func distance(match int) float64 {
+	if match <= 0 {
+		return 2
+	}
+	return 1 - float64(match)/100
 }

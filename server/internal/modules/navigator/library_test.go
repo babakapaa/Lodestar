@@ -55,7 +55,7 @@ func TestNavigatorFindsArticlesWhenCourseHasNothing(t *testing.T) {
 	if err != nil {
 		t.Fatalf("ask: %v", err)
 	}
-	if len(*queries) != 1 || (*queries)[0].Get("search") != "photosynthesis light reactions" || (*queries)[0].Get("filter") != "has_doi:true" {
+	if len(*queries) != 1 || (*queries)[0].Get("search") != "photosynthesis light reactions" || (*queries)[0].Get("filter") != "has_doi:true,is_retracted:false" {
 		t.Fatalf("queries = %v", *queries)
 	}
 	got := a.Reply.Articles
@@ -88,5 +88,34 @@ func TestUniversityCanTurnOpenLibraryOff(t *testing.T) {
 	a, _, err := w.navigator.Ask(w.ctx, student, dialogID, navigator.MessageInput{Key: "q1", Text: "Где почитать про фотосинтез?", Intent: navigator.IntentFind}, nil)
 	if err != nil || len(a.Reply.Articles) != 0 || len(*queries) != 0 {
 		t.Fatalf("articles = %+v, queries = %v, %v", a.Reply.Articles, *queries, err)
+	}
+}
+
+func TestNavigatorSearchesArticlesWhenMaterialsDoNotFit(t *testing.T) {
+	w, queries := libraryWorld(t, true)
+	w.kernel.Settings.(*fakeSettings).values[navigator.MatchSetting] = 40
+	w.navigator = navigator.NewService(w.kernel)
+	teacher, student := w.user("dana"), w.user("aigerim")
+	w.teach(teacher)
+	w.enrol(module.ModeStudy, student)
+	if _, err := w.materials.Add(w.ctx, teacher, courseID, navigator.MaterialInput{Title: "Строение клетки", Text: membrane}); err != nil {
+		t.Fatalf("add: %v", err)
+	}
+	if err := navigator.NewIndexer(w.kernel).Index(w.ctx, w.tenant); err != nil {
+		t.Fatalf("index: %v", err)
+	}
+	if _, _, err := w.navigator.Create(w.ctx, student, navigator.DialogInput{ID: dialogID, ScopeKind: "assignment", ScopeID: assignmentID}); err != nil {
+		t.Fatalf("create: %v", err)
+	}
+	w.model.reply = "photosynthesis light reactions"
+	a, _, err := w.navigator.Ask(w.ctx, student, dialogID, navigator.MessageInput{Key: "q1", Text: "Где почитать про фотосинтез?", Intent: navigator.IntentFind}, nil)
+	if err != nil || len(*queries) != 1 || len(a.Reply.Articles) != 1 {
+		t.Fatalf("articles = %+v, queries = %v, %v", a.Reply.Articles, *queries, err)
+	}
+	if _, _, err := w.navigator.Ask(w.ctx, student, dialogID, navigator.MessageInput{Key: "q2", Text: "Где почитать про клеточную мембрану?", Intent: navigator.IntentFind}, nil); err != nil {
+		t.Fatalf("ask: %v", err)
+	}
+	if len(*queries) != 1 {
+		t.Fatalf("searched although the materials fit: %v", *queries)
 	}
 }

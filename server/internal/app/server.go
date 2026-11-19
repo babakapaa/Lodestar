@@ -87,6 +87,7 @@ func NewServer(version string, cfg config.Config, box secretbox.Box, pool *pgxpo
 		kernel.Objects = ext.Storage
 	}
 	kernel.Preferences = profileService
+	kernel.Help = registry.HelpSource(kernel)
 	kernel.Briefs = registry.Briefs(kernel)
 	kernel.Scores = registry.ScoreSources(kernel)
 	kernel.TeamScopes = registry.TeamScopes(kernel)

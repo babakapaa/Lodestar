@@ -39,6 +39,7 @@ class SettingLabels {
     'attendance.absent_alert' => l10n.settingAttendanceAlert,
     'navigator.support_contacts' => l10n.settingNavigatorSupport,
     'navigator.memory_messages' => l10n.settingNavigatorMemory,
+    'navigator.open_library' => l10n.settingNavigatorLibrary,
     'league.division_gpu_hours' => l10n.settingLeagueGpu,
     _ => key,
   };

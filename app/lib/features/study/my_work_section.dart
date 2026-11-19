@@ -9,6 +9,7 @@ import '../../design/tokens/tokens_context.dart';
 import '../../l10n/l10n_context.dart';
 import 'assignment_details.dart';
 import 'attached_file_tile.dart';
+import 'help_summary_view.dart';
 import 'search_map_view.dart';
 import 'study_labels_context.dart';
 import 'study_providers.dart';
@@ -67,6 +68,10 @@ class MyWorkSection extends ConsumerWidget {
                   if (latest.searchMap case final map?) ...[
                     const SizedBox(height: Spacing.m),
                     SearchMapView(map: map),
+                  ],
+                  if (latest.help case final help?) ...[
+                    const SizedBox(height: Spacing.m),
+                    HelpSummaryView(summary: help),
                   ],
                 ],
               ),

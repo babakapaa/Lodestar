@@ -8,9 +8,11 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
+
+	"github.com/babakapaa/lodestar/server/internal/core/module"
 )
 
-const submissionColumns = `s.id::text, s.assignment_id::text, s.student_id::text, s.client_id::text, s.body, s.composed_at, s.search_map, s.submitted_at, s.team`
+const submissionColumns = `s.id::text, s.assignment_id::text, s.student_id::text, s.client_id::text, s.body, s.composed_at, s.search_map, s.submitted_at, s.team, s.navigator_summary`
 
 type SubmissionStore struct{}
 
@@ -28,10 +30,10 @@ func (SubmissionStore) ByClient(ctx context.Context, tx pgx.Tx, assignmentID, st
 	return sub, err
 }
 
-func (SubmissionStore) Insert(ctx context.Context, tx pgx.Tx, assignmentID, studentID string, in SubmissionInput, team *TeamReceipt) (Submission, error) {
+func (SubmissionStore) Insert(ctx context.Context, tx pgx.Tx, assignmentID, studentID string, in SubmissionInput, team *TeamReceipt, help *module.HelpSummary) (Submission, error) {
 	rows, err := tx.Query(ctx, `
-		INSERT INTO study.submissions AS s (assignment_id, student_id, client_id, body, composed_at, search_map, team)
-		VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING `+submissionColumns, assignmentID, studentID, in.ClientID, in.Body, in.ComposedAt, in.SearchMap, team)
+		INSERT INTO study.submissions AS s (assignment_id, student_id, client_id, body, composed_at, search_map, team, navigator_summary)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING `+submissionColumns, assignmentID, studentID, in.ClientID, in.Body, in.ComposedAt, in.SearchMap, team, help)
 	if err != nil {
 		return Submission{}, submissionError(err)
 	}
@@ -78,7 +80,7 @@ func (SubmissionStore) Latest(ctx context.Context, tx pgx.Tx, assignmentID strin
 	for rows.Next() {
 		var sub Submission
 		var count int
-		if err := rows.Scan(&sub.ID, &sub.AssignmentID, &sub.StudentID, &sub.ClientID, &sub.Body, &sub.ComposedAt, &sub.SearchMap, &sub.SubmittedAt, &sub.Team, &count); err != nil {
+		if err := rows.Scan(&sub.ID, &sub.AssignmentID, &sub.StudentID, &sub.ClientID, &sub.Body, &sub.ComposedAt, &sub.SearchMap, &sub.SubmittedAt, &sub.Team, &sub.Help, &count); err != nil {
 			return nil, nil, fmt.Errorf("scan submission: %w", err)
 		}
 		if _, seen := latest[sub.StudentID]; !seen {
@@ -126,7 +128,7 @@ func (SubmissionStore) Submitters(ctx context.Context, tx pgx.Tx, assignmentIDs 
 
 func scanSubmission(row pgx.CollectableRow) (Submission, error) {
 	var s Submission
-	err := row.Scan(&s.ID, &s.AssignmentID, &s.StudentID, &s.ClientID, &s.Body, &s.ComposedAt, &s.SearchMap, &s.SubmittedAt, &s.Team)
+	err := row.Scan(&s.ID, &s.AssignmentID, &s.StudentID, &s.ClientID, &s.Body, &s.ComposedAt, &s.SearchMap, &s.SubmittedAt, &s.Team, &s.Help)
 	return s, err
 }
 

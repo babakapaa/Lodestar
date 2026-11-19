@@ -16,6 +16,7 @@ class Assignment {
     required this.published,
     this.searchMap,
     this.navigatorMode = NavigatorMode.course,
+    this.navigatorSummary = false,
     this.defense = DefenseFormat.none,
     this.team,
   });
@@ -33,6 +34,7 @@ class Assignment {
       published: json['publishedAt'] != null,
       searchMap: MapRules.maybe(json['searchMap']),
       navigatorMode: NavigatorMode.parse(json['navigatorMode']),
+      navigatorSummary: json['navigatorSummary'] as bool? ?? false,
       defense: DefenseFormat.parse(json['defense']),
       team: TeamRules.maybe(json['team']),
     );
@@ -48,6 +50,7 @@ class Assignment {
   final bool published;
   final MapRules? searchMap;
   final NavigatorMode navigatorMode;
+  final bool navigatorSummary;
   final DefenseFormat defense;
   final TeamRules? team;
 }

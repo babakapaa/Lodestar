@@ -15,6 +15,7 @@ class AssignmentInput {
     required this.files,
     this.searchMap,
     this.navigatorMode = NavigatorMode.course,
+    this.navigatorSummary = false,
     this.defense = DefenseFormat.none,
     this.team,
   });
@@ -28,6 +29,7 @@ class AssignmentInput {
   final List<String> files;
   final MapRules? searchMap;
   final NavigatorMode navigatorMode;
+  final bool navigatorSummary;
   final DefenseFormat defense;
   final TeamRules? team;
 
@@ -41,6 +43,7 @@ class AssignmentInput {
     'files': files,
     'searchMap': searchMap?.toJson(),
     'navigatorMode': navigatorMode.wire,
+    'navigatorSummary': navigatorSummary,
     'defense': defense.wire,
     'team': team?.toJson(),
   };

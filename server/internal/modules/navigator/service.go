@@ -24,7 +24,9 @@ type Service struct {
 	dialogs   DialogStore
 	messages  MessageStore
 	journal   JournalStore
+	help      HelpStore
 	retriever Retriever
+	library   Library
 	verifier  Verifier
 	topics    TopicStore
 }
@@ -33,7 +35,9 @@ func NewService(k module.Kernel) Service {
 	sealer := Sealer{box: k.Secrets}
 	return Service{
 		k: k, dialogs: DialogStore{sealer: sealer}, messages: MessageStore{sealer: sealer}, journal: JournalStore{sealer: sealer},
+		help:      HelpStore{sealer: sealer},
 		retriever: Retriever{tenants: k.Tenants, embedder: k.Embedder, reranker: k.Reranker},
+		library:   Library{Client: k.Outbound, URL: OpenAlexURL},
 		verifier:  Verifier{model: k.Model},
 	}
 }
@@ -139,6 +143,9 @@ func (s Service) Ask(ctx context.Context, p auth.Principal, id string, in Messag
 		if journal, err = s.journaling(ctx, tx, p.UserID); err != nil {
 			return err
 		}
+		if prompt.Library, err = s.flag(ctx, tx, LibrarySetting); err != nil {
+			return err
+		}
 		support, err = s.text(ctx, tx, SupportSetting)
 		return err
 	})
@@ -174,7 +181,12 @@ func (s Service) Ask(ctx context.Context, p auth.Principal, id string, in Messag
 			return err
 		}
 		if journal && in.Text != "" && body.Intent != IntentClosed {
-			if err := s.journal.Insert(ctx, tx, p.UserID, dialog, journalBody{Query: in.Text, Sources: sources(body.Citations)}); err != nil {
+			if err := s.journal.Insert(ctx, tx, p.UserID, dialog, journalBody{Query: in.Text, Sources: sources(body)}); err != nil {
+				return err
+			}
+		}
+		if b := prompt.Brief; b != nil && b.Kind == helpScope && !b.Teaches && body.Intent != IntentClosed {
+			if err := s.help.Record(ctx, tx, p.UserID, b.Kind, b.ID, body); err != nil {
 				return err
 			}
 		}
@@ -208,7 +220,7 @@ func (s Service) reply(ctx context.Context, p auth.Principal, in MessageInput, p
 	if err != nil {
 		return messageBody{}, err
 	}
-	body := messageBody{Text: verdict.Text, Intent: prompt.Intent, Step: prompt.Step, Citations: verdict.Citations}
+	body := messageBody{Text: verdict.Text, Intent: prompt.Intent, Step: prompt.Step, Citations: verdict.Citations, Articles: verdict.Articles}
 	if distress {
 		body.Support = support
 	}
@@ -228,6 +240,7 @@ func (s Service) answer(ctx context.Context, p auth.Principal, prompt Prompt, st
 	if prompt.Brief != nil {
 		prompt.Fragments = s.retriever.Find(ctx, p.TenantID, prompt.Brief.CourseID, prompt.query())
 	}
+	articles := s.articles(ctx, prompt)
 	var verdict Verdict
 	for attempt := 0; attempt < 2; attempt++ {
 		if err := report(StageWrite); err != nil {
@@ -242,11 +255,12 @@ func (s Service) answer(ctx context.Context, p auth.Principal, prompt Prompt, st
 		}
 		verdict = s.verifier.Check(ctx, draft, prompt)
 		if verdict.Passed() {
+			verdict.Articles = articles
 			return verdict, nil
 		}
 		prompt.Retry = retryReason(verdict)
 	}
-	return Verdict{Text: fallbackReply}, nil
+	return Verdict{Text: fallbackReply, Articles: articles}, nil
 }
 
 func (s Service) complete(ctx context.Context, prompt Prompt) (string, error) {
@@ -355,10 +369,35 @@ func (s Service) journaling(ctx context.Context, tx pgx.Tx, userID string) (bool
 	return on, nil
 }
 
-func sources(citations []Citation) []JournalSource {
-	out := make([]JournalSource, 0, len(citations))
-	for _, c := range citations {
+func sources(body messageBody) []JournalSource {
+	out := make([]JournalSource, 0, len(body.Citations)+len(body.Articles))
+	for _, c := range body.Citations {
 		out = append(out, JournalSource{Title: c.Title, Reference: c.Reference, URL: c.URL})
 	}
+	for _, a := range body.Articles {
+		out = append(out, JournalSource{Title: a.Title, Reference: a.label(), URL: a.URL})
+	}
 	return out
+}
+
+func (s Service) flag(ctx context.Context, tx pgx.Tx, key string) (bool, error) {
+	raw, err := s.k.Settings.Value(ctx, tx, key)
+	if err != nil {
+		return false, err
+	}
+	var on bool
+	if err := json.Unmarshal(raw, &on); err != nil {
+		return false, err
+	}
+	return on, nil
+}
+
+func (s Service) Help(ctx context.Context, p auth.Principal, scopeKind, scopeID string) (module.HelpSummary, error) {
+	var out module.HelpSummary
+	err := s.k.Tenants.Run(ctx, p.TenantID, func(tx pgx.Tx) error {
+		var err error
+		out, err = s.help.Help(ctx, tx, p.UserID, scopeKind, scopeID)
+		return err
+	})
+	return out, err
 }

@@ -15,6 +15,7 @@ type AssignmentInput struct {
 	MaxPoints     *float64       `json:"maxPoints"`
 	SearchMap     *MapRules      `json:"searchMap"`
 	NavigatorMode *string        `json:"navigatorMode"`
+	NavigatorHelp bool           `json:"navigatorSummary"`
 	Defense       *DefenseFormat `json:"defense"`
 	Team          *TeamRules     `json:"team"`
 	Files         []string       `json:"files"`

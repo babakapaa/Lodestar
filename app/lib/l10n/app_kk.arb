@@ -1506,5 +1506,18 @@
   "entryFeatureNavigator": "Сіз үшін жазбайтын, үйрететін навигатор",
   "notesNewFolder": "Жаңа бума",
   "notesRenameShort": "Атын өзгерту",
-  "notesNewHere": "Осында жаңа жазба"
+  "notesNewHere": "Осында жаңа жазба",
+  "navigatorArticles": "OpenAlex мақалалары",
+  "navigatorArticleSave": "Жазбаларға",
+  "navigatorArticleSaved": "Мақала жазба дереккөздеріне қосылды",
+  "assignmentNavigatorSummary": "Навигатор қорытындысын тіркеу",
+  "assignmentNavigatorSummaryHint": "Сервер студент қай сатыдан қанша кеңес алғанын және қандай дереккөздерді көргенін жұмысқа тіркейді. Диалог мәтіні берілмейді.",
+  "helpSummaryTitle": "Навигатор қорытындысы",
+  "helpSummaryNone": "Бұл тапсырма бойынша навигатор қолданылмады",
+  "helpSummaryReplies": "Навигатор жауаптары: {count}",
+  "helpSummarySteps": "Сұрақ: {question}, бағыт: {direction}, дереккөз: {source}, үзінді: {fragment}, мысал: {example}",
+  "helpSummarySources": "Курс материалдары",
+  "helpSummaryArticles": "Мақалалар",
+  "helpSummaryAttached": "Бұл қорытынды жұмысқа тіркеледі. Оны өзгертуге болмайды, диалог мәтіні берілмейді.",
+  "settingNavigatorLibrary": "Навигатор: курс материалдарында ештеңе болмаса, OpenAlex-тен мақала іздеу"
 }

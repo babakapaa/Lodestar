@@ -15,6 +15,7 @@ import 'search_map_draft.dart';
 import 'outbox_controller.dart';
 import 'student_work.dart';
 import 'gradebook_api.dart';
+import 'help_summary.dart';
 import 'study_repository.dart';
 import 'submission.dart';
 import 'submission_draft.dart';
@@ -54,6 +55,11 @@ final assignmentsProvider = FutureProvider.autoDispose
 final assignmentProvider = FutureProvider.autoDispose
     .family<Loaded<AssignmentDetails>, String>(
       (ref, id) => ref.watch(studyRepositoryProvider).assignment(id),
+    );
+
+final helpSummaryProvider = FutureProvider.autoDispose
+    .family<HelpSummary, String>(
+      (ref, id) => ref.watch(studyRepositoryProvider).help(id),
     );
 
 final searchMapProvider = FutureProvider.autoDispose

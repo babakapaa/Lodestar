@@ -1506,5 +1506,18 @@
   "entryFeatureNavigator": "A navigator that teaches instead of writing for you",
   "notesNewFolder": "New folder",
   "notesRenameShort": "Rename",
-  "notesNewHere": "New note here"
+  "notesNewHere": "New note here",
+  "navigatorArticles": "Articles from OpenAlex",
+  "navigatorArticleSave": "Save to notes",
+  "navigatorArticleSaved": "Article added to note sources",
+  "assignmentNavigatorSummary": "Attach navigator summary",
+  "assignmentNavigatorSummaryHint": "The server attaches how many hints of each step the student got and which sources they saw. Dialog text is not shared.",
+  "helpSummaryTitle": "Navigator summary",
+  "helpSummaryNone": "The navigator was not used for this assignment",
+  "helpSummaryReplies": "Navigator replies: {count}",
+  "helpSummarySteps": "Question: {question}, direction: {direction}, source: {source}, fragment: {fragment}, example: {example}",
+  "helpSummarySources": "Course materials",
+  "helpSummaryArticles": "Articles",
+  "helpSummaryAttached": "This summary will be attached to your work. It can't be edited, and dialog text is not shared.",
+  "settingNavigatorLibrary": "Navigator: search OpenAlex articles when course materials have nothing"
 }

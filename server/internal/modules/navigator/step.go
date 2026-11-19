@@ -23,6 +23,10 @@ func (s Step) next() Step {
 	return ladder[min(i+1, len(ladder)-1)]
 }
 
+func (s Step) cites() bool {
+	return s == StepSource || s == StepFragment || s == StepExample
+}
+
 func (s Step) Last() bool {
 	return s == StepExample
 }

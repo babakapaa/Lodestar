@@ -27,10 +27,16 @@ type AssignmentService struct {
 	people      identity.People
 	log         audit.Log
 	teams       module.TeamDirectory
+	help        module.HelpSource
 }
 
 func NewAssignmentService(tenants database.TenantTx, acc access.Service, notifier module.Notifier) AssignmentService {
 	return AssignmentService{tenants: tenants, gate: CourseGate{access: acc}, notifier: notifier}
+}
+
+func (s AssignmentService) WithHelp(help module.HelpSource) AssignmentService {
+	s.help = help
+	return s
 }
 
 func (s AssignmentService) WithTeams(teams module.TeamDirectory) AssignmentService {
@@ -283,7 +289,11 @@ func (s AssignmentService) Submit(ctx context.Context, p auth.Principal, id stri
 		if err := s.acceptable(ctx, tx, p, a, c, in); err != nil {
 			return err
 		}
-		if sub, err = s.submissions.Insert(ctx, tx, id, p.UserID, in, nil); err != nil {
+		help, err := s.helpFor(ctx, tx, a, p.UserID)
+		if err != nil {
+			return err
+		}
+		if sub, err = s.submissions.Insert(ctx, tx, id, p.UserID, in, nil, help); err != nil {
 			return err
 		}
 		if err := s.submissions.SetFiles(ctx, tx, sub.ID, in.Files); err != nil {

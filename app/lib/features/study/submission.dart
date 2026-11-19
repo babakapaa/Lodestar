@@ -1,4 +1,5 @@
 import 'attached_file.dart';
+import 'help_summary.dart';
 import 'search_map.dart';
 
 class Submission {
@@ -8,6 +9,7 @@ class Submission {
     required this.submittedAt,
     required this.files,
     this.searchMap,
+    this.help,
   });
 
   factory Submission.fromJson(Map<String, Object?> json) {
@@ -17,6 +19,7 @@ class Submission {
       submittedAt: DateTime.parse(json['submittedAt']! as String),
       files: AttachedFile.list(json['files']),
       searchMap: SearchMap.maybe(json['searchMap']),
+      help: HelpSummary.maybe(json['navigatorSummary']),
     );
   }
 
@@ -28,4 +31,5 @@ class Submission {
   final DateTime submittedAt;
   final List<AttachedFile> files;
   final SearchMap? searchMap;
+  final HelpSummary? help;
 }

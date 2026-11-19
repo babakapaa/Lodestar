@@ -30,7 +30,12 @@ func (Module) PrivacySections(k module.Kernel) []privacy.Section {
 	return []privacy.Section{
 		PrivacySection{service: NewService(k)},
 		JournalPrivacySection{journal: JournalStore{sealer: Sealer{box: k.Secrets}}},
+		HelpPrivacySection{help: HelpStore{sealer: Sealer{box: k.Secrets}}},
 	}
+}
+
+func (Module) HelpSource(k module.Kernel) module.HelpSource {
+	return HelpStore{sealer: Sealer{box: k.Secrets}}
 }
 
 func (Module) StatsSources(module.Kernel) []module.StatsSource {

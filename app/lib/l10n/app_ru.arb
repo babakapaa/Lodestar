@@ -2643,5 +2643,44 @@
   "entryFeatureNavigator": "Навигатор, который учит, а не пишет за вас",
   "notesNewFolder": "Новая папка",
   "notesRenameShort": "Переименовать",
-  "notesNewHere": "Новая заметка здесь"
+  "notesNewHere": "Новая заметка здесь",
+  "navigatorArticles": "Статьи из OpenAlex",
+  "navigatorArticleSave": "В заметки",
+  "navigatorArticleSaved": "Статья добавлена в источники заметок",
+  "assignmentNavigatorSummary": "Приложить сводку навигатора",
+  "assignmentNavigatorSummaryHint": "Сервер приложит к работе, сколько подсказок каких ступеней получил студент и какие источники видел. Текст диалогов не передаётся.",
+  "helpSummaryTitle": "Сводка навигатора",
+  "helpSummaryNone": "По этому заданию навигатором не пользовались",
+  "helpSummaryReplies": "Ответов навигатора: {count}",
+  "@helpSummaryReplies": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "helpSummarySteps": "Вопрос: {question}, направление: {direction}, источник: {source}, фрагмент: {fragment}, пример: {example}",
+  "@helpSummarySteps": {
+    "placeholders": {
+      "question": {
+        "type": "int"
+      },
+      "direction": {
+        "type": "int"
+      },
+      "source": {
+        "type": "int"
+      },
+      "fragment": {
+        "type": "int"
+      },
+      "example": {
+        "type": "int"
+      }
+    }
+  },
+  "helpSummarySources": "Материалы курса",
+  "helpSummaryArticles": "Статьи",
+  "helpSummaryAttached": "Эта сводка приложится к работе. Изменить её нельзя, текст диалогов не передаётся.",
+  "settingNavigatorLibrary": "Навигатор: искать статьи в OpenAlex, если в материалах курса ничего нет"
 }

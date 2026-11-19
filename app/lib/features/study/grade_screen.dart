@@ -11,6 +11,7 @@ import '../../l10n/l10n_context.dart';
 import 'assignment.dart';
 import 'attached_file_tile.dart';
 import 'grade_form.dart';
+import 'help_summary_view.dart';
 import 'search_map_view.dart';
 import 'student_work.dart';
 import 'study_labels_context.dart';
@@ -53,6 +54,10 @@ class GradeScreen extends ConsumerWidget {
               if (attempt.searchMap case final map?) ...[
                 const SizedBox(height: Spacing.m),
                 SearchMapView(map: map),
+              ],
+              if (attempt.help case final help?) ...[
+                const SizedBox(height: Spacing.m),
+                HelpSummaryView(summary: help),
               ],
             ],
           ),

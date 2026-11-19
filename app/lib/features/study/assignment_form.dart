@@ -48,6 +48,7 @@ class _AssignmentFormState extends ConsumerState<AssignmentForm> {
   late bool _mapRequired = _assignment?.searchMap != null;
   late NavigatorMode _navigatorMode =
       _assignment?.navigatorMode ?? NavigatorMode.course;
+  late bool _navigatorSummary = _assignment?.navigatorSummary ?? false;
   late DefenseFormat _defense = _assignment?.defense ?? DefenseFormat.none;
   late TeamRules? _team = _assignment?.team;
   late final _minSources = TextEditingController(
@@ -163,6 +164,7 @@ class _AssignmentFormState extends ConsumerState<AssignmentForm> {
           ? MapRules(minSources: minSources!, minScholarly: minScholarly!)
           : null,
       navigatorMode: _navigatorMode,
+      navigatorSummary: _navigatorSummary,
       defense: _defense,
       team: _team,
     );
@@ -306,6 +308,13 @@ class _AssignmentFormState extends ConsumerState<AssignmentForm> {
             labelOf: labels.navigatorMode,
             onSelected: (value) => setState(() => _navigatorMode = value),
           ),
+        ),
+        SwitchListTile(
+          contentPadding: EdgeInsets.zero,
+          title: Text(l10n.assignmentNavigatorSummary),
+          subtitle: Text(l10n.assignmentNavigatorSummaryHint),
+          value: _navigatorSummary,
+          onChanged: (value) => setState(() => _navigatorSummary = value),
         ),
         const SizedBox(height: Spacing.xl),
         Section(
